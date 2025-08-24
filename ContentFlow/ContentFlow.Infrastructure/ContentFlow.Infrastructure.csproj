@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ContentFlow.Application\ContentFlow.Application.csproj" />
+      <ProjectReference Include="..\ContentFlow.Domain\ContentFlow.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="EntityFrameworkCore.CommonTools" Version="2.0.2" />
+      <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
+      <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.19" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.19" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.19" />
+      <PackageReference Include="SqlServerSpatial.Toolkit" Version="1.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="DatabaseEngine\Configurations\" />
+      <Folder Include="Services\" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,33 @@
+﻿using ContentFlow.Application.Interfaces.Posts;
+using ContentFlow.Infrastructure.DatabaseEngine;
+using ContentFlow.Infrastructure.Identity;
+using ContentFlow.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace ContentFlow.Infrastructure;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+        
+        services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+        
+        // Identity
+        services.AddIdentity<ApplicationUser, IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+        
+        // Repository
+        services.AddScoped<IPostRepository, PostRepository>();
+        
+        // Services
+        
+        
+        return services;
+    }
+}
