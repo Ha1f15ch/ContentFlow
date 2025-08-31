@@ -54,7 +54,7 @@ builder.Services.AddSwaggerGen(c =>
 // Add Application (CQRS, MediatR, Validators)
 builder.Services.AddApplication();
 
-// Add Infrastructure (DbContext, Identity, Repositories, Email)
+// Add Infrastructure (DbContext, Identity, Repositories, Email, Mappings)
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();

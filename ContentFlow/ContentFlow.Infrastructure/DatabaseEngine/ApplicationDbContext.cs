@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ContentFlow.Infrastructure.DatabaseEngine;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
@@ -15,7 +15,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     }
     
     //entities
-    public DbSet<Post> Posts => Set<Post>();
+    public DbSet<Post> Posts { get; set; }
+    public DbSet<Comment> Comments { get; set; }
+    public DbSet<Tag> Tags { get; set; }
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<PostTag> PostTags { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
