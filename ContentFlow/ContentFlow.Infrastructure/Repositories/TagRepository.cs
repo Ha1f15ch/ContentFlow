@@ -1,6 +1,7 @@
 ﻿using ContentFlow.Application.Common;
 using ContentFlow.Application.Interfaces.Tag;
 using ContentFlow.Domain.Entities;
+using ContentFlow.Domain.Exceptions;
 using ContentFlow.Infrastructure.DatabaseEngine;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,19 +16,31 @@ public class TagRepository : ITagRepository
         _context = context;
     }
     
-    public Task<Tag> GetByIdAsync(int id, CancellationToken ct)
+    public async Task<Tag> GetByIdAsync(int id, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        return await _context.Tags
+                   .FirstOrDefaultAsync(t => t.Id == id, ct)
+               ?? throw new NotFoundException($"Tags with id {id} not found");
     }
 
-    public Task<Tag> GetByNameAsync(string name, CancellationToken ct)
+    public async Task<Tag> GetByNameAsync(string name, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name cannot be null or empty", nameof(name));
+        
+        return await _context.Tags
+            .FirstOrDefaultAsync(t => t.Name == name, ct)
+            ?? throw new NotFoundException($"Tag with name {name} not found");
     }
 
-    public Task<Tag> GetBySlugAsync(string slug, CancellationToken ct)
+    public async Task<Tag> GetBySlugAsync(string slug, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        if(string.IsNullOrWhiteSpace(slug))
+            throw new ArgumentException("Slug cannot be null or empty", nameof(slug));
+        
+        return await _context.Tags
+            .FirstOrDefaultAsync(t => t.Slug == slug, ct)
+            ?? throw new NotFoundException($"Tag with slug {slug} not found");
     }
 
     public async Task<PaginatedResult<Tag>> GetAllAsync(int page, int pageSize, CancellationToken ct)
@@ -44,18 +57,20 @@ public class TagRepository : ITagRepository
         return new PaginatedResult<Tag>(tags, totalCount, page, pageSize);
     }
 
-    public Task AddAsync(Tag tag, CancellationToken ct)
+    public async Task AddAsync(Tag tag, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        await _context.Tags.AddAsync(tag, ct);
+        await _context.SaveChangesAsync(ct);
     }
 
-    public Task UpdateAsync(Tag tag, CancellationToken ct)
+    public async Task UpdateAsync(Tag tag, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        await _context.SaveChangesAsync(ct);
     }
 
-    public Task DeleteAsync(Tag tag, CancellationToken ct)
+    public async Task DeleteAsync(Tag tag, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        _context.Tags.Remove(tag);
+        await _context.SaveChangesAsync(ct);
     }
 }
