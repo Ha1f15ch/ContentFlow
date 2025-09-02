@@ -12,9 +12,6 @@
 
     <ItemGroup>
       <Folder Include="Exceptions\" />
-      <Folder Include="Functions\Posts\Commands\" />
-      <Folder Include="Functions\Posts\Handlers\" />
-      <Folder Include="Functions\Posts\Queries\" />
       <Folder Include="Interfaces\Common\" />
       <Folder Include="Services\" />
     </ItemGroup>

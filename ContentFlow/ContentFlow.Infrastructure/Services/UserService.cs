@@ -27,9 +27,9 @@ public class UserService : IUserService
         return _mapper.Map<UserDto>(user);
     }
 
-    public async Task<UserDto> GetByIdAsync(string userId, CancellationToken ct)
+    public async Task<UserDto> GetByIdAsync(int userId, CancellationToken ct)
     {
-        var user = await _userManager.FindByIdAsync(userId)
+        var user = await _userManager.FindByIdAsync(userId.ToString())
             ?? throw new NotFoundException($"User with {userId} not found");
         
         return _mapper.Map<UserDto>(user);
