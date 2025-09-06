@@ -53,5 +53,8 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 ContentFlow/ContentFlow.sln.DotSettings.user
-/.vs/
-/.idea/
+/.vs
+/.idea
+/ContentFlow/.idea/
+/ContentFlow/.vs/
+/ContentFlow/ContentFlow/
