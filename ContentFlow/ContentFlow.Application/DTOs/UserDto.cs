@@ -1,8 +1,9 @@
 ﻿namespace ContentFlow.Application.DTOs;
 
 public record UserDto (
-    string Id,
+    int Id,
     string Email,
     string? FirstName,
     string? LastName,
+    string? AvatarUrl,
     DateTime CreatedAt);

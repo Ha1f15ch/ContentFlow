@@ -1,4 +1,7 @@
-﻿using ContentFlow.Application.Interfaces.Posts;
+﻿using ContentFlow.Application.Interfaces.Category;
+using ContentFlow.Application.Interfaces.Comment;
+using ContentFlow.Application.Interfaces.Posts;
+using ContentFlow.Application.Interfaces.Tag;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Infrastructure.DatabaseEngine;
 using ContentFlow.Infrastructure.Identity;
@@ -28,6 +31,9 @@ public static class DependencyInjection
         
         // Repository
         services.AddScoped<IPostRepository, PostRepository>();
+        services.AddScoped<ICommentRepository, CommentRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ITagRepository, TagRepository>();
         
         // Services
         services.AddScoped<IUserService, UserService>();

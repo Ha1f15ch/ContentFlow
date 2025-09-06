@@ -1,4 +1,6 @@
-﻿using ContentFlow.Application.Interfaces.Posts;
+﻿using ContentFlow.Application.Common;
+using ContentFlow.Application.DTOs;
+using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Domain.Entities;
 using ContentFlow.Domain.Enums;
 using ContentFlow.Domain.Exceptions;
@@ -23,11 +25,37 @@ public class PostRepository : IPostRepository
             ?? throw new NotFoundException($"Post with ID {id} not found.");
     }
 
-    public async Task<List<Post>> GetAllAsync(CancellationToken ct)
+    public async Task<PaginatedResult<PostReadModel>> GetAllAsync(int page, int pageSize, CancellationToken ct)
     {
-        return await _context.Posts
+        var query = _context.Posts
             .AsNoTracking()
+            .Where(p => p.Status == PostStatus.Published);
+        
+        var totalCount = await query.CountAsync(ct);
+        
+        var posts = await query
+            .OrderBy(c => c.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .GroupJoin(
+                _context.Comments,
+                post => post.Id,
+                comment => comment.PostId,
+                (post, comments) => new PostReadModel(
+                    post.Id,
+                    post.Title,
+                    post.Slug,
+                    post.Excerpt,
+                    post.AuthorId,
+                    post.Status,
+                    post.CreatedAt,
+                    post.PublishedAt,
+                    comments.Count()
+                )
+            )
             .ToListAsync(ct);
+        
+        return new PaginatedResult<PostReadModel>(posts, totalCount, page, pageSize);
     }
 
     public async Task<List<Post>> GetPublishedAsync(CancellationToken ct)

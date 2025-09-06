@@ -6,7 +6,7 @@ using MediatR;
 
 namespace ContentFlow.Application.Functions.Posts.Handlers;
 
-public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, bool>
+public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, int>
 {
     private readonly IPostRepository _postRepository;
     private readonly IUserService  _userService;
@@ -17,7 +17,7 @@ public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, bool>
         _userService = userService;
     }
 
-    public async Task<bool> Handle(CreatePostCommand request, CancellationToken cancellationToken)
+    public async Task<int> Handle(CreatePostCommand request, CancellationToken cancellationToken)
     {
         var postAuthor = await _userService.GetByIdAsync(request.AuthorId, cancellationToken);
 
@@ -25,11 +25,11 @@ public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, bool>
             title: request.Title,
             content: request.Content,
             authorId: request.AuthorId,
-            categoryId: request.AuthorId
+            categoryId: request.CategoryId
         );
         
         await _postRepository.AddAsync(post, cancellationToken);
         
-        return true;
+        return post.Id;
     }
 }

@@ -27,6 +27,20 @@ public class UserService : IUserService
         return _mapper.Map<UserDto>(user);
     }
 
+    public async Task<List<UserDto>> GetByIdsAsync(List<int> userIds, CancellationToken ct)
+    {
+        return await _userManager.Users
+            .Where(u => userIds.Contains(u.Id))
+            .Select(u => new UserDto(
+                u.Id,
+                u.Email,
+                u.FirstName,
+                u.LastName,
+                u.AuthorAvatar,
+                u.CreatedAt))
+            .ToListAsync(ct);
+    }
+
     public async Task<UserDto> GetByIdAsync(int userId, CancellationToken ct)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString())

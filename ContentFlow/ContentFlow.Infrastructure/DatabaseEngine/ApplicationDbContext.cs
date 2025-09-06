@@ -20,6 +20,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<Tag> Tags { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<PostTag> PostTags { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<UserTwoFactorCode> UserTwoFactorCodes { get; set; }
+    public DbSet<TrustedDevice> TrustedDevices { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

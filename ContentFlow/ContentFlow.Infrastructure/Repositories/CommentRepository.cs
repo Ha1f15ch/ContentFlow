@@ -24,6 +24,11 @@ public class CommentRepository : ICommentRepository
             ?? throw new NotFoundException($"Comment with id {id} not found");
     }
 
+    public async Task<int> GetCountAsync(int postId, CancellationToken ct)
+    {
+        return await _context.Comments.CountAsync(c => c.PostId == postId, ct);
+    }
+
     public async Task<PaginatedResult<Comment>> GetByPostIdAsync(int postId, int page, int pageSize, CancellationToken ct)
     {
         var totalCount = await _context.Comments
