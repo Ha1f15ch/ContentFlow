@@ -12,6 +12,7 @@
 
     <ItemGroup>
       <Folder Include="Exceptions\" />
+      <Folder Include="Functions\Auth\Handlers\" />
       <Folder Include="Interfaces\Common\" />
       <Folder Include="Services\" />
     </ItemGroup>
