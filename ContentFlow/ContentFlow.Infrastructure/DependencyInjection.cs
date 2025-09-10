@@ -1,8 +1,10 @@
 ﻿using ContentFlow.Application.Interfaces.Category;
 using ContentFlow.Application.Interfaces.Comment;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.Tag;
 using ContentFlow.Application.Interfaces.Users;
+using ContentFlow.Infrastructure.Configuration;
 using ContentFlow.Infrastructure.DatabaseEngine;
 using ContentFlow.Infrastructure.Identity;
 using ContentFlow.Infrastructure.Mappings;
@@ -37,9 +39,14 @@ public static class DependencyInjection
         
         // Services
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IEmailSender, EmailSender>();
+        services.AddScoped<IEmailService, EmailService>();
         
         // Mappings
         services.AddAutoMapper(typeof(MappingProfile).Assembly);
+        
+        //Configurations
+        services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
         
         return services;
     }
