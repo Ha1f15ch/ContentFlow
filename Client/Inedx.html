@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+     <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+ 
+<!-- КОНТЕЙНЕР ДЛЯ ПРИЛОЖЕНИЯ -->
+  <div id="app">
+    <h1>Мои задачи</h1>
+    <form @submit.prevent="addTask">
+      <input v-model="newTask" type="text" placeholder="Что нужно сделать?" />
+      <button type="submit">Добавить</button>
+    </form>
+
+    <ul class="task-list">
+      <li v-for="task in tasks" :key="task.id" class="task-item">
+        <span :class="{ completed: task.completed }">{{ task.text }}</span>
+        <div class="task-actions">
+          <input type="checkbox" v-model="task.completed" :id="'completed-' + task.id" />
+          <label :for="'completed-' + task.id" class="action-label">Сделано</label>
+          <button @click="removeTask(task.id)" class="delete-btn">×</button>
+        </div>
+      </li>
+    </ul>
+    <p v-if="tasks.length === 0" class="empty">Нет задач. Добавь первую!</p>
+  </div>
+   <script src="https://unpkg.com/vue@3"></script>
+   <script src="script.js"></script>
+  
+  </body>
+</html>
+
+
