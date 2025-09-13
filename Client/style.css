@@ -1,113 +1,130 @@
-
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #d3d3d3;
-    color: #333;
-    margin: 40px;
-    line-height: 1.6;
-  }
-
-  h1, h2, h3 {
-    color: #2c3e50;
-  }
-
-  li {
-    margin: 10px 0;
-  }
-
-  a {
-    color: #3498db;
-    text-decoration: none;
-    font-weight: bold;
-  }
-
-  a:hover {
-    color: #2980b9;
-    text-decoration: underline;
-  }
-
-  img {
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    transition: transform 0.3s ease;
-  }
-
-  img:hover {
-    transform: scale(1.05);
-  }
-
-  h2 {
-  border-bottom: 3px solid #3498db;
-  padding-bottom: 5px;
-  display: inline-block;
+:root {
+  --bg-color: #f8f9fa;
+  --text-color: #333;
+  --card-bg: #ffffff;
+  --border-color: #e0e0e0;
+  --btn-bg: #3498db;
+  --btn-hover: #2980b9;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.digital-clock {
-  display: inline-block;
-  background-color: #2c3e50;           /* Тёмно-синий фон */
-  color: #ffffff;                      /* Белый текст */
-  font-family: 'Courier New', monospace;
-  font-size: 24px;
-  font-weight: bold;
-  padding: 10px 18px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  margin: 10px 0;
-  text-align: center;
-  border: 2px solid #1a252f;
+.dark-theme {
+  --bg-color: #1a1a1a;
+  --text-color: #e0e0e0;
+  --card-bg: #2d2d2d;
+  --border-color: #444;
+  --btn-bg: #3498db;
+  --btn-hover: #2980b9;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
+/* Применение переменных ко всему приложению */
+#app {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 40px;
+  line-height: 1.6;
+  transition: background-color 0.3s ease;
+}
 
+h1, h2, h3 {
+  color: #2c3e50;
+}
+
+/* Форма добавления задачи */
+form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  max-width: 600px;
+}
+
+input[type="text"] {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 16px;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+button {
+  padding: 12px 16px;
+  background-color: var(--btn-bg);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: var(--btn-hover);
+}
+
+/* Кнопка переключения темы */
+.theme-toggle {
+  margin-bottom: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  background-color: #7f8c8d;
+}
+
+/* Список задач */
 .task-list {
   list-style: none;
   padding: 0;
   margin: 20px 0;
   max-width: 100%;
   width: 100%;
-  box-shadow: none;
 }
 
+/* Карточка задачи */
 .task-item {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   align-items: flex-start;
-  padding: 12px 2x;
-  background-color: #fff;
-  border: none; /* Убираем рамку */
-  border-radius: 4px;
+  padding: 12px 16px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   margin-bottom: 8px;
-  box-shadow: none; /* Убираем тень */
+  box-shadow: var(--shadow);
   width: 100%;
-  flex: 1;
   word-wrap: break-word;
-  transition: all 0.2s ease;
   line-height: 1.5;
 }
 
-.task-item:hover {
-  background-color: #f9f9f9;
+.task-item span {
+  text-align: left;
+  margin-bottom: 8px;
+  width: 100%;
+  display: block;
 }
 
-.task-item label {
+/* Действия под задачей */
+.task-actions {
   display: flex;
+  gap: 8px;
   align-items: center;
-  gap: 10px;
+  width: 100%;
+}
+
+.action-label {
+  font-size: 14px;
+  color: #666;
   cursor: pointer;
-  flex: 1;
 }
 
-.task-text {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  white-space: normal;
-}
-
-.completed {
-  text-decoration: line-through;
-  color: #888;
-  font-style: italic;
+.action-label:hover {
+  color: #ccc;
 }
 
 .delete-btn {
@@ -115,7 +132,7 @@
   height: 24px;
   font-size: 16px;
   padding: 0;
-  margin-left: 8px;
+  margin-left: auto;
   background-color: #e74c3c;
   color: white;
   border: none;
@@ -128,62 +145,7 @@
   background-color: #c0392b;
 }
 
-form {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap; /* Кнопка пойдёт на новую строку, если мало места */
-  max-width: 600px;
-}
-
-button {
-  padding: 12px 16px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  white-space: nowrap; /* Чтобы текст кнопки не переносился */
-}
-
-button:hover {
-  background-color: #2980b9;
-}
-
-.empty {
-  color: #777;
-  font-style: italic;
-  margin: 20px 0;
-}
-
-.task-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-  align-items: center;
-}
-
-.task-item span {
-  text-align: left;
-  margin-bottom: 8px;
-  width: 100%;
-  display: block;
-  word-wrap: break-word;    /* Ключевое: переносит текст */
-  line-height: 1.5;
-}
-
-.action-label {
-  font-size: 14px;
-  color: #666;
-  cursor: pointer;
-  user-select: none;
-}
-
-.action-label:hover {
-  color: #333;
-}
-
+/* Чекбоксы */
 input[type="checkbox"] {
   width: 16px;
   height: 16px;
@@ -193,24 +155,30 @@ input[type="checkbox"] {
 }
 
 input[type="checkbox"]:checked {
-  background-color: #3498db;
-  border-color: #3498db;
+  background-color: var(--btn-bg);
+  border-color: var(--btn-bg);
 }
 
-form {
+/* Фильтры */
+.filters {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap; /* Если экран узкий — кнопка перейдёт на новую строку */
+  gap: 8px;
+  margin: 10px 0 20px 0;
 }
 
-input[type="text"] {
-  flex: 1;
-  min-width: 200px;
-  max-width: 100%;           /* Не вылезает за пределы */
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 16px;
-  font-family: inherit;
+.filters button {
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.filters button.active {
+  background-color: var(--btn-hover);
+  color: white;
+}
+
+/* Пустое состояние */
+.empty {
+  color: #777;
+  font-style: italic;
+  margin: 20px 0;
 }

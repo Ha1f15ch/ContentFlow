@@ -1,20 +1,37 @@
 <!DOCTYPE html>
-<html>
-  <head>
-     <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
- 
-<!-- КОНТЕЙНЕР ДЛЯ ПРИЛОЖЕНИЯ -->
-  <div id="app">
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мои задачи</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Корневой элемент Vue -->
+  <div id="app" :class="{ 'dark-theme': isDark }">
     <h1>Мои задачи</h1>
+
+    <!-- Форма добавления задачи -->
     <form @submit.prevent="addTask">
       <input v-model="newTask" type="text" placeholder="Что нужно сделать?" />
       <button type="submit">Добавить</button>
     </form>
 
+    <!-- Кнопки фильтров -->
+    <div class="filters">
+      <button @click="filter = 'all'" :class="{ active: filter === 'all' }">Все</button>
+      <button @click="filter = 'active'" :class="{ active: filter === 'active' }">Активные</button>
+      <button @click="filter = 'completed'" :class="{ active: filter === 'completed' }">Выполненные</button>
+    </div>
+
+    <!-- Кнопка переключения темы -->
+    <button @click="isDark = !isDark" class="theme-toggle">
+      {{ isDark ? 'Светлая тема' : 'Тёмная тема' }}
+    </button>
+
+    <!-- Список задач -->
     <ul class="task-list">
-      <li v-for="task in tasks" :key="task.id" class="task-item">
+      <li v-for="task in filteredTasks" :key="task.id" class="task-item">
         <span :class="{ completed: task.completed }">{{ task.text }}</span>
         <div class="task-actions">
           <input type="checkbox" v-model="task.completed" :id="'completed-' + task.id" />
@@ -23,12 +40,13 @@
         </div>
       </li>
     </ul>
+
+    <!-- Сообщение, если задач нет -->
     <p v-if="tasks.length === 0" class="empty">Нет задач. Добавь первую!</p>
   </div>
-   <script src="https://unpkg.com/vue@3"></script>
-   <script src="script.js"></script>
-  
-  </body>
+
+  <!-- Подключаем Vue и наш скрипт -->
+  <script src="https://unpkg.com/vue@3"></script>
+  <script src="script.js"></script>
+</body>
 </html>
-
-
