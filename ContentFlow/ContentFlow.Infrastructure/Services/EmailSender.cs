@@ -21,7 +21,7 @@ public class EmailSender : IEmailSender
                 isHtml: true,
                 ct: ct);
 
-            Console.WriteLine("Код верификации отправлен на {Email}", email);
+            Console.WriteLine($"Код верификации отправлен на Email: {email}");
             return true;
         }
         catch (Exception ex)

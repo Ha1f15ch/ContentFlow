@@ -5,6 +5,7 @@ using ContentFlow.Domain.Exceptions;
 using ContentFlow.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ValidationException = FluentValidation.ValidationException;
 
 namespace ContentFlow.Infrastructure.Services;
 
@@ -19,10 +20,15 @@ public class UserService : IUserService
         _mapper = mapper;
     }
 
-    public async Task<UserDto> GetByEmailAsync(string email, CancellationToken ct)
+    public async Task<UserDto?> GetByEmailAsync(string email, CancellationToken ct)
     {
-        var user = await _userManager.FindByEmailAsync(email)
-            ?? throw new NotFoundException($"uer with {email} not found");
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user == null)
+        {
+            Console.WriteLine($"User with email = {email} not found");
+            return null;
+        }
         
         return _mapper.Map<UserDto>(user);
     }
@@ -46,6 +52,26 @@ public class UserService : IUserService
         var user = await _userManager.FindByIdAsync(userId.ToString())
             ?? throw new NotFoundException($"User with {userId} not found");
         
+        return _mapper.Map<UserDto>(user);
+    }
+
+    public async Task<UserDto> CreateAsync(string email, string password, string? firstName = null, string? lastName = null)
+    {
+        var user = new ApplicationUser
+        {
+            Email = email,
+            UserName = email,
+            FirstName = firstName,
+            LastName = lastName,
+            CreatedAt = DateTime.UtcNow,
+            IsBlocked = false
+        };
+        
+        var result = await _userManager.CreateAsync(user, password);
+
+        if (!result.Succeeded)
+            throw new ValidationException($"Failed to create user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+
         return _mapper.Map<UserDto>(user);
     }
 
