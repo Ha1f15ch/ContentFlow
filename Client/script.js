@@ -5,7 +5,7 @@ createApp({
     return {
       newTask: '',
       tasks: JSON.parse(localStorage.getItem('tasks')) || [],
-      filter: 'all', // 'all', 'active', 'completed'
+      filter: 'all',
       isDark: false
     };
   },
@@ -46,5 +46,22 @@ createApp({
 
     const savedTheme = localStorage.getItem('isDark');
     if (savedTheme) this.isDark = savedTheme === 'true';
+
+    // Применяем тему при загрузке
+    if (this.isDark) {
+      document.body.classList.add('dark-theme');
+    } else {
+      document.body.classList.remove('dark-theme');
+    }
+  },
+  watch: {
+    isDark(newVal) {
+      if (newVal) {
+        document.body.classList.add('dark-theme');
+      } else {
+        document.body.classList.remove('dark-theme');
+      }
+      this.saveState();
+    }
   }
 }).mount('#app');

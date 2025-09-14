@@ -182,3 +182,29 @@ input[type="checkbox"]:checked {
   font-style: italic;
   margin: 20px 0;
 }
+
+body.dark-theme {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+}
+
+body.dark-theme .task-item,
+body.dark-theme form input,
+body.dark-theme .filters button.active {
+  background-color: #2d2d2d;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+body.dark-theme button {
+  background-color: #3498db;
+}
+
+body {
+  background-color: #f8f9fa;
+  color: #333;
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  margin: 40px;
+  line-height: 1.6;
+}
