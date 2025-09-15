@@ -8,6 +8,7 @@ public interface IUserService
     Task<List<UserDto>> GetByIdsAsync(List<int> userIds, CancellationToken ct);
     Task<UserDto> GetByIdAsync(int userId, CancellationToken ct);
     Task<UserDto> CreateAsync(string email, string password, string? firstName = null, string? lastName = null);
-    Task<bool> IsInRoleAsync(string userId, string role);
+    Task<bool> IsInRoleAsync(int userId, string role);
     Task<List<UserDto>> GetAllAsync(CancellationToken ct);
+    Task ConfirmEmailAsync(int userId, CancellationToken ct);
 }

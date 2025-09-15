@@ -46,14 +46,7 @@ public class UserTwoFactorCodeRepository : IUserTwoFactorCodeRepository
                 c.ExpiresAt > DateTime.UtcNow &&
                 c.AttemptCount < c.MaxAttempts, ct);
 
-        return code == null ? null : new TwoFactorCodeDto(
-            code.Id,
-            code.UserId,
-            code.ExpiresAt,
-            code.CreatedAt,
-            code.AttemptCount,
-            code.MaxAttempts,
-            code.IsUsed, code.Purpose);
+        return code == null ? null : MapToDto(code);
     }
 
     public async Task<TwoFactorCodeDto?> GetValidByPlainCodeAsync(string plainCode, string purpose, CancellationToken ct)
@@ -69,15 +62,7 @@ public class UserTwoFactorCodeRepository : IUserTwoFactorCodeRepository
         foreach (var candidate in candidates)
         {
             if (PasswordHasher.Verify(plainCode, candidate.CodeSalt, candidate.CodeHash))
-                return new TwoFactorCodeDto(
-                    candidate.Id,
-                    candidate.UserId,
-                    candidate.ExpiresAt,
-                    candidate.CreatedAt,
-                    candidate.AttemptCount,
-                    candidate.MaxAttempts,
-                    candidate.IsUsed,
-                    candidate.Purpose);
+                return MapToDto(candidate);
         }
 
         return null;
@@ -101,5 +86,19 @@ public class UserTwoFactorCodeRepository : IUserTwoFactorCodeRepository
         code.IsUsed = true;
         _context.UserTwoFactorCodes.Update(code);
         await _context.SaveChangesAsync(ct);
+    }
+
+    private TwoFactorCodeDto MapToDto(UserTwoFactorCode code)
+    {
+        return new TwoFactorCodeDto(
+            Id: code.Id,
+            UserId: code.UserId,
+            ExpiresAt: code.ExpiresAt,
+            CreatedAt: code.CreatedAt,
+            AttemptCount: code.AttemptCount,
+            MaxAttempts: code.MaxAttempts,
+            IsUsed: code.IsUsed,
+            Purpose: code.Purpose,
+            NextResendAt: code.NextResendAt);
     }
 }

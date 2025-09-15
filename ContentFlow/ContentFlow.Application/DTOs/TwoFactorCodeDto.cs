@@ -8,4 +8,5 @@ public record TwoFactorCodeDto(
     int AttemptCount,
     int MaxAttempts,
     bool IsUsed,
-    string Purpose);
+    string Purpose,
+    DateTime? NextResendAt);

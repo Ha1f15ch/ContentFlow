@@ -75,9 +75,9 @@ public class UserService : IUserService
         return _mapper.Map<UserDto>(user);
     }
 
-    public async Task<bool> IsInRoleAsync(string userId, string role)
+    public async Task<bool> IsInRoleAsync(int userId, string role)
     {
-        var user = await _userManager.FindByIdAsync(userId);
+        var user = await _userManager.FindByIdAsync(userId.ToString());
         if(user == null) 
             return false;
 
@@ -88,5 +88,22 @@ public class UserService : IUserService
     {
         var users = await _userManager.Users.ToListAsync(ct);
         return _mapper.Map<List<UserDto>>(users);
+    }
+
+    public async Task ConfirmEmailAsync(int userId, CancellationToken ct)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        
+        if (user == null)
+            throw new NotFoundException($"User with {userId} not found");
+        
+        if(user.EmailConfirmed)
+            return;
+        
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+        
+        if (!result.Succeeded)
+            throw new ValidationException($"Failed to confirm email: {string.Join(", ", result.Errors.Select(e => e.Description))}");
     }
 }
