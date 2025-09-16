@@ -34,13 +34,25 @@
       <li v-for="task in filteredTasks" :key="task.id" class="task-item">
         <span :class="{ completed: task.completed }">{{ task.text }}</span>
         <div class="task-actions">
-          <input type="checkbox" v-model="task.completed" :id="'completed-' + task.id" />
-          <label :for="'completed-' + task.id" class="action-label">Сделано</label>
-          <button @click="removeTask(task.id)" class="delete-btn">×</button>
+            <input type="checkbox" v-model="task.completed" :id="'completed-' + task.id" />
+            <label :for="'completed-' + task.id" class="action-label">Сделано</label>
+            <!-- Кнопка редактирования -->
+            <button @click="openEditModal(task)" class="edit-btn">✏️</button>
+            <button @click="removeTask(task.id)" class="delete-btn">×</button>
         </div>
       </li>
     </ul>
-
+    <!-- Модальное окно редактирования -->
+        <div v-if="isEditModalOpen" class="modal-overlay" @click="closeEditModal">
+             <div class="modal-content" @click.stop>
+              <h3>Редактировать задачу</h3>
+               <input v-model="editedTaskText" type="text" class="modal-input" />
+        <div class="modal-actions">
+              <button @click="saveEditedTask">Сохранить</button>
+              <button @click="closeEditModal">Отмена</button>
+        </div>
+        </div>
+        </div>
     <!-- Сообщение, если задач нет  -->
     <p v-if="tasks.length === 0" class="empty">Нет задач. Добавь первую!</p>
   </div>

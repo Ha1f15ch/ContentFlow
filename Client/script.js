@@ -6,7 +6,11 @@ createApp({
       newTask: '',
       tasks: JSON.parse(localStorage.getItem('tasks')) || [],
       filter: 'all',
-      isDark: false
+      isDark: false,
+      // Новые данные для модального окна редактирования
+      isEditModalOpen: false,
+      taskToEdit: null,
+      editedTaskText: ''
     };
   },
   computed: {
@@ -37,7 +41,29 @@ createApp({
     saveState() {
       localStorage.setItem('tasks', JSON.stringify(this.tasks));
       localStorage.setItem('filter', this.filter);
-      localStorage.setItem('isDark', this.isDark);
+      localStorage.setItem('isDark', this.isDark.toString()); // Сохраняем как строку
+    },
+    // Открытие модального окна редактирования
+    openEditModal(task) {
+      this.taskToEdit = task;
+      this.editedTaskText = task.text;
+      this.isEditModalOpen = true;
+    },
+
+    // Закрытие модального окна
+    closeEditModal() {
+      this.isEditModalOpen = false;
+      this.taskToEdit = null;
+      this.editedTaskText = '';
+    },
+
+    // Сохранение изменений
+    saveEditedTask() {
+      if (this.taskToEdit) {
+        this.taskToEdit.text = this.editedTaskText;
+        this.saveState();
+      }
+      this.closeEditModal();
     }
   },
   mounted() {
