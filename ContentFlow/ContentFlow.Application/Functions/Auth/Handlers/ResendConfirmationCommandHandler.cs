@@ -67,6 +67,7 @@ public class ResendConfirmationCommandHandler : IRequestHandler<ResendConfirmati
         catch (Exception ex)
         {
             Console.WriteLine($"Email sending failed: {ex.Message}");
+            return new AuthResult(false, Errors: new() { "Email sending failed" });
         }
         
         return new AuthResult(true);

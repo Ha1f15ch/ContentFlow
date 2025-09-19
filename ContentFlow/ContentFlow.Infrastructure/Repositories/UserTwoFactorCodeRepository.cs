@@ -1,4 +1,5 @@
 ﻿using ContentFlow.Application.DTOs;
+using ContentFlow.Application.DTOs.PrivateDTOModels;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Infrastructure.DatabaseEngine;
 using ContentFlow.Infrastructure.Identity;
@@ -49,10 +50,11 @@ public class UserTwoFactorCodeRepository : IUserTwoFactorCodeRepository
         return code == null ? null : MapToDto(code);
     }
 
-    public async Task<TwoFactorCodeDto?> GetValidByPlainCodeAsync(string plainCode, string purpose, CancellationToken ct)
+    public async Task<TwoFactorCodeDto?> GetValidByPlainCodeAsync(string plainCode, int userId, string purpose, CancellationToken ct)
     {
         var candidates = await _context.UserTwoFactorCodes
             .Where(c =>
+                c.UserId == userId &&
                 c.Purpose == purpose &&
                 !c.IsUsed &&
                 c.ExpiresAt > DateTime.UtcNow &&
@@ -66,6 +68,25 @@ public class UserTwoFactorCodeRepository : IUserTwoFactorCodeRepository
         }
 
         return null;
+    }
+
+    public async Task<VerificationCodeVerificationDto?> GetVerificationCodeForValidationAsync(int userId, string purpose,
+        CancellationToken ct)
+    {
+        var code = await _context.UserTwoFactorCodes
+            .Where(c =>
+                c.UserId == userId &&
+                c.Purpose == purpose &&
+                !c.IsUsed &&
+                c.ExpiresAt > DateTime.UtcNow &&
+                c.AttemptCount < c.MaxAttempts)
+            .Select(c => new VerificationCodeVerificationDto(
+                c.Id,
+                c.CodeHash,
+                c.CodeSalt))
+            .FirstOrDefaultAsync(ct);
+
+        return code;
     }
 
     public async Task<bool> IncrementAttemptAsync(int codeId, CancellationToken ct)

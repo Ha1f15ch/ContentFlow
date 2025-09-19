@@ -90,7 +90,7 @@ public class UserService : IUserService
         return _mapper.Map<List<UserDto>>(users);
     }
 
-    public async Task ConfirmEmailAsync(int userId, CancellationToken ct)
+    public async Task<bool> ConfirmEmailAsync(int userId, CancellationToken ct)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
         
@@ -98,12 +98,14 @@ public class UserService : IUserService
             throw new NotFoundException($"User with {userId} not found");
         
         if(user.EmailConfirmed)
-            return;
+            return true;
         
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var result = await _userManager.ConfirmEmailAsync(user, token);
+        user.EmailConfirmed = true;
+        
+        var result = await _userManager.UpdateAsync(user);
         
         if (!result.Succeeded)
             throw new ValidationException($"Failed to confirm email: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        return true;
     }
 }
