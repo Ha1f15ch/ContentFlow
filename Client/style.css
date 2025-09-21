@@ -230,6 +230,13 @@ body {
   width: 90%;
   max-width: 400px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  color: var(--text-color);
+}
+
+/* Увеличим размер модального окна для новой задачи */
+.large-modal {
+  max-width: 600px; /* Или другая ширина по вкусу */
+  width: 95%;
 }
 
 .modal-input {
@@ -240,6 +247,31 @@ body {
   border-radius: 4px;
   background-color: var(--card-bg);
   color: var(--text-color);
+}
+
+/* Стили для текстовой области и выпадающих списков внутри модалки */
+.modal-textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  font-family: inherit; /* Наследуем шрифт */
+  min-height: 100px; /* Минимальная высота для удобства ввода */
+  resize: vertical; /* Позволяем пользователю изменять высоту по вертикали */
+}
+
+.modal-select {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  font-family: inherit;
 }
 
 .modal-actions {
@@ -254,4 +286,60 @@ body {
   font-size: 16px;
   cursor: pointer;
   margin-left: 10px;
+}
+
+/* Стили для меток */
+.modal-content label {
+  display: block;
+  margin-top: 15px;
+  font-weight: bold;
+  text-align: left;
+}
+/* Убираем отступ сверху у первого лейбла */
+.modal-content h3 + label {
+  margin-top: 0;
+}
+
+/* Стили для меток приоритета и статуса в списке задач */
+.task-meta {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+  flex-wrap: wrap; /* Если не помещаются, переносим на новую строку */
+}
+
+.priority-badge,
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+/* Стили для приоритетов */
+.priority-low {
+  background-color: #e0e0e0; /* Серый */
+  color: #333;
+}
+.priority-medium {
+  background-color: #fff3cd; /* Желтый */
+  color: #856404;
+}
+.priority-high {
+  background-color: #f8d7da; /* Красный */
+  color: #721c24;
+}
+
+/* Стили для статусов */
+.status-planned {
+  background-color: #cce5ff; /* Голубой */
+  color: #004085;
+}
+.status-in-progress {
+  background-color: #d4edda; /* Зеленый */
+  color: #155724;
+}
+.status-done {
+  background-color: #d6d8db; /* Светло-серый */
+  color: #383d41;
 }

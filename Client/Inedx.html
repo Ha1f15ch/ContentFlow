@@ -7,14 +7,15 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Корневой элемент Vue -->
+    <!-- Корневой элемент Vue -->
   <div id="app">
     <h1>Мои задачи</h1>
 
     <!-- Форма добавления задачи -->
     <form @submit.prevent="addTask">
       <input v-model="newTask" type="text" placeholder="Что нужно сделать?" />
-      <button type="submit">Добавить</button>
+      <button type="submit">Добавить (Быстро)</button>
+      <button type="button" @click="openNewTaskModal">Добавить (Подробно)</button>
     </form>
 
     <!-- Кнопки фильтров -->
@@ -33,32 +34,93 @@
     <ul class="task-list">
       <li v-for="task in filteredTasks" :key="task.id" class="task-item">
         <span :class="{ completed: task.completed }">{{ task.text }}</span>
+        
+        <!-- Отображение приоритета и статуса -->
+        <div class="task-meta">
+          <span :class="['priority-badge', 'priority-' + task.priority]">
+            {{ getPriorityLabel(task.priority) }}
+          </span>
+          <span :class="['status-badge', 'status-' + task.status]">
+            {{ getStatusLabel(task.status) }}
+          </span>
+        </div>
+
         <div class="task-actions">
-            <input type="checkbox" v-model="task.completed" :id="'completed-' + task.id" />
-            <label :for="'completed-' + task.id" class="action-label">Сделано</label>
-            <!-- Кнопка редактирования -->
-            <button @click="openEditModal(task)" class="edit-btn">✏️</button>
-            <button @click="removeTask(task.id)" class="delete-btn">×</button>
+          <input type="checkbox" v-model="task.completed" :id="'completed-' + task.id" />
+          <label :for="'completed-' + task.id" class="action-label">Сделано</label>
+          <button @click="openEditModal(task)" class="edit-btn">✏️</button>
+          <button @click="removeTask(task.id)" class="delete-btn">×</button>
         </div>
       </li>
     </ul>
-    <!-- Модальное окно редактирования -->
-        <div v-if="isEditModalOpen" class="modal-overlay" @click="closeEditModal">
-             <div class="modal-content" @click.stop>
-              <h3>Редактировать задачу</h3>
-               <input v-model="editedTaskText" type="text" class="modal-input" />
-        <div class="modal-actions">
-              <button @click="saveEditedTask">Сохранить</button>
-              <button @click="closeEditModal">Отмена</button>
-        </div>
-        </div>
-        </div>
-    <!-- Сообщение, если задач нет  -->
+
+    <!-- Сообщение, если задач нет -->
     <p v-if="tasks.length === 0" class="empty">Нет задач. Добавь первую!</p>
-  </div>
+
+    <!-- Модальное окно редактирования существующей задачи -->
+    <div v-if="isEditModalOpen" class="modal-overlay" @click="closeEditModal">
+      <div class="modal-content" @click.stop>
+        <h3>Редактировать задачу</h3>
+        <input v-model="editedTaskText" type="text" class="modal-input" />
+        
+        <label for="editTaskPriority">Приоритет:</label>
+        <select id="editTaskPriority" v-model="editedTaskPriority" class="modal-select">
+          <option value="low">Низкий</option>
+          <option value="medium">Средний</option>
+          <option value="high">Высокий</option>
+        </select>
+
+        <label for="editTaskStatus">Статус:</label>
+        <select id="editTaskStatus" v-model="editedTaskStatus" class="modal-select">
+          <option value="planned">Запланирована</option>
+          <option value="in-progress">В процессе</option>
+          <option value="done">Выполнена</option>
+        </select>
+        
+        <div class="modal-actions">
+          <button @click="saveEditedTask">Сохранить</button>
+          <button @click="closeEditModal">Отмена</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Модальное окно добавления новой задачи -->
+    <div v-if="isNewTaskModalOpen" class="modal-overlay" @click="closeNewTaskModal">
+      <div class="modal-content large-modal" @click.stop>
+        <h3>Добавить новую задачу</h3>
+        
+        <label for="newTaskText">Описание задачи:</label>
+        <textarea
+          id="newTaskText"
+          v-model="newTaskData.text"
+          class="modal-textarea"
+          placeholder="Что нужно сделать?"
+        ></textarea>
+
+        <label for="newTaskPriority">Приоритет:</label>
+        <select id="newTaskPriority" v-model="newTaskData.priority" class="modal-select">
+          <option value="low">Низкий</option>
+          <option value="medium">Средний</option>
+          <option value="high">Высокий</option>
+        </select>
+
+        <label for="newTaskStatus">Статус:</label>
+        <select id="newTaskStatus" v-model="newTaskData.status" class="modal-select">
+          <option value="planned">Запланирована</option>
+          <option value="in-progress">В процессе</option>
+          <option value="done">Выполнена</option>
+        </select>
+
+        <div class="modal-actions">
+          <button @click="saveNewTask">Создать задачу</button>
+          <button @click="closeNewTaskModal">Отмена</button>
+        </div>
+      </div>
+    </div>
+  </div> <!-- Конец #app -->
 
   <!-- Подключаем Vue и наш скрипт -->
-  <script src="https://unpkg.com/vue@3"></script>
+<script src="https://unpkg.com/vue@3"></script>
   <script src="script.js"></script>
 </body>
 </html>
