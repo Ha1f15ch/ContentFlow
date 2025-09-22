@@ -1,0 +1,352 @@
+[
+  {
+    "id": 1,
+    "title": "Исправить баг с авторизацией",
+    "description": "Пользователи не могут войти при включённом 2FA.",
+    "status": "In progress",
+    "priority": "Major"
+  },
+  {
+    "id": 2,
+    "title": "Добавить тёмную тему",
+    "description": "Реализовать переключение между светлой и тёмной темой.",
+    "status": "New",
+    "priority": "Normal"
+  },
+  {
+    "id": 3,
+    "title": "Оптимизировать загрузку изображений",
+    "description": "Сжать изображения и подключить lazy load.",
+    "status": "Finish",
+    "priority": "Minor"
+  },
+  {
+    "id": 4,
+    "title": "Обновить документацию API",
+    "description": "Добавить примеры запросов и ответов для новых эндпоинтов.",
+    "status": "New",
+    "priority": "Normal"
+  },
+  {
+    "id": 5,
+    "title": "Настроить CI/CD пайплайн",
+    "description": "Автоматизировать деплой на staging при пуше в develop.",
+    "status": "In progress",
+    "priority": "Major"
+  },
+  {
+    "id": 6,
+    "title": "Исправить адаптивность на мобильных",
+    "description": "Меню не скрывается на устройствах с шириной экрана < 768px.",
+    "status": "Finish",
+    "priority": "Normal"
+  },
+  {
+    "id": 7,
+    "title": "Добавить уведомления в реальном времени",
+    "description": "Использовать WebSocket для push-уведомлений.",
+    "status": "New",
+    "priority": "Major"
+  },
+  {
+    "id": 8,
+    "title": "Перевести интерфейс на английский",
+    "description": "Подготовить локализацию для первой версии.",
+    "status": "In progress",
+    "priority": "Normal"
+  },
+  {
+    "id": 9,
+    "title": "Провести нагрузочное тестирование",
+    "description": "Проверить поведение сервера при 1000+ одновременных запросах.",
+    "status": "New",
+    "priority": "Major"
+  },
+  {
+    "id": 10,
+    "title": "Исправить опечатку в футере",
+    "description": "Неправильно написано название компании.",
+    "status": "Finish",
+    "priority": "Minor"
+  },
+  {
+    "id": 11,
+    "title": "Добавить фильтрацию по тегам",
+    "description": "Пользователи должны фильтровать задачи по тегам.",
+    "status": "In progress",
+    "priority": "Normal"
+  },
+  {
+    "id": 12,
+    "title": "Реализовать экспорт в PDF",
+    "description": "Добавить кнопку экспорта отчётов в PDF.",
+    "status": "New",
+    "priority": "Normal"
+  },
+  {
+    "id": 13,
+    "title": "Настроить Sentry для фронтенда",
+    "description": "Отслеживать ошибки JS в продакшене.",
+    "status": "Finish",
+    "priority": "Minor"
+  },
+  {
+    "id": 14,
+    "title": "Обновить зависимости npm",
+    "description": "Провести аудит и обновить уязвимые пакеты.",
+    "status": "In progress",
+    "priority": "Normal"
+  },
+  {
+    "id": 15,
+    "title": "Добавить анимацию переходов",
+    "description": "Плавные переходы между страницами Vue Router.",
+    "status": "New",
+    "priority": "Minor"
+  },
+  {
+    "id": 16,
+    "title": "Исправить 404 на несуществующих страницах",
+    "description": "Добавить кастомную страницу 404.",
+    "status": "Finish",
+    "priority": "Minor"
+  },
+  {
+    "id": 17,
+    "title": "Реализовать восстановление пароля",
+    "description": "Добавить форму и логику отправки ссылки на email.",
+    "status": "In progress",
+    "priority": "Major"
+  },
+  {
+    "id": 18,
+    "title": "Добавить поддержку drag & drop",
+    "description": "Для перетаскивания задач в колонках Kanban.",
+    "status": "New",
+    "priority": "Normal"
+  },
+  {
+    "id": 19,
+    "title": "Провести код-ревью компонентов",
+    "description": "Проверить соответствие стайлгайду и чистоту кода.",
+    "status": "Finish",
+    "priority": "Minor"
+  },
+  {
+    "id": 20,
+    "title": "Добавить пагинацию в таблицу",
+    "description": "Разбить список на страницы по 10 записей.",
+    "status": "In progress",
+    "priority": "Normal"
+  },
+  {
+    "id": 21,
+    "title": "Интегрировать Google Analytics",
+    "description": "Отслеживать поведение пользователей на сайте.",
+    "status": "New",
+    "priority": "Normal"
+  },
+  {
+    "id": 22,
+    "title": "Исправить баг с датой в календаре",
+    "description": "Неверно отображается дата при выборе в Firefox.",
+    "status": "Finish",
+    "priority": "Minor"
+  },
+  {
+    "id": 23,
+    "title": "Добавить подтверждение перед удалением",
+    "description": "Показывать модальное окно при удалении важных данных.",
+    "status": "In progress",
+    "priority": "Normal"
+  },
+  {
+    "id": 24,
+    "title": "Реализовать автосохранение формы",
+    "description": "Сохранять черновик каждые 30 секунд.",
+    "status": "New",
+    "priority": "Major"
+  },
+  {
+    "id": 25,
+    "title": "Обновить favicon",
+    "description": "Заменить на новый логотип в формате .ico и .svg.",
+    "status": "Finish",
+    "priority": "Minor"
+  },
+  {
+    "id": 26,
+    "title": "Добавить хлебные крошки",
+    "description": "Улучшить навигацию по вложенным разделам.",
+    "status": "In progress",
+    "priority": "Normal"
+  },
+  {
+    "id": 27,
+    "title": "Оптимизировать SEO метатеги",
+    "description": "Динамически генерировать title и description для страниц.",
+    "status": "New",
+    "priority": "Normal"
+  },
+  {
+    "id": 28,
+    "title": "Исправить отступы в Safari",
+    "description": "Некорректные отступы в некоторых блоках на iOS.",
+    "status": "Finish",
+    "priority": "Minor"
+  },
+  {
+    "id": 29,
+    "title": "Добавить поиск по задачам",
+    "description": "Реализовать фильтрацию по ключевым словам.",
+    "status": "In progress",
+    "priority": "Major"
+  },
+  {
+    "id": 30,
+    "title": "Настроить резервное копирование БД",
+    "description": "Ежедневный бэкап на внешний диск.",
+    "status": "New",
+    "priority": "Major"
+  },
+  {
+    "id": 31,
+    "title": "Добавить подсветку синтаксиса",
+    "description": "Для блоков с кодом в документации.",
+    "status": "Finish",
+    "priority": "Minor"
+  },
+  {
+    "id": 32,
+    "title": "Реализовать мультиязычность",
+    "description": "Поддержка минимум 3 языков на фронтенде.",
+    "status": "In progress",
+    "priority": "Major"
+  },
+  {
+    "id": 33,
+    "title": "Добавить кнопку 'Наверх'",
+    "description": "Плавный скролл в начало страницы.",
+    "status": "New",
+    "priority": "Minor"
+  },
+  {
+    "id": 34,
+    "title": "Исправить загрузку аватаров",
+    "description": "Изображения не отображаются после загрузки.",
+    "status": "Finish",
+    "priority": "Normal"
+  },
+  {
+    "id": 35,
+    "title": "Добавить историю изменений",
+    "description": "Логировать изменения статуса и приоритета задач.",
+    "status": "In progress",
+    "priority": "Normal"
+  },
+  {
+    "id": 36,
+    "title": "Реализовать вход через Google",
+    "description": "Добавить OAuth2 для Google аккаунтов.",
+    "status": "New",
+    "priority": "Major"
+  },
+  {
+    "id": 37,
+    "title": "Улучшить доступность (a11y)",
+    "description": "Добавить aria-атрибуты и tabindex.",
+    "status": "Finish",
+    "priority": "Minor"
+  },
+  {
+    "id": 38,
+    "title": "Добавить шорткаты клавиатуры",
+    "description": "Ctrl+N — новая задача, Ctrl+S — сохранить.",
+    "status": "In progress",
+    "priority": "Normal"
+  },
+  {
+    "id": 39,
+    "title": "Настроить robots.txt",
+    "description": "Запретить индексацию тестовых страниц.",
+    "status": "New",
+    "priority": "Minor"
+  },
+  {
+    "id": 40,
+    "title": "Исправить баг с сортировкой",
+    "description": "Сортировка по дате работает некорректно.",
+    "status": "Finish",
+    "priority": "Normal"
+  },
+  {
+    "id": 41,
+    "title": "Добавить прогресс-бар загрузки",
+    "description": "Визуализировать процесс загрузки файлов.",
+    "status": "In progress",
+    "priority": "Normal"
+  },
+  {
+    "id": 42,
+    "title": "Реализовать теги для задач",
+    "description": "Возможность добавлять и удалять теги.",
+    "status": "New",
+    "priority": "Normal"
+  },
+  {
+    "id": 43,
+    "title": "Провести аудит производительности",
+    "description": "Проанализировать с помощью Lighthouse.",
+    "status": "Finish",
+    "priority": "Minor"
+  },
+  {
+    "id": 44,
+    "title": "Добавить поддержку markdown",
+    "description": "В описании задач можно использовать markdown.",
+    "status": "In progress",
+    "priority": "Major"
+  },
+  {
+    "id": 45,
+    "title": "Настроить почтовые уведомления",
+    "description": "Отправлять письма при изменении статуса задачи.",
+    "status": "New",
+    "priority": "Major"
+  },
+  {
+    "id": 46,
+    "title": "Исправить иконки в меню",
+    "description": "Некоторые иконки отображаются как квадратики.",
+    "status": "Finish",
+    "priority": "Minor"
+  },
+  {
+    "id": 47,
+    "title": "Добавить фильтр по приоритету",
+    "description": "Быстрая фильтрация задач по Minor/Normal/Major.",
+    "status": "In progress",
+    "priority": "Normal"
+  },
+  {
+    "id": 48,
+    "title": "Реализовать загрузку аватара",
+    "description": "Выбор, обрезка и загрузка изображения профиля.",
+    "status": "New",
+    "priority": "Normal"
+  },
+  {
+    "id": 49,
+    "title": "Добавить тултипы к кнопкам",
+    "description": "Пояснения при наведении на иконки.",
+    "status": "Finish",
+    "priority": "Minor"
+  },
+  {
+    "id": 50,
+    "title": "Интегрировать чат-поддержку",
+    "description": "Добавить виджет Tawk.to или аналог.",
+    "status": "In progress",
+    "priority": "Major"
+  }
+]
