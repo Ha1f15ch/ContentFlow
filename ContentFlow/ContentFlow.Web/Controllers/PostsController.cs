@@ -2,6 +2,7 @@
 using ContentFlow.Application.DTOs;
 using ContentFlow.Application.Functions.Posts.Commands;
 using ContentFlow.Application.Functions.Posts.Queries;
+using ContentFlow.Application.Security;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,8 +29,16 @@ public class PostsController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> CreatePost([FromBody] CreatePostCommand command)
+    public async Task<IActionResult> CreatePost([FromBody] CreatePostRequest request)
     {
+        var authorId = User.GetUserId();
+        
+        var command = new CreatePostCommand(
+            Title: request.Title,
+            Content: request.Content,
+            AuthorId: authorId,
+            CategoryId: request.CategoryId);
+        
         var postId = await _mediator.Send(command);
         
         return CreatedAtAction(
