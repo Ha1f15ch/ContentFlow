@@ -1,5 +1,7 @@
 using ContentFlow.Application;
+using ContentFlow.Application.Common;
 using ContentFlow.Infrastructure;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +15,8 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
     });
 });
+
+builder.Services.AddAuthentication();
 
 // controllers
 builder.Services.AddControllers();
@@ -59,6 +63,8 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
+await AutoInitializeRole(app.Services);
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -80,3 +86,28 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+static async Task AutoInitializeRole(IServiceProvider serviceProvider)
+{
+    using var scope = serviceProvider.CreateScope();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+
+    var roleNames = new[]
+    {
+        RoleConstants.Guest.ToString(),
+        RoleConstants.User.ToString(),
+        RoleConstants.ContentEditor.ToString(),
+        RoleConstants.Moderator.ToString(),
+        RoleConstants.Admin.ToString(),
+        RoleConstants.Banned.ToString()
+    };
+
+    foreach (var roleName in roleNames)
+    {
+        if (!await roleManager.RoleExistsAsync(roleName))
+        {
+            await roleManager.CreateAsync(new IdentityRole<int>(roleName));
+            Console.WriteLine($"Role {roleName} not founded, create the new.");
+        }   
+    }
+}

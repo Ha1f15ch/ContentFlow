@@ -54,7 +54,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
             }
             
             // Creating 2FA code
-            var code = GenerateSixValueCode();
+            var code = TokenGenerator.GenerateSixValueCode();
 
             var (codeHash, codeSalt) = PasswordHasher.Hash(code);
 
@@ -73,6 +73,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
                 return new AuthResult(false, Errors: new() { "Failed to initiate email verification" });
             }
             
+            await _userService.AddToRoleAsync(userDto.Email, RoleConstants.Guest.ToString(), cancellationToken);
+            
             // try sand code to email
             try
             {
@@ -85,11 +87,5 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
             
             return new AuthResult(true);
         }
-    }
-    
-    private static string GenerateSixValueCode()
-    {
-        var random = new Random();
-        return random.Next(100000, 999999).ToString();
     }
 }

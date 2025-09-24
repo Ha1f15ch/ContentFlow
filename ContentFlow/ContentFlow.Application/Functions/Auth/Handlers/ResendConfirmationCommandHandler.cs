@@ -42,7 +42,7 @@ public class ResendConfirmationCommandHandler : IRequestHandler<ResendConfirmati
             await _userTwoFactorCodeRepository.MarkAsUsedAsync(code.Id, cancellationToken);
         }
         
-        var newCode = GenerateSixDigitCode();
+        var newCode = TokenGenerator.GenerateSixValueCode();
         var (codeHash, codeSalt) = PasswordHasher.Hash(newCode);
 
         try
@@ -71,11 +71,5 @@ public class ResendConfirmationCommandHandler : IRequestHandler<ResendConfirmati
         }
         
         return new AuthResult(true);
-    }
-    
-    private static string GenerateSixDigitCode()
-    {
-        var random = new Random();
-        return random.Next(100000, 999999).ToString();
     }
 }

@@ -14,7 +14,7 @@ public class UserTwoFactorCodeRepository : IUserTwoFactorCodeRepository
     
     public UserTwoFactorCodeRepository(ApplicationDbContext context)
     {
-            _context  = context;
+        _context  = context;
     }
 
     public async Task AddAsync(int userId, string codeHash, string codeSalt, string purpose, CancellationToken ct)

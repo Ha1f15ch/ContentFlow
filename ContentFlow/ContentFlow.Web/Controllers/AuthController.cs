@@ -1,6 +1,8 @@
-﻿using ContentFlow.Application.Functions.Auth.Commands;
+﻿using ContentFlow.Application.Common;
+using ContentFlow.Application.Functions.Auth.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Ocsp;
 
 namespace ContentFlow.Web.Controllers;
 
@@ -23,9 +25,18 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginCommand loginCommand)
+    public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
     {
+        var metadata = new ClientMetadata(
+            IpAddress: GetIpAddress(),
+            UserAgent: HttpContext.Request.Headers.UserAgent,
+            DeviceId: Request.Headers["DeviceId"],
+            Location: null
+        );
+        
+        var loginCommand = new LoginCommand(loginRequest.Email, loginRequest.Password, metadata);
         var result = await _mediator.Send(loginCommand);
+        
         return Ok(result);
     }
 
@@ -41,5 +52,13 @@ public class AuthController : ControllerBase
     {
         var result = await _mediator.Send(resendConfirmationCommand);
         return Ok(result);
+    }
+    
+    private string GetIpAddress()
+    {
+        if (HttpContext.Request.Headers.ContainsKey("X-Forwarded-For"))
+            return HttpContext.Request.Headers["X-Forwarded-For"];
+    
+        return HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
     }
 }

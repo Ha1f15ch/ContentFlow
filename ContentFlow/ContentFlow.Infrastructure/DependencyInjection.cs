@@ -2,6 +2,7 @@
 using ContentFlow.Application.Interfaces.Comment;
 using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Posts;
+using ContentFlow.Application.Interfaces.RefreshToken;
 using ContentFlow.Application.Interfaces.Tag;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Infrastructure.Configuration;
@@ -37,17 +38,20 @@ public static class DependencyInjection
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<IUserTwoFactorCodeRepository, UserTwoFactorCodeRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         
         // Services
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IEmailSender, EmailSender>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<ITokenService, TokenService>();
         
         // Mappings
         services.AddAutoMapper(typeof(MappingProfile).Assembly);
         
         //Configurations
         services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+        services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
         
         return services;
     }

@@ -49,13 +49,17 @@ public class ConfirmEmailCommandHandler :  IRequestHandler<ConfirmEmailCommand, 
             return new AuthResult(false, Errors: new() { "Invalid verification code" });
         }
         
-        await _userTwoFactorCodeRepository.MarkAsUsedAsync(activeCodeDto.Id, cancellationToken);
         var setEmailConfirmed = await _userService.ConfirmEmailAsync(user.Id, cancellationToken);
 
         if (!setEmailConfirmed)
         {
             return new AuthResult(false, Errors: new() { "Email not confirmed" });
         }
+        
+        await _userTwoFactorCodeRepository.MarkAsUsedAsync(activeCodeDto.Id, cancellationToken);
+        
+        await _userService.RemoveFromRoleAsync(user.Email, RoleConstants.Guest.ToString(), cancellationToken);
+        await _userService.AddToRoleAsync(user.Email, RoleConstants.User.ToString(), cancellationToken);
         
         return new AuthResult(true, null);
     }

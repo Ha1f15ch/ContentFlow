@@ -43,7 +43,8 @@ public class UserService : IUserService
                 u.FirstName,
                 u.LastName,
                 u.AuthorAvatar,
-                u.CreatedAt))
+                u.CreatedAt,
+                u.EmailConfirmed))
             .ToListAsync(ct);
     }
 
@@ -75,6 +76,22 @@ public class UserService : IUserService
         return _mapper.Map<UserDto>(user);
     }
 
+    public async Task AddToRoleAsync(string email, string role, CancellationToken ct)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null) return;
+        
+        await _userManager.AddToRoleAsync(user, role);
+    }
+
+    public async Task RemoveFromRoleAsync(string email, string role, CancellationToken ct)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null) return;
+        
+        await _userManager.RemoveFromRoleAsync(user, role);
+    }
+
     public async Task<bool> IsInRoleAsync(int userId, string role)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
@@ -88,6 +105,14 @@ public class UserService : IUserService
     {
         var users = await _userManager.Users.ToListAsync(ct);
         return _mapper.Map<List<UserDto>>(users);
+    }
+
+    public async Task<bool> CheckPasswordAsync(string email, string password, CancellationToken ct)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null) return false;
+
+        return await _userManager.CheckPasswordAsync(user, password);
     }
 
     public async Task<bool> ConfirmEmailAsync(int userId, CancellationToken ct)
@@ -107,5 +132,16 @@ public class UserService : IUserService
         if (!result.Succeeded)
             throw new ValidationException($"Failed to confirm email: {string.Join(", ", result.Errors.Select(e => e.Description))}");
         return true;
+    }
+
+    public async Task<List<string>> GetRolesAsync(string email, CancellationToken ct)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null)
+        {
+            return new List<string>();
+        }
+        
+        return new List<string>(await _userManager.GetRolesAsync(user));
     }
 }
