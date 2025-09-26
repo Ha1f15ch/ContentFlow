@@ -7,18 +7,16 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <!-- Корневой элемент Vue -->
+ <!-- Корневой элемент Vue -->
     <div id="app">
       <h1>Мои задачи</h1>
 
-      <!-- Форма добавления задачи -->
-      <form @submit.prevent="addTask">
-        <input v-model="newTask" type="text" placeholder="Что нужно сделать?" />
-        <!-- Кнопка для быстрого добавления -->
-        <button type="submit">Добавить (Быстро)</button>
-        <!-- Кнопка для открытия модального окна подробного добавления -->
-        <button type="button" @click="openNewTaskModal">Добавить (Подробно)</button>
-      </form>
+      <!-- КНОПКА-БАННЕР ДЛЯ ДОБАВЛЕНИЯ ЗАДАЧИ -->
+      <div class="add-task-banner">
+        <button @click="openNewTaskModal" class="add-task-button">
+          ➕ Добавить новую задачу
+        </button>
+      </div>
 
       <!-- Кнопки фильтров -->
       <div class="filters">
@@ -62,77 +60,81 @@
       <!-- Сообщение, если задач нет -->
       <p v-if="tasks.length === 0" class="empty">Нет задач. Добавь первую!</p>
 
-<!-- Модальное окно редактирования существующей задачи -->
-<div v-if="isEditModalOpen" class="modal-overlay" @click="closeEditModal">
-  <div class="modal-content large-modal" @click.stop>
-    <h3>Редактировать задачу</h3>
-    
-    <!-- Заменяем input на textarea -->
-    <label for="editTaskText">Описание задачи:</label>
-    <textarea
-      id="editTaskText"
-      v-model="editedTaskText"
-      class="modal-textarea"
-      placeholder="Что нужно сделать?"
-    ></textarea>
-    
-    <!-- Поля для редактирования приоритета и статуса -->
-    <label for="editTaskPriority">Приоритет:</label>
-    <select id="editTaskPriority" v-model="editedTaskPriority" class="modal-select">
-      <option value="low">Низкий</option>
-      <option value="medium">Средний</option>
-      <option value="high">Высокий</option>
-    </select>
+      <!-- Модальное окно редактирования существующей задачи -->
+      <!-- Обернуто в <transition> для анимации -->
+      <transition name="modal">
+        <div v-if="isEditModalOpen" class="modal-overlay" @click="closeEditModal">
+          <div class="modal-content large-modal" @click.stop>
+            <h3>Редактировать задачу</h3>
 
-    <label for="editTaskStatus">Статус:</label>
-    <select id="editTaskStatus" v-model="editedTaskStatus" class="modal-select">
-      <option value="planned">Запланирована</option>
-      <option value="in-progress">В процессе</option>
-      <option value="done">Выполнена</option>
-    </select>
-    
-    <div class="modal-actions">
-      <button @click="saveEditedTask">Сохранить</button>
-      <button @click="closeEditModal">Отмена</button>
-    </div>
-  </div>
-</div>
-      <!-- Конец модального окна редактирования -->
+            <!-- Используем textarea для текста задачи -->
+            <label for="editTaskText">Описание задачи:</label>
+            <textarea
+              id="editTaskText"
+              v-model="editedTaskText"
+              class="modal-textarea"
+              placeholder="Что нужно сделать?"
+            ></textarea>
 
-      <!-- Модальное окно добавления новой задачи -->
-      <div v-if="isNewTaskModalOpen" class="modal-overlay" @click="closeNewTaskModal">
-        <div class="modal-content large-modal" @click.stop>
-          <h3>Добавить новую задачу</h3>
+            <!-- Поля для редактирования приоритета и статуса -->
+            <label for="editTaskPriority">Приоритет:</label>
+            <select id="editTaskPriority" v-model="editedTaskPriority" class="modal-select">
+              <option value="low">Низкий</option>
+              <option value="medium">Средний</option>
+              <option value="high">Высокий</option>
+            </select>
 
-          <label for="newTaskText">Описание задачи:</label>
-          <textarea
-            id="newTaskText"
-            v-model="newTaskData.text"
-            class="modal-textarea"
-            placeholder="Что нужно сделать?"
-          ></textarea>
+            <label for="editTaskStatus">Статус:</label>
+            <select id="editTaskStatus" v-model="editedTaskStatus" class="modal-select">
+              <option value="planned">Запланирована</option>
+              <option value="in-progress">В процессе</option>
+              <option value="done">Выполнена</option>
+            </select>
 
-          <label for="newTaskPriority">Приоритет:</label>
-          <select id="newTaskPriority" v-model="newTaskData.priority" class="modal-select">
-            <option value="low">Низкий</option>
-            <option value="medium">Средний</option>
-            <option value="high">Высокий</option>
-          </select>
-
-          <label for="newTaskStatus">Статус:</label>
-          <select id="newTaskStatus" v-model="newTaskData.status" class="modal-select">
-            <option value="planned">Запланирована</option>
-            <option value="in-progress">В процессе</option>
-            <option value="done">Выполнена</option>
-          </select>
-
-          <div class="modal-actions">
-            <button @click="saveNewTask">Создать задачу</button>
-            <button @click="closeNewTaskModal">Отмена</button>
+            <div class="modal-actions">
+              <button @click="saveEditedTask">Сохранить</button>
+              <button @click="closeEditModal">Отмена</button>
+            </div>
           </div>
         </div>
-      </div>
-      <!-- Конец модального окна добавления -->
+      </transition>
+
+      <!-- Модальное окно добавления новой задачи -->
+      <!-- Обернуто в <transition> для анимации -->
+      <transition name="modal">
+        <div v-if="isNewTaskModalOpen" class="modal-overlay" @click="closeNewTaskModal">
+          <div class="modal-content large-modal" @click.stop>
+            <h3>Добавить новую задачу</h3>
+
+            <label for="newTaskText">Описание задачи:</label>
+            <textarea
+              id="newTaskText"
+              v-model="newTaskData.text"
+              class="modal-textarea"
+              placeholder="Что нужно сделать?"
+            ></textarea>
+
+            <label for="newTaskPriority">Приоритет:</label>
+            <select id="newTaskPriority" v-model="newTaskData.priority" class="modal-select">
+              <option value="low">Низкий</option>
+              <option value="medium">Средний</option>
+              <option value="high">Высокий</option>
+            </select>
+
+            <label for="newTaskStatus">Статус:</label>
+            <select id="newTaskStatus" v-model="newTaskData.status" class="modal-select">
+              <option value="planned">Запланирована</option>
+              <option value="in-progress">В процессе</option>
+              <option value="done">Выполнена</option>
+            </select>
+
+            <div class="modal-actions">
+              <button @click="saveNewTask">Создать задачу</button>
+              <button @click="closeNewTaskModal">Отмена</button>
+            </div>
+          </div>
+        </div>
+      </transition>
     </div>
     <!-- Конец #app -->
 

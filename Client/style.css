@@ -261,6 +261,7 @@ body {
   font-family: inherit; /* Наследуем шрифт */
   min-height: 100px; /* Минимальная высота для удобства ввода */
   resize: vertical; /* Позволяем пользователю изменять высоту по вертикали */
+  box-sizing: border-box;
 }
 
 .modal-select {
@@ -342,4 +343,57 @@ body {
 .status-done {
   background-color: #d6d8db; /* Светло-серый */
   color: #383d41;
+}
+
+/* --- Анимации модальных окон --- */
+
+/* 1. Плавное появление/исчезновение фона */
+.modal-enter-active, .modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-from, .modal-leave-to {
+  opacity: 0;
+}
+
+/* 2. Плавное появление/исчезновение окна */
+.modal-enter-active .modal-content,
+.modal-leave-active .modal-content {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.modal-enter-from .modal-content,
+.modal-leave-to .modal-content {
+  transform: translateY(-20px) scale(0.95);
+  opacity: 0;
+}
+
+.modal-enter-to .modal-content,
+.modal-leave-from .modal-content {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.add-task-banner {
+  margin-bottom: 20px;
+}
+/* --- Кнопка-баннер для добавления задачи --- */
+.add-task-button {
+  width: 100%;
+  padding: 20px;
+  background-color: var(--card-bg); /* Белый фон */
+  border: 2px dashed var(--border-color); /* Пунктирная рамка */
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.add-task-button:hover {
+  background-color: var(--btn-bg); /* Синий фон при наведении */
+  color: white;
+  border-color: var(--btn-bg);
 }
