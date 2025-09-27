@@ -4,10 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Мои задачи</title>
+
+    <!-- 🔗 Подключение Google Fonts: Roboto Slab & Open Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Roboto+Slab:wght@600;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
- <!-- Корневой элемент Vue -->
+    <!-- Корневой элемент Vue -->
     <div id="app">
       <h1>Мои задачи</h1>
 
@@ -35,7 +41,8 @@
       <!-- Список задач -->
       <ul class="task-list">
         <li v-for="task in filteredTasks" :key="task.id" class="task-item">
-          <span :class="{ completed: task.completed }">{{ task.text }}</span>
+          <span :class="{ completed: task.completed }"><strong>{{ task.title }}</strong></span>
+          <p v-if="task.text" class="task-description">{{ task.text }}</p>
 
           <!-- Отображение приоритета и статуса -->
           <div class="task-meta">
@@ -61,19 +68,28 @@
       <p v-if="tasks.length === 0" class="empty">Нет задач. Добавь первую!</p>
 
       <!-- Модальное окно редактирования существующей задачи -->
-      <!-- Обернуто в <transition> для анимации -->
       <transition name="modal">
         <div v-if="isEditModalOpen" class="modal-overlay" @click="closeEditModal">
           <div class="modal-content large-modal" @click.stop>
             <h3>Редактировать задачу</h3>
 
-            <!-- Используем textarea для текста задачи -->
+            <!-- НОВОЕ: Поле для заголовка -->
+            <label for="editTaskTitle">Заголовок задачи:</label>
+            <input
+              id="editTaskTitle"
+              v-model="editedTaskTitle"
+              type="text"
+              class="modal-input"
+              placeholder="Кратко о чём задача"
+            />
+
+            <!-- Поле для описания -->
             <label for="editTaskText">Описание задачи:</label>
             <textarea
               id="editTaskText"
               v-model="editedTaskText"
               class="modal-textarea"
-              placeholder="Что нужно сделать?"
+              placeholder="Подробное описание задачи..."
             ></textarea>
 
             <!-- Поля для редактирования приоритета и статуса -->
@@ -100,18 +116,28 @@
       </transition>
 
       <!-- Модальное окно добавления новой задачи -->
-      <!-- Обернуто в <transition> для анимации -->
       <transition name="modal">
         <div v-if="isNewTaskModalOpen" class="modal-overlay" @click="closeNewTaskModal">
           <div class="modal-content large-modal" @click.stop>
             <h3>Добавить новую задачу</h3>
 
+            <!-- НОВОЕ: Поле для заголовка -->
+            <label for="newTaskTitle">Заголовок задачи:</label>
+            <input
+              id="newTaskTitle"
+              v-model="newTaskData.title"
+              type="text"
+              class="modal-input"
+              placeholder="Кратко о чём задача"
+            />
+
+            <!-- Поле для описания -->
             <label for="newTaskText">Описание задачи:</label>
             <textarea
               id="newTaskText"
               v-model="newTaskData.text"
               class="modal-textarea"
-              placeholder="Что нужно сделать?"
+              placeholder="Подробное описание задачи..."
             ></textarea>
 
             <label for="newTaskPriority">Приоритет:</label>

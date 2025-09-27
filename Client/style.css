@@ -1,13 +1,19 @@
+/* --- ПЕРЕМЕННЫЕ CSS (:root) ---
+   Определяют базовые цвета и стили для светлой темы.
+   Используются через var(--имя-переменной) */
 :root {
-  --bg-color: #f8f9fa;
-  --text-color: #333;
-  --card-bg: #ffffff;
-  --border-color: #e0e0e0;
-  --btn-bg: #3498db;
-  --btn-hover: #2980b9;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --bg-color: #f8f9fa;        /* Фон страницы */
+  --text-color: #333;         /* Основной текст */
+  --card-bg: #ffffff;        /* Фон карточек */
+  --border-color: #e0e0e0;    /* Цвет рамок */
+  --btn-bg: #3498db;          /* Фон кнопок */
+  --btn-hover: #2980b9;       /* Фон кнопок при наведении */
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Тень */
+  --header-color: #2c3e50;
 }
 
+/* --- ТЁМНАЯ ТЕМА (.dark-theme) ---
+   Переопределяет переменные для тёмного режима */
 .dark-theme {
   --bg-color: #1a1a1a;
   --text-color: #e0e0e0;
@@ -16,308 +22,154 @@
   --btn-bg: #3498db;
   --btn-hover: #2980b9;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --header-color: #ffffff;
 }
 
-/* Применение переменных ко всему приложению */
+/* --- ОСНОВНЫЕ СТИЛИ СТРАНИЦЫ (#app) ---
+   Применяются ко всему приложению */
 #app {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  min-height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 40px;
-  line-height: 1.6;
-  transition: background-color 0.3s ease;
+  background-color: var(--bg-color); /* Фон из переменной */
+  color: var(--text-color);          /* Цвет текста из переменной */
+  min-height: 100vh;                 /* Минимальная высота — весь экран */
+  font-family: 'Open Sans', sans-serif; /* Шрифт основного текста */
+  margin: 40px;                      /* Отступы от краёв */
+  line-height: 1.6;                  /* Межстрочный интервал */
+  transition: background-color 0.3s ease; /* Плавный переход фона */
 }
 
+/* --- ЗАГОЛОВКИ ---
+   Стили для h1, h2, h3 */
 h1, h2, h3 {
-  color: #2c3e50;
+  color: var(--header-color); /* Цвет заголовков */
+  font-family: 'Roboto Slab', serif; /* Шрифт заголовков */
 }
 
-/* Форма добавления задачи */
-form {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  max-width: 600px;
+/* --- КНОПКА-БАННЕР ДЛЯ ДОБАВЛЕНИЯ ЗАДАЧИ ---
+   Стили для крупной кнопки "Добавить новую задачу" */
+.add-task-banner {
+  margin-bottom: 20px; /* Отступ снизу */
 }
 
-input[type="text"] {
-  flex: 1;
-  min-width: 200px;
-  padding: 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 16px;
-  background-color: var(--card-bg);
-  color: var(--text-color);
+.add-task-button {
+  width: 100%;                    /* Ширина на всю доступную область */
+  padding: 20px;                  /* Внутренние отступы */
+  background-color: var(--card-bg); /* Фон из переменной */
+  border: 2px dashed var(--border-color); /* Пунктирная рамка */
+  border-radius: 8px;            /* Скруглённые углы */
+  font-size: 18px;                /* Размер шрифта */
+  font-weight: 500;              /* Полужирный шрифт */
+  color: var(--text-color);       /* Цвет текста */
+  cursor: pointer;               /* Курсор "рука" */
+  transition: all 0.2s ease;     /* Плавный переход всех свойств */
+  text-align: center;             /* Текст по центру */
+  font-family: 'Open Sans', sans-serif; /* Шрифт кнопки */
 }
 
-button {
-  padding: 12px 16px;
-  background-color: var(--btn-bg);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  white-space: nowrap;
-  transition: background-color 0.2s ease;
+.add-task-button:hover {
+  background-color: var(--btn-bg); /* Фон кнопки при наведении */
+  color: white;                   /* Белый текст при наведении */
+  border-color: var(--btn-bg);    /* Цвет рамки при наведении */
 }
 
-button:hover {
-  background-color: var(--btn-hover);
-}
-
-/* Кнопка переключения темы */
-.theme-toggle {
-  margin-bottom: 20px;
-  padding: 8px 16px;
-  font-size: 14px;
-  background-color: #7f8c8d;
-}
-
-/* Список задач */
-.task-list {
-  list-style: none;
-  padding: 0;
-  margin: 20px 0;
-  max-width: 100%;
-  width: 100%;
-}
-
-/* Карточка задачи */
-.task-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 12px 16px;
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  margin-bottom: 8px;
-  box-shadow: var(--shadow);
-  width: 100%;
-  word-wrap: break-word;
-  line-height: 1.5;
-}
-
-.task-item span {
-  text-align: left;
-  margin-bottom: 8px;
-  width: 100%;
-  display: block;
-}
-
-/* Действия под задачей */
-.task-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  width: 100%;
-}
-
-.action-label {
-  font-size: 14px;
-  color: #666;
-  cursor: pointer;
-}
-
-.action-label:hover {
-  color: #ccc;
-}
-
-.delete-btn {
-  width: 24px;
-  height: 24px;
-  font-size: 16px;
-  padding: 0;
-  margin-left: auto;
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.delete-btn:hover {
-  background-color: #c0392b;
-}
-
-/* Чекбоксы */
-input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-input[type="checkbox"]:checked {
-  background-color: var(--btn-bg);
-  border-color: var(--btn-bg);
-}
-
-/* Фильтры */
+/* --- КНОПКИ ФИЛЬТРОВ ---
+   Стили для кнопок "Все", "Активные", "Выполненные" */
 .filters {
-  display: flex;
-  gap: 8px;
-  margin: 10px 0 20px 0;
+  display: flex;        /* Горизонтальное расположение */
+  gap: 8px;             /* Расстояние между кнопками */
+  margin: 10px 0 20px 0; /* Отступы сверху и снизу */
 }
 
 .filters button {
-  padding: 8px 12px;
-  font-size: 14px;
+  padding: 8px 12px;    /* Внутренние отступы */
+  font-size: 14px;      /* Размер шрифта */
+  font-family: 'Open Sans', sans-serif; /* Шрифт кнопок */
 }
 
 .filters button.active {
-  background-color: var(--btn-hover);
-  color: white;
+  background-color: var(--btn-hover); /* Фон активной кнопки */
+  color: white;                      /* Белый текст */
 }
 
-/* Пустое состояние */
-.empty {
-  color: #777;
-  font-style: italic;
-  margin: 20px 0;
+/* --- КНОПКА ПЕРЕКЛЮЧЕНИЯ ТЕМЫ ---
+   Стили для кнопки "Светлая/Тёмная тема" */
+.theme-toggle {
+  margin-bottom: 20px;  /* Отступ снизу */
+  padding: 8px 16px;    /* Внутренние отступы */
+  font-size: 14px;      /* Размер шрифта */
+  background-color: #7f8c8d; /* Фон кнопки */
+  font-family: 'Open Sans', sans-serif; /* Шрифт кнопки */
 }
 
-body.dark-theme {
-  background-color: #1a1a1a;
-  color: #e0e0e0;
+/* --- СПИСОК ЗАДАЧ ---
+   Стили для <ul class="task-list"> */
+.task-list {
+  list-style: none;     /* Убираем маркеры списка */
+  padding: 0;           /* Убираем внутренние отступы */
+  margin: 20px 0;       /* Отступы сверху и снизу */
+  max-width: 100%;      /* Максимальная ширина */
+  width: 100%;          /* Ширина 100% */
 }
 
-body.dark-theme .task-item,
-body.dark-theme form input,
-body.dark-theme .filters button.active {
-  background-color: #2d2d2d;
-  border-color: #444;
-  color: #e0e0e0;
+/* --- КАРТОЧКА ЗАДАЧИ ---
+   Стили для <li class="task-item"> */
+.task-item {
+  display: flex;                /* Flexbox-контейнер */
+  flex-direction: column;       /* Элементы в колонку */
+  align-items: flex-start;     /* Выравнивание по левому краю */
+  padding: 12px 16px;           /* Внутренние отступы */
+  background-color: var(--card-bg); /* Фон из переменной */
+  border: 1px solid var(--border-color); /* Рамка */
+  border-radius: 8px;            /* Скруглённые углы */
+  margin-bottom: 8px;           /* Отступ снизу */
+  box-shadow: var(--shadow);    /* Тень из переменной */
+  width: 100%;                  /* Ширина 100% */
+  word-wrap: break-word;        /* Перенос длинных слов */
+  line-height: 1.5;             /* Межстрочный интервал */
 }
 
-body.dark-theme button {
-  background-color: #3498db;
-}
-
-body {
-  background-color: #f8f9fa;
-  color: #333;
-  min-height: 100vh;
-  font-family: 'Segoe UI', sans-serif;
-  margin: 40px;
-  line-height: 1.6;
-}
-
-/* Модальное окно */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background-color: var(--card-bg);
-  padding: 20px;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 400px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  color: var(--text-color);
-}
-
-/* Увеличим размер модального окна для новой задачи */
-.large-modal {
-  max-width: 600px; /* Или другая ширина по вкусу */
-  width: 95%;
-}
-
-.modal-input {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  background-color: var(--card-bg);
-  color: var(--text-color);
-}
-
-/* Стили для текстовой области и выпадающих списков внутри модалки */
-.modal-textarea {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  background-color: var(--card-bg);
-  color: var(--text-color);
-  font-family: inherit; /* Наследуем шрифт */
-  min-height: 100px; /* Минимальная высота для удобства ввода */
-  resize: vertical; /* Позволяем пользователю изменять высоту по вертикали */
-  box-sizing: border-box;
-}
-
-.modal-select {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  background-color: var(--card-bg);
-  color: var(--text-color);
-  font-family: inherit;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.edit-btn {
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  margin-left: 10px;
-}
-
-/* Стили для меток */
-.modal-content label {
+/* --- ЗАГОЛОВОК ЗАДАЧИ ---
+   Стили для <strong> внутри .task-item */
+.task-item strong {
   display: block;
-  margin-top: 15px;
-  font-weight: bold;
-  text-align: left;
-}
-/* Убираем отступ сверху у первого лейбла */
-.modal-content h3 + label {
-  margin-top: 0;
+  margin-bottom: 6px;
+  font-size: 1.2em;       /* Увеличили шрифт */
+  font-weight: 600;       /* Полужирный */
+  color: var(--text-color);         /* Цвет из h1-h3 */
+  line-height: 1.3;       /* Межстрочный интервал */
+  font-family: 'Roboto Slab', serif; /* Шрифт заголовка задачи */
 }
 
-/* Стили для меток приоритета и статуса в списке задач */
+/* --- ОПИСАНИЕ ЗАДАЧИ ---
+   Стили для <p class="task-description"> */
+.task-description {
+  margin: 0 0 10px 0;    /* Отступы: сверху 0, снизу 10px */
+  font-size: 0.95em;     /* Меньший шрифт */
+  color: var(--text-color);           /* Более тёмный серый */
+  line-height: 1.5;      /* Межстрочный интервал */
+  white-space: pre-wrap;  /* Сохраняет переносы строк из textarea */
+  font-family: 'Open Sans', sans-serif; /* Шрифт описания */
+}
+
+/* --- МЕТКИ ПРИОРИТЕТА И СТАТУСА ---
+   Стили для <span class="priority-badge"> и <span class="status-badge"> */
 .task-meta {
-  display: flex;
-  gap: 10px;
-  margin-top: 5px;
-  flex-wrap: wrap; /* Если не помещаются, переносим на новую строку */
+  display: flex;        /* Горизонтальное расположение */
+  gap: 10px;            /* Расстояние между метками */
+  margin-top: 5px;       /* Отступ сверху */
+  flex-wrap: wrap;       /* Перенос на новую строку при необходимости */
 }
 
 .priority-badge,
 .status-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.8em;
-  font-weight: bold;
+  padding: 4px 8px;     /* Внутренние отступы */
+  border-radius: 4px;    /* Скруглённые углы */
+  font-size: 0.8em;     /* Меньший размер шрифта */
+  font-weight: bold;    /* Полужирный шрифт */
+  font-family: 'Open Sans', sans-serif; /* Шрифт меток */
 }
 
-/* Стили для приоритетов */
+/* --- ЦВЕТА МЕТОК ПРИОРИТЕТА ---
+   Стили для разных уровней приоритета */
 .priority-low {
   background-color: #e0e0e0; /* Серый */
   color: #333;
@@ -331,7 +183,8 @@ body {
   color: #721c24;
 }
 
-/* Стили для статусов */
+/* --- ЦВЕТА МЕТОК СТАТУСА ---
+   Стили для разных статусов задач */
 .status-planned {
   background-color: #cce5ff; /* Голубой */
   color: #004085;
@@ -345,55 +198,226 @@ body {
   color: #383d41;
 }
 
-/* --- Анимации модальных окон --- */
+/* --- ДЕЙСТВИЯ ПОД ЗАДАЧЕЙ ---
+   Стили для чекбокса, кнопок "Сделано", "✏️", "×" */
+.task-actions {
+  display: flex;        /* Горизонтальное расположение */
+  gap: 8px;             /* Расстояние между элементами */
+  align-items: center;  /* Выравнивание по центру по вертикали */
+  width: 100%;          /* Ширина 100% */
+  margin-top: 10px;      /* Отступ сверху */
+}
 
-/* 1. Плавное появление/исчезновение фона */
+.action-label {
+  font-size: 14px;      /* Размер шрифта */
+  color: #666;          /* Серый цвет */
+  cursor: pointer;      /* Курсор "рука" */
+  font-family: 'Open Sans', sans-serif; /* Шрифт лейбла */
+}
+
+.action-label:hover {
+  color: #ccc;          /* Цвет при наведении */
+}
+
+.delete-btn {
+  width: 24px;          /* Ширина кнопки */
+  height: 24px;         /* Высота кнопки */
+  font-size: 16px;      /* Размер шрифта */
+  padding: 0;           /* Убираем внутренние отступы */
+  margin-left: auto;    /* Отступ слева (авто = вправо) */
+  background-color: #e74c3c; /* Красный фон */
+  color: white;         /* Белый текст */
+  border: none;         /* Убираем рамку */
+  border-radius: 50%;   /* Круглая форма */
+  cursor: pointer;      /* Курсор "рука" */
+  transition: background 0.2s; /* Плавный переход фона */
+  font-family: 'Open Sans', sans-serif; /* Шрифт кнопки */
+}
+
+.delete-btn:hover {
+  background-color: #c0392b; /* Фон при наведении */
+}
+
+.edit-btn {
+  background: none;      /* Прозрачный фон */
+  border: none;         /* Убираем рамку */
+  font-size: 16px;      /* Размер шрифта */
+  cursor: pointer;      /* Курсор "рука" */
+  margin-left: 10px;     /* Отступ слева */
+  font-family: 'Open Sans', sans-serif; /* Шрифт кнопки */
+}
+
+/* --- ЧЕКБОКСЫ ---
+   Стили для <input type="checkbox"> */
+input[type="checkbox"] {
+  width: 16px;          /* Ширина */
+  height: 16px;         /* Высота */
+  border: 1px solid #ccc; /* Рамка */
+  border-radius: 3px;   /* Скруглённые углы */
+  cursor: pointer;      /* Курсор "рука" */
+}
+
+input[type="checkbox"]:checked {
+  background-color: var(--btn-bg); /* Фон при выборе */
+  border-color: var(--btn-bg);    /* Цвет рамки при выборе */
+}
+
+/* --- ПУСТОЕ СОСТОЯНИЕ ---
+   Стили для сообщения "Нет задач. Добавь первую!" */
+.empty {
+  color: #777;          /* Серый цвет текста */
+  font-style: italic;   /* Курсив */
+  margin: 20px 0;        /* Отступы сверху и снизу */
+  font-family: 'Open Sans', sans-serif; /* Шрифт сообщения */
+}
+
+/* --- МОДАЛЬНОЕ ОКНО ---
+   Стили для <div class="modal-overlay"> и <div class="modal-content"> */
+.modal-overlay {
+  position: fixed;      /* Фиксированное позиционирование */
+  top: 0;               /* Сверху */
+  left: 0;              /* Слева */
+  width: 100%;          /* Ширина 100% */
+  height: 100%;         /* Высота 100% */
+  background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачный чёрный фон */
+  display: flex;        /* Flexbox-контейнер */
+  justify-content: center; /* Центрирование по горизонтали */
+  align-items: center; /* Центрирование по вертикали */
+  z-index: 1000;        /* Высокий z-index, чтобы быть поверх всего */
+}
+
+.modal-content {
+  background-color: var(--card-bg); /* Фон из переменной */
+  padding: 20px;        /* Внутренние отступы */
+  border-radius: 8px;   /* Скруглённые углы */
+  width: 90%;           /* Ширина 90% */
+  max-width: 400px;     /* Максимальная ширина */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Тень */
+  color: var(--text-color); /* Цвет текста */
+  font-family: 'Open Sans', sans-serif; /* Шрифт модального окна */
+}
+
+/* --- УВЕЛИЧЕННОЕ МОДАЛЬНОЕ ОКНО ---
+   Стили для <div class="modal-content large-modal"> */
+.large-modal {
+  max-width: 600px;     /* Максимальная ширина 600px */
+  width: 95%;           /* Ширина 95% */
+}
+
+/* --- ПОЛЯ ВВОДА В МОДАЛЬНОМ ОКНЕ ---
+   Стили для <input>, <textarea>, <select> */
+.modal-input,
+.modal-textarea,
+.modal-select {
+  width: 100%;          /* Ширина 100% */
+  padding: 10px;         /* Внутренние отступы */
+  margin: 10px 0;        /* Отступы сверху и снизу */
+  border: 1px solid var(--border-color); /* Рамка */
+  border-radius: 4px;   /* Скруглённые углы */
+  background-color: var(--card-bg); /* Фон */
+  color: var(--text-color); /* Цвет текста */
+  font-family: inherit; /* Наследуем шрифт */
+  box-sizing: border-box; /* Учитываем padding и border в width */
+}
+
+.modal-textarea {
+  min-height: 100px;    /* Минимальная высота */
+  resize: vertical;    /* Разрешаем изменять высоту только по вертикали */
+}
+
+/* --- КНОПКИ В МОДАЛЬНОМ ОКНЕ ---
+   Стили для <div class="modal-actions"> и кнопок внутри */
+.modal-actions {
+  display: flex;        /* Горизонтальное расположение */
+  gap: 10px;            /* Расстояние между кнопками */
+  justify-content: flex-end; /* Выравнивание вправо */
+  margin-top: 20px;      /* Отступ сверху */
+}
+
+button {
+  padding: 12px 16px;   /* Внутренние отступы */
+  background-color: var(--btn-bg); /* Фон из переменной */
+  color: white;         /* Белый текст */
+  border: none;         /* Убираем рамку */
+  border-radius: 6px;   /* Скруглённые углы */
+  cursor: pointer;      /* Курсор "рука" */
+  font-size: 16px;      /* Размер шрифта */
+  white-space: nowrap;  /* Запрещаем перенос текста */
+  transition: background-color 0.2s ease; /* Плавный переход фона */
+  font-family: 'Open Sans', sans-serif; /* Шрифт кнопок */
+}
+
+button:hover {
+  background-color: var(--btn-hover); /* Фон при наведении */
+}
+
+/* --- СТИЛИ ДЛЯ МЕТОК В МОДАЛЬНОМ ОКНЕ ---
+   Стили для <label> */
+.modal-content label {
+  display: block;       /* Блочный элемент */
+  margin-top: 15px;     /* Отступ сверху */
+  font-weight: bold;    /* Полужирный шрифт */
+  text-align: left;     /* Текст по левому краю */
+  font-family: 'Open Sans', sans-serif; /* Шрифт лейблов */
+}
+/* Убираем отступ сверху у первого лейбла */
+.modal-content h3 + label {
+  margin-top: 0;
+}
+
+/* --- ТЁМНАЯ ТЕМА ДЛЯ BODY ---
+   Стили для <body class="dark-theme"> */
+body.dark-theme {
+  background-color: #1a1a1a; /* Чёрный фон */
+  color: #e0e0e0;            /* Светлый текст */
+}
+
+body.dark-theme .task-item,
+body.dark-theme form input,
+body.dark-theme .filters button.active {
+  background-color: #2d2d2d; /* Тёмный фон карточек */
+  border-color: #444;         /* Тёмная рамка */
+  color: #e0e0e0;            /* Светлый текст */
+}
+
+body.dark-theme button {
+  background-color: #3498db; /* Синий фон кнопок */
+}
+
+/* --- ОСНОВНОЙ СТИЛЬ BODY ---
+   Базовые стили для <body> */
+body {
+  background-color: #f8f9fa; /* Светлый фон */
+  color: #333;              /* Тёмный текст */
+  min-height: 100vh;        /* Минимальная высота */
+  font-family: 'Open Sans', sans-serif; /* Шрифт по умолчанию */
+  margin: 40px;             /* Отступы */
+  line-height: 1.6;         /* Межстрочный интервал */
+}
+
+/* --- АНИМАЦИИ МОДАЛЬНЫХ ОКОН ---
+   Стили для <transition name="modal"> */
 .modal-enter-active, .modal-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease; /* Плавное изменение прозрачности */
 }
 
 .modal-enter-from, .modal-leave-to {
-  opacity: 0;
+  opacity: 0; /* Начальное и конечное значение прозрачности */
 }
 
-/* 2. Плавное появление/исчезновение окна */
 .modal-enter-active .modal-content,
 .modal-leave-active .modal-content {
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease; /* Плавные переходы */
 }
 
 .modal-enter-from .modal-content,
 .modal-leave-to .modal-content {
-  transform: translateY(-20px) scale(0.95);
-  opacity: 0;
+  transform: translateY(-20px) scale(0.95); /* Сдвиг вверх и уменьшение */
+  opacity: 0; /* Прозрачность */
 }
 
 .modal-enter-to .modal-content,
 .modal-leave-from .modal-content {
-  transform: translateY(0) scale(1);
-  opacity: 1;
-}
-
-.add-task-banner {
-  margin-bottom: 20px;
-}
-/* --- Кнопка-баннер для добавления задачи --- */
-.add-task-button {
-  width: 100%;
-  padding: 20px;
-  background-color: var(--card-bg); /* Белый фон */
-  border: 2px dashed var(--border-color); /* Пунктирная рамка */
-  border-radius: 8px;
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--text-color);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: center;
-}
-
-.add-task-button:hover {
-  background-color: var(--btn-bg); /* Синий фон при наведении */
-  color: white;
-  border-color: var(--btn-bg);
+  transform: translateY(0) scale(1); /* Исходное положение */
+  opacity: 1; /* Полная непрозрачность */
 }
