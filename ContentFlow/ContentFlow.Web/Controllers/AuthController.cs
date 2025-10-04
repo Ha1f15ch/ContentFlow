@@ -1,4 +1,5 @@
-﻿using ContentFlow.Application.Common;
+﻿using System.Security.Claims;
+using ContentFlow.Application.Common;
 using ContentFlow.Application.Functions.Auth.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -51,6 +52,20 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> ResendConfirmation([FromBody] ResendConfirmationCommand resendConfirmationCommand)
     {
         var result = await _mediator.Send(resendConfirmationCommand);
+        return Ok(result);
+    }
+
+    [HttpGet("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        var userIdClaims = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!int.TryParse(userIdClaims, out var userId))
+            return Unauthorized();
+        
+        var command = new LogoutCommand(UserId: userId);
+
+        var result = await _mediator.Send(command);
+        
         return Ok(result);
     }
     

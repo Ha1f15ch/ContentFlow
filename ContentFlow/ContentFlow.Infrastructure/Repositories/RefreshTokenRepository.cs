@@ -80,6 +80,27 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         return await _context.SaveChangesAsync(ct) > 0;
     }
 
+    public async Task RevokeAllActiveByUserIdAsync(int userId, string reason, CancellationToken ct)
+    {
+        var tokens = await _context.RefreshTokens
+            .Where(t =>
+                t.UserId == userId &&
+                !t.IsRevoked &&
+                t.ExpiresAt > DateTime.UtcNow)
+            .ToListAsync(ct);
+
+        foreach (var token in tokens)
+        {
+            token.IsRevoked = true;
+            token.RevokedAt = DateTime.UtcNow;
+            token.RevokedByIp = "API";
+            token.ReplacedByTokenHash = null;
+        }
+
+        _context.RefreshTokens.UpdateRange(tokens);
+        var resultOfRevoke = await _context.SaveChangesAsync(ct);
+    }
+
     public async Task<bool> ExistsByUserIdAndDeviceAsync(int userId, string? deviceId, CancellationToken ct)
     {
         return await _context.RefreshTokens

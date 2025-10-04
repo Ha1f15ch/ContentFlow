@@ -8,5 +8,6 @@ public interface IRefreshTokenRepository
     Task<RefreshTokenDto?> GetValidByIdAsync(int tokenId, CancellationToken ct);
     Task<RefreshTokenDto?> GetValidByHashAsync(string tokenHash, CancellationToken ct);
     Task<bool> RevokeAsync(int tokenId, string revokedByIp, string? newTokenHash, CancellationToken ct);
+    Task RevokeAllActiveByUserIdAsync(int userId, string reason, CancellationToken ct);
     Task<bool> ExistsByUserIdAndDeviceAsync(int userId, string? deviceId, CancellationToken ct);
 }
