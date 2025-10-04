@@ -25,6 +25,8 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand, bool>
     {
         await _refreshTokenRepository.RevokeAllActiveByUserIdAsync(request.UserId, "User logout", cancellationToken);
         
+        // Escape from all devices. (not implemented)
+        
         return true;
     }
 }
