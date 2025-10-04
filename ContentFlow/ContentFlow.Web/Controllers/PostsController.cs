@@ -23,12 +23,12 @@ public class PostsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PaginatedResult<PostDto>>> GetPostsAsync([FromQuery] GetPostsQuery query)
     {
-        var  result = await _mediator.Send(query);
+        var result = await _mediator.Send(query);
         return Ok(result);
     }
 
+    [Authorize(Policy = "CanEditContent")]
     [HttpPost]
-    [Authorize]
     public async Task<IActionResult> CreatePost([FromBody] CreatePostRequest request)
     {
         var authorId = User.GetUserId();
@@ -48,9 +48,52 @@ public class PostsController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult> GetPostById(int id)
+    public async Task<IActionResult> GetPostById(int id)
     {
         var post = await _mediator.Send(new GetPostByIdQuery(id));
         return Ok(post);
+    }
+
+    [Authorize(Policy = "CanEditContent")]
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> UpdatePostById(int id, [FromBody] UpdatePostModel request)
+    {
+        var authorId = User.GetUserId();
+        
+        var command = new UpdatePostCommand(
+            PostId: id,
+            Title: request.Title,
+            Content: request.Content,
+            CategoryId: request.CategoryId,
+            TagIds: request.TagIds,
+            AuthorId: authorId);
+        
+        await _mediator.Send(command);
+
+        return Ok();
+    }
+
+    [Authorize(Policy = "CanDeleteContent")]
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeletePostById(int id)
+    {
+        var userInitiator = User.GetUserId();
+        var command = new DeletePostCommand(UserInitiator: userInitiator, PostId: id);
+        
+        await _mediator.Send(command);
+
+        return Ok();
+    }
+    
+    [Authorize(Policy = "CanPublish")]
+    [HttpPost("{id:int}/publish")]
+    public async Task<IActionResult> PublishPost(int id)
+    {
+        var userInitiator = User.GetUserId();
+        var command = new PublishPostCommand(PostId: id, UserId: userInitiator);
+
+        var result = await _mediator.Send(command);
+        
+        return Ok(result);
     }
 }

@@ -61,6 +61,29 @@ builder.Services.AddApplication();
 // Add Infrastructure (DbContext, Identity, Repositories, Email, Mappings)
 builder.Services.AddInfrastructure(builder.Configuration);
 
+//Policy for endpoints
+builder.Services.AddAuthorization(option =>
+{
+    option.AddPolicy("CanPublish", policy => 
+        policy.RequireRole(
+            RoleConstants.User,
+            RoleConstants.Moderator,
+            RoleConstants.Admin));
+    
+    option.AddPolicy("CanEditContent",  policy =>
+        policy.RequireRole(
+            RoleConstants.User,
+            RoleConstants.ContentEditor,
+            RoleConstants.Moderator,
+            RoleConstants.Admin));
+    
+    option.AddPolicy("CanDeleteContent",  policy =>
+        policy.RequireRole(
+            RoleConstants.User,
+            RoleConstants.Moderator,
+            RoleConstants.Admin));
+});
+
 var app = builder.Build();
 
 await AutoInitializeRole(app.Services);

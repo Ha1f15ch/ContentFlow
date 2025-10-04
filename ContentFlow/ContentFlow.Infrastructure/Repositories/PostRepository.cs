@@ -1,4 +1,5 @@
-﻿using ContentFlow.Application.Common;
+﻿using System.Globalization;
+using ContentFlow.Application.Common;
 using ContentFlow.Application.DTOs;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Domain.Entities;
@@ -18,11 +19,16 @@ public class PostRepository : IPostRepository
         _context = context;
     }
     
-    public async Task<Post> GetByIdAsync(int id, CancellationToken ct)
+    public async Task<Post?> GetByIdAsync(int id, CancellationToken ct)
     {
-        return await _context.Posts
-            .FirstOrDefaultAsync(p => p.Id == id, ct)
-            ?? throw new NotFoundException($"Post with ID {id} not found.");
+        var post = await _context.Posts
+            .FirstOrDefaultAsync(p => p.Id == id, ct);
+        if (post == null)
+        {
+            Console.WriteLine($"Post with ID {id} not found.");
+        }
+        
+        return post;
     }
 
     public async Task<PaginatedResult<PostReadModel>> GetAllAsync(int page, int pageSize, CancellationToken ct)
@@ -88,6 +94,7 @@ public class PostRepository : IPostRepository
 
     public async Task DeleteAsync(Post post, CancellationToken ct)
     {
+        post.MarkAsDeleted();
         _context.Posts.Update(post);
         await _context.SaveChangesAsync(ct);
     }

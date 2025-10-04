@@ -6,7 +6,7 @@ namespace ContentFlow.Application.Interfaces.Posts;
 
 public interface IPostRepository
 {
-    Task<Post> GetByIdAsync(int id, CancellationToken ct);
+    Task<Post?> GetByIdAsync(int id, CancellationToken ct);
     Task<PaginatedResult<PostReadModel>> GetAllAsync(int page, int pageSize, CancellationToken ct);
     Task<List<Post>> GetPublishedAsync(CancellationToken ct);
     Task<List<Post>> GetByAuthorIdAsync(int authorId, CancellationToken ct);
