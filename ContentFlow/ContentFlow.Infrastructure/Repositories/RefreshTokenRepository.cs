@@ -98,7 +98,7 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         }
 
         _context.RefreshTokens.UpdateRange(tokens);
-        var resultOfRevoke = await _context.SaveChangesAsync(ct);
+        await _context.SaveChangesAsync(ct);
     }
 
     public async Task<bool> ExistsByUserIdAndDeviceAsync(int userId, string? deviceId, CancellationToken ct)

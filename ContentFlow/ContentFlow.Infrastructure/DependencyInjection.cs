@@ -45,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<IEmailSender, EmailSender>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IPostCommentsService, PostCommentsService>();
         
         // Mappings
         services.AddAutoMapper(typeof(MappingProfile).Assembly);

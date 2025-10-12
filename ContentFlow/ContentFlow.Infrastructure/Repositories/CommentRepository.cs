@@ -93,6 +93,22 @@ public class CommentRepository : ICommentRepository
         return new PaginatedResult<Comment>(comments, totalCount, page, pageSize);
     }
 
+    public async Task<List<Comment>> GetApprovedByPostIdAsync(int postId, CancellationToken ct)
+    {
+        if (postId == 0)
+        {
+            return new List<Comment>();
+        }
+        
+        return await _context.Comments
+            .AsNoTracking()
+            .Where(c => c.PostId == postId &&
+                        c.Status == CommentStatus.Approved &&
+                        !c.IsDeleted)
+            .OrderBy(c => c.CreatedAt)
+            .ToListAsync(ct);
+    }
+
     public async Task AddAsync(Comment comment, CancellationToken ct)
     {
         await _context.Comments.AddAsync(comment, ct);
@@ -101,7 +117,7 @@ public class CommentRepository : ICommentRepository
 
     public async Task UpdateAsync(Comment comment, CancellationToken ct)
     {
-        await _context.Comments.AddAsync(comment, ct);
+        _context.Comments.Update(comment);
         await _context.SaveChangesAsync(ct);
     }
 

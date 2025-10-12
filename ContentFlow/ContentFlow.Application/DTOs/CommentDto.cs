@@ -5,4 +5,5 @@ public record CommentDto(
     string Content,
     string AuthorName,
     DateTime CreatedAt,
-    List<CommentDto> Comments);
+    List<CommentDto> Comments,
+    int? ParentCommentId);
