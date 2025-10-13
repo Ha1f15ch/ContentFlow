@@ -39,7 +39,7 @@ public class CommentsController : ControllerBase
 
     [HttpPost]
     [Authorize(Policy = "CanEditContent")]
-    public async Task<IActionResult> CreateComment(int postId, [FromBody] CommentDto command)
+    public async Task<IActionResult> CreateComment(int postId, [FromBody] CommentDtoToCreate commentToCreate)
     {
         var userIdByClaims = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!int.TryParse(userIdByClaims, out var userId))
@@ -47,7 +47,11 @@ public class CommentsController : ControllerBase
             userId = 0;
         }
 
-        var command = new CreateCommentCommand();
+        var command = new CreateCommentCommand(
+            PostId: postId, 
+            AuthorId: userId, 
+            Content: commentToCreate.Content, 
+            ParentCommentId: commentToCreate.ParentCommentId);
         
         var result = await _mediator.Send(command);
         
