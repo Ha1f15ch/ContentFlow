@@ -60,7 +60,7 @@ public class CommentsController : ControllerBase
 
     [HttpPut("{id:int}")]
     [Authorize(Policy = "CanEditContent")]
-    public async Task<IActionResult> UpdateComment(int postId, int id, [FromBody] UpdateCommentData updateCommentData)
+    public async Task<IActionResult> UpdateComment(int postId, int id, [FromBody] UpdateCommentRequest updateCommentRequest)
     {
         var userIdByClaims = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!int.TryParse(userIdByClaims, out var userId))
@@ -68,7 +68,11 @@ public class CommentsController : ControllerBase
             userId = 0;
         }
 
-        var command = new UpdateCommentCommand();
+        var command = new UpdateCommentCommand(
+            id, 
+            postId, 
+            updateCommentRequest.NewCommentText, 
+            userId);
         
         var result = await _mediator.Send(command);
 
@@ -85,7 +89,7 @@ public class CommentsController : ControllerBase
             userId = 0;
         }
 
-        var command = new DeleteCommentCommand();
+        var command = new DeleteCommentCommand(id, postId, userId);
         
         var result = await _mediator.Send(command);
 
