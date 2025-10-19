@@ -22,8 +22,8 @@ public class DeleteCommentCommandHandler : IRequestHandler<DeleteCommentCommand,
         _userService = userService;
     }
 
-    public Task<bool> Handle(DeleteCommentCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(DeleteCommentCommand request, CancellationToken cancellationToken)
     {
-        
+        return true;
     }
 }
