@@ -31,34 +31,68 @@ public class PostRepository : IPostRepository
         return post;
     }
 
-    public async Task<PaginatedResult<PostReadModel>> GetAllAsync(int page, int pageSize, CancellationToken ct)
+    public async Task<PaginatedResult<PostReadModel>> GetAllAsync(
+        int page,
+        int pageSize,
+        string? search = null,
+        int? categoryId = null,
+        PostStatus? status = null,
+        int? currentUserId = null,
+        CancellationToken ct = default)
     {
         var query = _context.Posts
             .AsNoTracking()
-            .Where(p => p.Status == PostStatus.Published);
+            .AsQueryable();
+
+        if (currentUserId.HasValue)
+        {
+            var userId =  currentUserId.Value;
+            query = query.Where(p => 
+                p.Status == PostStatus.Published ||
+                p.Status == PostStatus.Archived || 
+                (p.Status == PostStatus.Draft && p.AuthorId == userId) ||
+                (p.Status == PostStatus.PendingModeration && p.AuthorId == userId));
+        }
+        else
+        {
+            query = query.Where(p => p.Status == PostStatus.Published);
+        }
         
-        var totalCount = await query.CountAsync(ct);
+        // Search
+        if (!string.IsNullOrEmpty(search))
+        {
+            query = query.Where(p => p.Title.Contains(search) || p.Content.Contains(search));
+        }
         
-        var posts = await query
-            .OrderBy(c => c.CreatedAt)
+        // Filter by category
+        if (categoryId.HasValue)
+        {
+            query = query.Where(p => p.CategoryId == categoryId);
+        }
+
+        var postQuery = from post in query
+            join author in _context.Users on post.AuthorId equals author.Id
+            join comment in _context.Comments on post.Id equals comment.PostId into comments
+            select new PostReadModel(
+                post.Id,
+                post.Title,
+                post.Slug,
+                post.Excerpt,
+                post.AuthorId,
+                post.Status,
+                post.CreatedAt,
+                post.PublishedAt,
+                comments.Count(),
+                $"{author.FirstName} {author.LastName}".Trim(),
+                author.AuthorAvatar
+                );
+        
+        var totalCount = await postQuery.CountAsync(ct);
+        
+        var posts = await postQuery
+            .OrderByDescending(p => p.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .GroupJoin(
-                _context.Comments,
-                post => post.Id,
-                comment => comment.PostId,
-                (post, comments) => new PostReadModel(
-                    post.Id,
-                    post.Title,
-                    post.Slug,
-                    post.Excerpt,
-                    post.AuthorId,
-                    post.Status,
-                    post.CreatedAt,
-                    post.PublishedAt,
-                    comments.Count()
-                )
-            )
             .ToListAsync(ct);
         
         return new PaginatedResult<PostReadModel>(posts, totalCount, page, pageSize);

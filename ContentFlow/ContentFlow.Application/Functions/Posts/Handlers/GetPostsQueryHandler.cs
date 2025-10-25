@@ -23,7 +23,14 @@ public class GetPostsQueryHandler : IRequestHandler<GetPostsQuery, PaginatedResu
 
     public async Task<PaginatedResult<PostDto>> Handle(GetPostsQuery request, CancellationToken cancellationToken)
     {
-        var posts = await _postRepository.GetAllAsync(request.Page, request.PageSize, cancellationToken);
+        var posts = await _postRepository.GetAllAsync(
+            page: request.Page, 
+            pageSize: request.PageSize,
+            search: request.Search,
+            categoryId: request.CategoryId,
+            status: request.Status,
+            currentUserId: request.CurrentUserId,
+            ct: cancellationToken);
         
         var authorIds = posts.Items
             .Select(x => x.AuthorId)

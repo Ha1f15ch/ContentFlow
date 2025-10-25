@@ -2,6 +2,7 @@
 using ContentFlow.Application.DTOs;
 using ContentFlow.Application.Functions.Comments.Commands;
 using ContentFlow.Application.Functions.Comments.Queries;
+using ContentFlow.Application.Security;
 using ContentFlow.Domain.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -24,32 +25,43 @@ public class CommentsController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetComments(int postId)
     {
-        var userIdByClaims = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!int.TryParse(userIdByClaims, out var userId))
-        {
-            userId = 0;
-        }
+        var userIdByClaims = User.GetAuthenticatedUserId();
 
-        var command = new GetCommentsByPostIdQuery(PostId: postId, UserId: userId);
-        
-        var result = await _mediator.Send(command);
-        
-        return Ok(result);
+        var command = new GetCommentsByPostIdQuery(PostId: postId, UserId: userIdByClaims);
+
+        try
+        {
+            var result = await _mediator.Send(command);
+
+            return Ok(result);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception exception)
+        {
+            return StatusCode(500, new { message = exception.Message });
+        }
     }
 
     [HttpPost]
     [Authorize(Policy = "CanEditContent")]
     public async Task<IActionResult> CreateComment(int postId, [FromBody] CreateCommentRequest createCommentToCreate)
     {
-        var userIdByClaims = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!int.TryParse(userIdByClaims, out var userId))
-        {
-            userId = 0;
-        }
+        var userIdByClaims = User.GetAuthenticatedUserId();
 
         var command = new CreateCommentCommand(
             PostId: postId, 
-            AuthorId: userId, 
+            AuthorId: userIdByClaims, 
             Content: createCommentToCreate.Content,
             ParentCommentId: createCommentToCreate.ParentCommentId);
         try
@@ -73,24 +85,19 @@ public class CommentsController : ControllerBase
         {
             return StatusCode(500, new { message = exception.Message });
         }
-        
     }
 
     [HttpPut("{id:int}")]
     [Authorize(Policy = "CanEditContent")]
     public async Task<IActionResult> UpdateComment(int postId, int id, [FromBody] UpdateCommentRequest updateCommentRequest)
     {
-        var userIdByClaims = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!int.TryParse(userIdByClaims, out var userId))
-        {
-            userId = 0;
-        }
+        var userIdByClaims = User.GetAuthenticatedUserId();
 
         var command = new UpdateCommentCommand(
             id, 
             postId, 
             updateCommentRequest.NewCommentText, 
-            userId);
+            userIdByClaims);
         
         try
         {
@@ -115,13 +122,9 @@ public class CommentsController : ControllerBase
     [Authorize(Policy = "CanEditContent")]
     public async Task<IActionResult> DeleteComment(int postId, int id)
     {
-        var userIdByClaims = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!int.TryParse(userIdByClaims, out var userId))
-        {
-            userId = 0;
-        }
+        var userIdByClaims = User.GetAuthenticatedUserId();
 
-        var command = new DeleteCommentCommand(id, postId, userId);
+        var command = new DeleteCommentCommand(id, postId, userIdByClaims);
 
         try
         {

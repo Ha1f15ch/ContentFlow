@@ -23,7 +23,11 @@ public class PostsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PaginatedResult<PostDto>>> GetPostsAsync([FromQuery] GetPostsQuery query)
     {
-        var result = await _mediator.Send(query);
+        var authorId = User.GetUserId();
+        
+        var request = query with{CurrentUserId = authorId};
+        
+        var result = await _mediator.Send(request);
         return Ok(result);
     }
 
@@ -31,7 +35,7 @@ public class PostsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreatePost([FromBody] CreatePostRequest request)
     {
-        var authorId = User.GetUserId();
+        var authorId = User.GetAuthenticatedUserId();
         
         var command = new CreatePostCommand(
             Title: request.Title,
@@ -58,7 +62,7 @@ public class PostsController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdatePostById(int id, [FromBody] UpdatePostModel request)
     {
-        var authorId = User.GetUserId();
+        var authorId = User.GetAuthenticatedUserId();
         
         var command = new UpdatePostCommand(
             PostId: id,
@@ -77,7 +81,7 @@ public class PostsController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeletePostById(int id)
     {
-        var userInitiator = User.GetUserId();
+        var userInitiator = User.GetAuthenticatedUserId();
         var command = new DeletePostCommand(UserInitiator: userInitiator, PostId: id);
         
         await _mediator.Send(command);
@@ -89,7 +93,7 @@ public class PostsController : ControllerBase
     [HttpPost("{id:int}/publish")]
     public async Task<IActionResult> PublishPost(int id)
     {
-        var userInitiator = User.GetUserId();
+        var userInitiator = User.GetAuthenticatedUserId();
         var command = new PublishPostCommand(PostId: id, UserId: userInitiator);
 
         var result = await _mediator.Send(command);

@@ -11,4 +11,6 @@ public record PostReadModel(
     PostStatus Status,
     DateTime CreatedAt,
     DateTime PublishedAt,
-    int CommentCount);
+    int CommentCount,
+    string AuthorName,
+    string? AuthorAvatar);

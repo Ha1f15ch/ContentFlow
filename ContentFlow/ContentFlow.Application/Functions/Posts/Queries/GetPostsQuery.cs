@@ -10,5 +10,6 @@ public record GetPostsQuery(
     int PageSize = 10,
     string? Search = null,
     int? CategoryId = null,
-    PostStatus? Status = null
+    PostStatus? Status = null,
+    int? CurrentUserId = null
     ) : IRequest<PaginatedResult<PostDto>>;
