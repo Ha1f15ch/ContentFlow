@@ -7,4 +7,4 @@ public record UpdateCommentCommand(
     int CommentId, 
     int PostId,
     string NewCommentText, 
-    int AuthorId) : IRequest<CommentDto>;
+    int AuthorId) : IRequest<Unit>;

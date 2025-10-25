@@ -6,6 +6,7 @@ using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Domain.Entities;
 using MediatR;
+using MediatR.Pipeline;
 
 namespace ContentFlow.Application.Functions.Comments.Handlers;
 
@@ -33,24 +34,34 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
         {
             throw new NotFoundException("Post not found");
         }
-
+        
         var user = await _userService.GetByIdAsync(request.AuthorId, cancellationToken);
+        
+        var isTrusted = await _userService.IsInRoleAsync(user.Id, RoleConstants.User) ||
+                        await _userService.IsInRoleAsync(user.Id, RoleConstants.ContentEditor) ||
+                        await _userService.IsInRoleAsync(user.Id, RoleConstants.Moderator) ||
+                        await _userService.IsInRoleAsync(user.Id, RoleConstants.Admin);
+        
+        if (!isTrusted)
+            throw new UnauthorizedAccessException("You do not have permission to comment.");
 
-        if (await _userService.IsInRoleAsync(user.Id, RoleConstants.User))
+        if (request.ParentCommentId.HasValue)
         {
-            var newComment = new Comment
-            (
-                content: request.Content,
-                postId: post.Id,
-                authorId: user.Id,
-                parentCommentId: null
-            );
-            
-            await _commentRepository.AddAsync(newComment, cancellationToken);
-            
-            return newComment.Id;
+            var parentComment = await _commentRepository.GetByIdAsync(request.ParentCommentId.Value, cancellationToken);
+            if (parentComment == null || parentComment.IsDeleted || parentComment.PostId != request.PostId)
+                throw new NotFoundException("Invalid parent comment");
         }
         
-        return 0;
+        var newComment = new Comment
+        (
+            content: request.Content,
+            postId: request.PostId,
+            authorId: user.Id,
+            parentCommentId: request.ParentCommentId
+            );
+            
+        await _commentRepository.AddAsync(newComment, cancellationToken);
+            
+        return newComment.Id;
     }
 }

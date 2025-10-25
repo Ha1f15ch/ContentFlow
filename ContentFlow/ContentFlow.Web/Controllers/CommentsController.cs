@@ -2,9 +2,9 @@
 using ContentFlow.Application.DTOs;
 using ContentFlow.Application.Functions.Comments.Commands;
 using ContentFlow.Application.Functions.Comments.Queries;
+using ContentFlow.Domain.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ContentFlow.Web.Controllers;
@@ -39,7 +39,7 @@ public class CommentsController : ControllerBase
 
     [HttpPost]
     [Authorize(Policy = "CanEditContent")]
-    public async Task<IActionResult> CreateComment(int postId, [FromBody] CommentDtoToCreate commentToCreate)
+    public async Task<IActionResult> CreateComment(int postId, [FromBody] CreateCommentRequest createCommentToCreate)
     {
         var userIdByClaims = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!int.TryParse(userIdByClaims, out var userId))
@@ -50,12 +50,30 @@ public class CommentsController : ControllerBase
         var command = new CreateCommentCommand(
             PostId: postId, 
             AuthorId: userId, 
-            Content: commentToCreate.Content, 
-            ParentCommentId: commentToCreate.ParentCommentId);
+            Content: createCommentToCreate.Content,
+            ParentCommentId: createCommentToCreate.ParentCommentId);
+        try
+        {
+            var result = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetComments), new { id = result }, new {id = result});
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception exception)
+        {
+            return StatusCode(500, new { message = exception.Message });
+        }
         
-        var result = await _mediator.Send(command);
-        
-        return Ok(result);
     }
 
     [HttpPut("{id:int}")]
@@ -74,9 +92,23 @@ public class CommentsController : ControllerBase
             updateCommentRequest.NewCommentText, 
             userId);
         
-        var result = await _mediator.Send(command);
-
-        return Ok();
+        try
+        {
+            await _mediator.Send(command);
+            return NoContent(); // 204 - успешно обновлено
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpDelete("{id:int}")]
@@ -90,9 +122,23 @@ public class CommentsController : ControllerBase
         }
 
         var command = new DeleteCommentCommand(id, postId, userId);
-        
-        var result = await _mediator.Send(command);
 
-        return Ok();
+        try
+        {
+            var result = await _mediator.Send(command);
+            return NoContent();
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }

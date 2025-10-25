@@ -92,6 +92,12 @@ public class UserService : IUserService
         await _userManager.RemoveFromRoleAsync(user, role);
     }
 
+    /// <summary>
+    /// Проверяет, есть ли указанная роль у пользователя
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="role"></param>
+    /// <returns></returns>
     public async Task<bool> IsInRoleAsync(int userId, string role)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
@@ -134,6 +140,12 @@ public class UserService : IUserService
         return true;
     }
 
+    /// <summary>
+    /// Получить список ролей пользователя по email
+    /// </summary>
+    /// <param name="email"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public async Task<List<string>> GetRolesAsync(string email, CancellationToken ct)
     {
         var user = await _userManager.FindByEmailAsync(email);
@@ -142,6 +154,6 @@ public class UserService : IUserService
             return new List<string>();
         }
         
-        return new List<string>(await _userManager.GetRolesAsync(user));
+        return [..await _userManager.GetRolesAsync(user)];
     }
 }

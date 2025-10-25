@@ -17,7 +17,7 @@ public class CommentRepository : ICommentRepository
         _context = context;
     }
     
-    public async Task<Comment> GetByIdAsync(int id, CancellationToken ct)
+    public async Task<Comment?> GetByIdAsync(int id, CancellationToken ct)
     {
         return await _context.Comments
             .FirstOrDefaultAsync(c => c.Id == id, ct)

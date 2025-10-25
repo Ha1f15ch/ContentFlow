@@ -1,9 +1,13 @@
-﻿namespace ContentFlow.Application.DTOs;
+﻿using ContentFlow.Domain.Enums;
+
+namespace ContentFlow.Application.DTOs;
 
 public record CommentDto(
     int Id,
+    int PostId,
     string Content,
     string AuthorName,
     DateTime CreatedAt,
     List<CommentDto> Comments,
-    int? ParentCommentId);
+    int? ParentCommentId,
+    string CommentStatus);

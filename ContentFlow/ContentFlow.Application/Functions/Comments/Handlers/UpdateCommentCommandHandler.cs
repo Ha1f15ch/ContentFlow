@@ -1,15 +1,14 @@
-﻿using AutoMapper;
-using ContentFlow.Application.Common;
-using ContentFlow.Application.DTOs;
+﻿using ContentFlow.Application.Common;
 using ContentFlow.Application.Functions.Comments.Commands;
 using ContentFlow.Application.Interfaces.Comment;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.Users;
+using ContentFlow.Domain.Exceptions;
 using MediatR;
 
 namespace ContentFlow.Application.Functions.Comments.Handlers;
 
-public class UpdateCommentCommandHandler : IRequestHandler<UpdateCommentCommand, CommentDto>
+public class UpdateCommentCommandHandler : IRequestHandler<UpdateCommentCommand, Unit>
 {
     private readonly ICommentRepository _commentRepository;
     private readonly IPostRepository  _postRepository;
@@ -17,38 +16,45 @@ public class UpdateCommentCommandHandler : IRequestHandler<UpdateCommentCommand,
     
     
     public UpdateCommentCommandHandler(
-        ICommentRepository commentRepository)
+        ICommentRepository commentRepository,
+        IPostRepository postRepository,
+        IUserService userService)
     {
         _commentRepository = commentRepository;
+        _postRepository = postRepository;
+        _userService = userService;
     }
 
-    public async Task<CommentDto> Handle(UpdateCommentCommand request, CancellationToken cancellationToken)
+    /// <summary>
+    /// Обработка изменения комментария
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Task (Unit)</returns>
+    public async Task<Unit> Handle(UpdateCommentCommand request, CancellationToken cancellationToken)
     {
         var post = await _postRepository.GetByIdAsync(request.PostId, cancellationToken);
         if (post == null)
-        {
-            return null; // нужно создать отдельно типы данных включающий в себя типы (комментарий, пост и так далее)
-        } // в этом типе данных добавить поле результат успешный ? Текст сообщения
-
+            throw new NotFoundException($"Post with id {request.PostId} not found");
+        
         var comment = await _commentRepository.GetByIdAsync(request.CommentId, cancellationToken);
         if (comment == null)
+            throw new NotFoundException($"Comment with ID {request.CommentId} not found.");
+        
+        if(post.Id != comment.PostId)
+            throw new NotFoundException($"Choose correct post with comment ID {request.CommentId}.");
+        
+        if (!await _userService.IsInRoleAsync(request.AuthorId, RoleConstants.Moderator) &&
+            !await _userService.IsInRoleAsync(request.AuthorId, RoleConstants.Admin))
         {
-            return null; // в результате выводим false + текст ошибки, что-то не найдено  
-        }
-
-        var authorUpdateComment = _userService.GetByIdAsync(request.AuthorId, cancellationToken);
-        if (authorUpdateComment == null)
-        {
-            return null; // В результат выводим ошибку + false в результате 
-        }
-
-        var userRoleExist = await _userService.IsInRoleAsync(authorUpdateComment.Id, RoleConstants.ContentEditor);
-        if (!userRoleExist)
-        {
-            return null; // выводим снова false + текст ошибки в ответном сообщении
+            if (comment.AuthorId != request.AuthorId)
+                throw new UnauthorizedAccessException("You can only edit your own comments.");
         }
         
-        // запись изменения комментария
-        return new CommentDto(request.CommentId, request.NewCommentText, "stumb", DateTime.Now, new List<CommentDto>(), request.CommentId);
+        // Изменяем комментарий
+        comment.Edit(request.NewCommentText);
+        await _commentRepository.UpdateAsync(comment, cancellationToken);
+
+        return Unit.Value;
     }
 }

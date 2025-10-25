@@ -5,7 +5,7 @@ namespace ContentFlow.Application.Interfaces.Comment;
 
 public interface ICommentRepository
 {
-    Task<Domain.Entities.Comment> GetByIdAsync(int id, CancellationToken ct);
+    Task<Domain.Entities.Comment?> GetByIdAsync(int id, CancellationToken ct);
     Task<PaginatedResult<Domain.Entities.Comment>> GetByPostIdAsync(int postId, int page, int pageSize, CancellationToken ct);
     Task<PaginatedResult<Domain.Entities.Comment>> GetByAuthorIdAsync(int authorId, int page, int pageSize, CancellationToken ct);
     Task<PaginatedResult<Domain.Entities.Comment>> GetApprovedAsync(int page, int pageSize, CancellationToken ct);
