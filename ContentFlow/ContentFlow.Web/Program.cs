@@ -7,6 +7,7 @@ using Hangfire;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,30 +24,36 @@ builder.Logging.AddSimpleConsole(options =>
 });
 
 // Configuration serilog
-var logPath = builder.Configuration.GetSection("Logging:LogPath").Value;
+var logPath = builder.Configuration["Logging:LogPath"] ?? "logs";
 
-if (logPath != null)
+try
 {
-    Directory.CreateDirectory(logPath);
+    //Directory.CreateDirectory(logPath);
 
     Log.Logger = new LoggerConfiguration()
         .ReadFrom.Configuration(builder.Configuration)
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning) // Уменьшаем шум от фреймворка
+        .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+        .Enrich.FromLogContext() // Добавляет контекст 
         .WriteTo.Console(
             outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
         .WriteTo.File(
-            path: Path.Combine(logPath, "log-{Date:yyyy_MM_dd}.txt"),
+            path: "Logs/log.txt",
             rollingInterval: RollingInterval.Day,
             retainedFileTimeLimit: TimeSpan.FromDays(90),
-            outputTemplate:
-            "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
+            rollOnFileSizeLimit: true,
+            fileSizeLimitBytes: 1_000_000, // 1 MB
+            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}",
+            encoding: System.Text.Encoding.UTF8)
         .CreateLogger();
-}
-else
-{
-    throw new NullReferenceException($"Не получилось считать путь для папки логирования");
-}
 
-builder.Host.UseSerilog();
+    builder.Host.UseSerilog(); // Заменяет встроенный логгер
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Serilog initialization failed: {ex.Message}");
+    throw;
+}
 
 builder.Services.AddCors(options =>
 {
@@ -133,7 +140,7 @@ await AutoInitializeRole(app.Services);
 // Turn on hangfire dashboard
 app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
-    Authorization = new[] { new HangfireAuthorizationFilter() }
+    //Authorization = new[] { new HangfireAuthorizationFilter() }
 });
 
 // Configure the HTTP request pipeline.
