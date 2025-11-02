@@ -126,4 +126,21 @@ public class RefreshTokenRepository : IRefreshTokenRepository
             DeviceId: token.DeviceId
         );
     }
+
+    public async Task<int> DeleteExpiredTokenAsync(CancellationToken ct)
+    {
+        var expiredTokens = await _context.RefreshTokens
+            .Where(t => t.ExpiresAt < DateTime.UtcNow)
+            .ToListAsync(ct);
+
+        if (!expiredTokens.Any())
+        {
+            return 0;
+        }
+        
+        _context.RefreshTokens.RemoveRange(expiredTokens);
+        await _context.SaveChangesAsync(ct);
+        
+        return expiredTokens.Count;
+    }
 }

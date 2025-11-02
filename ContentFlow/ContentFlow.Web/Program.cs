@@ -1,6 +1,9 @@
 using ContentFlow.Application;
 using ContentFlow.Application.Common;
 using ContentFlow.Infrastructure;
+using ContentFlow.Infrastructure.Jobs;
+using ContentFlow.Web.Security;
+using Hangfire;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -127,6 +130,12 @@ var app = builder.Build();
 
 await AutoInitializeRole(app.Services);
 
+// Turn on hangfire dashboard
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthorizationFilter() }
+});
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -146,6 +155,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Start work job scheduler
+using (var scope = app.Services.CreateScope())
+{
+    BackgroundJobScheduler.ScheduleJobs(scope.ServiceProvider.GetRequiredService<IRecurringJobManager>());
+}
 
 app.Run();
 

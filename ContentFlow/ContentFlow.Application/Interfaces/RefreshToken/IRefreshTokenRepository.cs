@@ -10,4 +10,5 @@ public interface IRefreshTokenRepository
     Task<bool> RevokeAsync(int tokenId, string revokedByIp, string? newTokenHash, CancellationToken ct);
     Task RevokeAllActiveByUserIdAsync(int userId, string reason, CancellationToken ct);
     Task<bool> ExistsByUserIdAndDeviceAsync(int userId, string? deviceId, CancellationToken ct);
+    Task<int> DeleteExpiredTokenAsync(CancellationToken ct = default);
 }

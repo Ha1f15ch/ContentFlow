@@ -8,9 +8,12 @@ using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Infrastructure.Configuration;
 using ContentFlow.Infrastructure.DatabaseEngine;
 using ContentFlow.Infrastructure.Identity;
+using ContentFlow.Infrastructure.Jobs;
 using ContentFlow.Infrastructure.Mappings;
 using ContentFlow.Infrastructure.Repositories;
 using ContentFlow.Infrastructure.Services;
+using Hangfire;
+using Hangfire.Console;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -26,6 +29,19 @@ public static class DependencyInjection
         
         // DbContext
         services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+        
+        // Hangfire
+        services.AddHangfire(config =>
+        {
+            config.UseSqlServerStorage(connectionString)
+                .UseSerilogLogProvider() // serilog в hangfire
+                .UseConsole();
+        });
+        
+        services.AddHangfireServer();
+        
+        // Jobs
+        services.AddScoped<TokenCleanupJob>();
         
         // Identity
         services.AddIdentity<ApplicationUser, IdentityRole<int>>()
