@@ -2,6 +2,7 @@ using ContentFlow.Application;
 using ContentFlow.Application.Common;
 using ContentFlow.Infrastructure;
 using ContentFlow.Infrastructure.Jobs;
+using ContentFlow.Web.Extensions;
 using ContentFlow.Web.Security;
 using Hangfire;
 using Microsoft.AspNetCore.Identity;
@@ -28,7 +29,7 @@ var logPath = builder.Configuration["Logging:LogPath"] ?? "logs";
 
 try
 {
-    //Directory.CreateDirectory(logPath);
+    Directory.CreateDirectory(logPath);
 
     Log.Logger = new LoggerConfiguration()
         .ReadFrom.Configuration(builder.Configuration)
@@ -135,6 +136,10 @@ builder.Services.AddAuthorization(option =>
 
 var app = builder.Build();
 
+// Initialize database, apply migrations
+await app.InitializeDatabaseAsync();
+
+// Initialize role
 await AutoInitializeRole(app.Services);
 
 // Turn on hangfire dashboard
