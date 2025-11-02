@@ -7,6 +7,7 @@ using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Application.Security;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace ContentFlow.Application.Functions.Auth.Handlers;
 
@@ -15,23 +16,29 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
     private readonly IUserService  _userService;
     private readonly IEmailSender  _emailSender;
     private readonly IUserTwoFactorCodeRepository _userTwoFactorCodeRepository;
+    private readonly ILogger<RegisterCommandHandler> _logger;
     
     public RegisterCommandHandler(
         IUserService userService, 
         IEmailSender emailSender, 
-        IUserTwoFactorCodeRepository userTwoFactorCodeRepository)
+        IUserTwoFactorCodeRepository userTwoFactorCodeRepository,
+        ILogger<RegisterCommandHandler> logger)
     {
             _emailSender  = emailSender;
             _userService = userService;
             _userTwoFactorCodeRepository = userTwoFactorCodeRepository;
+            _logger = logger;
     }
 
     public async Task<AuthResult> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("User registration started for email: {Email}", request.Email);
+        
         var existingUser = await _userService.GetByEmailAsync(request.Email, cancellationToken);
 
         if (existingUser != null)
         {
+            _logger.LogWarning("Registration attempt with already registered email: {Email}", request.Email);
             return new AuthResult(Success: false, Errors: new() {$"User with email {request.Email} already exists"});
         }
         else
@@ -41,21 +48,21 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
             {
                 userDto = await _userService.CreateAsync(request.Email, request.Password, request.FirstName,
                     request.LastName);
+                _logger.LogInformation("User created successfully with ID: {UserId}", userDto.Id);
             }
             catch (ValidationException validationException)
             {
-                Console.WriteLine($"Operation failed: {validationException.Message}");
+                _logger.LogError(validationException, "Validation failed during registration for email: {Email}", request.Email);
                 return new AuthResult(Success: false, Errors: new() {$"{validationException.Errors}"});
             }
             catch (Exception exception)
             {
-                Console.WriteLine($"Unhandled exception: {exception.Message}");
+                _logger.LogCritical(exception, "Unexpected error creating user with email: {Email}", request.Email);
                 return new AuthResult(Success: false, Errors: new() {$"{exception.Message}"});
             }
             
             // Creating 2FA code
             var code = TokenGenerator.GenerateSixValueCode();
-
             var (codeHash, codeSalt) = PasswordHasher.Hash(code);
 
             try
@@ -66,25 +73,29 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
                     codeSalt: codeSalt,
                     purpose: "EmailVerification",
                     ct: cancellationToken);
+                _logger.LogInformation("Verification code generated and saved for user: {UserId}", userDto.Id);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to save verification code: {ex.Message}");
+                _logger.LogError(ex, "Failed to save verification code for user: {UserId}", userDto.Id);
                 return new AuthResult(false, Errors: new() { "Failed to initiate email verification" });
             }
             
             await _userService.AddToRoleAsync(userDto.Email, RoleConstants.Guest.ToString(), cancellationToken);
+            _logger.LogInformation("User {UserId} assigned to role: {Role}", userDto.Id, RoleConstants.Guest);
             
             // try sand code to email
             try
             {
                 var emailSand = await _emailSender.SendVerificationEmailAsync(userDto.Email, code, cancellationToken);
+                _logger.LogInformation("Verification email sent to: {Email}", userDto.Email);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Email sending failed: {ex.Message}"); //user can resend code again later
+                _logger.LogWarning(ex, "Failed to send verification email to: {Email}. User can retry later.", userDto.Email); //user can resend code again later
             }
             
+            _logger.LogInformation("User registration completed successfully: {Email}", request.Email);
             return new AuthResult(true);
         }
     }

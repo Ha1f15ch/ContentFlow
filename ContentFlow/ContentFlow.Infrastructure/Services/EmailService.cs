@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Net.Mail;
 using ContentFlow.Application.Interfaces.Common;
@@ -8,6 +9,7 @@ using MimeKit;
 using MailKit.Security;
 using MimeKit.Text;
 using MailKit.Net.Smtp;
+using Microsoft.Extensions.Logging;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 
 namespace ContentFlow.Infrastructure.Services;
@@ -15,10 +17,14 @@ namespace ContentFlow.Infrastructure.Services;
 public class EmailService : IEmailService
 {
     private readonly EmailSettings _emailSettings;
+    private readonly ILogger<EmailService> _logger;
 
-    public EmailService(IOptions<EmailSettings> emailSettings)
+    public EmailService(
+        IOptions<EmailSettings> emailSettings,
+        ILogger<EmailService> logger)
     {
         _emailSettings = emailSettings.Value;
+        _logger = logger;
     }
     
     public async Task SendAsync(
@@ -43,26 +49,36 @@ public class EmailService : IEmailService
 
         using var client = new SmtpClient();
 
+        _logger.LogDebug("Attempting to connect to SMTP server: {Host}:{Port}", _emailSettings.Host, _emailSettings.Port);
+        
+        var stopwatch = Stopwatch.StartNew();
         try
         {
             client.AuthenticationMechanisms.Remove("XOAUTH2");
             client.LocalDomain = "localhost";
 
-            Console.WriteLine($"Пытаемся установить соединение с почтой. HOST: {_emailSettings.Host}, PORT: {_emailSettings.Port}");
             await client.ConnectAsync(_emailSettings.Host, _emailSettings.Port, SecureSocketOptions.Auto, ct);
+            _logger.LogDebug("SMTP connection established");
 
-            Console.WriteLine($"Аутентификация в сервисе почты");
             await client.AuthenticateAsync(_emailSettings.Username, _emailSettings.Password, ct);
-
-            Console.WriteLine($"Пытаемся отправить письмо на email: {to}");
+            _logger.LogDebug("SMTP authentication successful");
+            
             await client.SendAsync(message, ct);
+            _logger.LogDebug("Email sent via SMTP");
+            
             await client.DisconnectAsync(true, ct);
 
-            Console.WriteLine($"Письмо успешно отправлено на {to}");
+            stopwatch.Stop();
+            _logger.LogInformation(
+                "Email sent successfully to {To} in {ElapsedMs}ms", 
+                to, stopwatch.ElapsedMilliseconds);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Ошибка при отправке письма на {to}: {ex.Message}");
+            stopwatch.Stop();
+            _logger.LogError(ex, 
+                "Failed to send email to {To} after {ElapsedMs}ms", 
+                to, stopwatch.ElapsedMilliseconds);
             throw new Exception($"Не удалось отправить письмо на {to}", ex);
         }
     }

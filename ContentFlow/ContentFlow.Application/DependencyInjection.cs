@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using ContentFlow.Application.Common.Behaviors;
 using FluentValidation;
 
 namespace ContentFlow.Application;
@@ -11,6 +12,10 @@ public static class DependencyInjection
     {
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly()); // FluentValidation
+        
+        // регистрация pipeline behavior
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+        
         return services;
     }
 }

@@ -16,6 +16,9 @@ public class PostCommentsService : IPostCommentsService
     
     public List<CommentDto> BuildCommentsTree(List<Comment> comments, Dictionary<int, string> userNames)
     {
+        if (comments == null)
+            throw new ArgumentNullException(nameof(comments));
+        
         _logger.LogDebug("Building comment tree for {Count} comments", comments.Count);
         var commentsDto = comments.Select(c => new CommentDto(
             Id: c.Id,
@@ -29,7 +32,6 @@ public class PostCommentsService : IPostCommentsService
             )).ToList();
 
         var commentDict = commentsDto.ToDictionary(c => c.Id);
-        
         var rootComments = new List<CommentDto>();
 
         foreach (var dto in commentsDto)
@@ -44,6 +46,7 @@ public class PostCommentsService : IPostCommentsService
             }
         }
         
+        _logger.LogDebug("Comment tree built with {RootCount} root comments", rootComments.Count);
         return rootComments;
     }
 }

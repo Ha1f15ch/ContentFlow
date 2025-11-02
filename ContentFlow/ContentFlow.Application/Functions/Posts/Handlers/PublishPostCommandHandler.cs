@@ -3,6 +3,7 @@ using ContentFlow.Application.Functions.Posts.Commands;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.Users;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace ContentFlow.Application.Functions.Posts.Handlers;
 
@@ -10,37 +11,60 @@ public class PublishPostCommandHandler : IRequestHandler<PublishPostCommand, boo
 {
     private readonly IPostRepository _postRepository;
     private readonly IUserService _userService;
+    private readonly ILogger<PublishPostCommandHandler> _logger;
     
     public PublishPostCommandHandler(
         IPostRepository postRepository,
-        IUserService userService)
+        IUserService userService,
+        ILogger<PublishPostCommandHandler> logger)
     {
         _postRepository = postRepository;
         _userService = userService;
+        _logger = logger;
     }
 
     public async Task<bool> Handle(PublishPostCommand request, CancellationToken cancellationToken)
     {
+        _logger.LogInformation(
+            "User {UserId} requested to publish post {PostId}", 
+            request.UserId, request.PostId);
+
         var post = await _postRepository.GetByIdAsync(request.PostId, cancellationToken);
 
         if (post == null)
         {
-            Console.WriteLine($"Post with id = {request.PostId} not found");
+            _logger.LogWarning("Publish failed: post not found. PostId: {PostId}, RequestingUser: {UserId}", 
+                request.PostId, request.UserId);
             return false;
         }
-        
-        if (!await _userService.IsInRoleAsync(request.UserId, RoleConstants.Admin) &&
-            !await _userService.IsInRoleAsync(request.UserId, RoleConstants.Moderator))
+
+        // Проверка прав: Admin/Moderator или автор
+        var isModeratorOrAdmin = await _userService.IsInRoleAsync(request.UserId, RoleConstants.Admin) ||
+                                 await _userService.IsInRoleAsync(request.UserId, RoleConstants.Moderator);
+
+        if (!isModeratorOrAdmin && post.AuthorId != request.UserId)
         {
-            if (post.AuthorId != request.UserId)
-            {
-                Console.WriteLine("You don't have permission to set Publish status for this post");
-                return false;
-            }
+            _logger.LogWarning(
+                "Access denied: user {UserId} tried to publish post {PostId} they do not own", 
+                request.UserId, request.PostId);
+            return false;
         }
-        
-        post.Publish();
-        await _postRepository.UpdateAsync(post, cancellationToken);
-        return true;
+
+        try
+        {
+            post.Publish();
+            await _postRepository.UpdateAsync(post, cancellationToken);
+            
+            _logger.LogInformation(
+                "Post {PostId} published successfully. Title: '{Title}', PublishedBy: {UserId}", 
+                post.Id, post.Title, request.UserId);
+                
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to publish post {PostId}. Unexpected error occurred.", request.PostId);
+            return false;
+        }
     }
 }

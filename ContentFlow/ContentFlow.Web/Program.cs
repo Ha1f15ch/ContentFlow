@@ -3,8 +3,47 @@ using ContentFlow.Application.Common;
 using ContentFlow.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Logging
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+// Color for logging
+builder.Logging.AddSimpleConsole(options =>
+{
+    options.SingleLine = true;
+    options.IncludeScopes = true;
+    options.TimestampFormat = "hh:mm:ss ";
+});
+
+// Configuration serilog
+var logPath = builder.Configuration.GetSection("Logging:LogPath").Value;
+
+if (logPath != null)
+{
+    Directory.CreateDirectory(logPath);
+
+    Log.Logger = new LoggerConfiguration()
+        .ReadFrom.Configuration(builder.Configuration)
+        .WriteTo.Console(
+            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
+        .WriteTo.File(
+            path: Path.Combine(logPath, "log-{Date:yyyy_MM_dd}.txt"),
+            rollingInterval: RollingInterval.Day,
+            retainedFileTimeLimit: TimeSpan.FromDays(90),
+            outputTemplate:
+            "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
+        .CreateLogger();
+}
+else
+{
+    throw new NullReferenceException($"Не получилось считать путь для папки логирования");
+}
+
+builder.Host.UseSerilog();
 
 builder.Services.AddCors(options =>
 {
