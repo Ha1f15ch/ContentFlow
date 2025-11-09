@@ -11,6 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Functions\Tag\Commands\" />
       <Folder Include="Interfaces\Common\" />
       <Folder Include="Services\" />
     </ItemGroup>
