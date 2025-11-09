@@ -42,9 +42,19 @@ public class Tag
     
     #region Private Methods
     
-    private static string GenerateSlug(string name)
+    /// <summary>
+    /// Генерирует URL-безопасный slug из имени.
+    /// Может использоваться в бизнес-логике вне сущности.
+    /// </summary>
+    /// <param name="name">Исходное имя</param>
+    /// <returns>Нормализованный slug</returns>
+    public static string GenerateSlug(string name)
     {
-        return name.ToLowerInvariant().Replace(" ", "-").Trim('-');
+        return name.Trim()
+            .ToLowerInvariant()
+            .Replace(" ", "-")
+            .Replace("--", "-")
+            .Trim('-');
     }
     
     #endregion

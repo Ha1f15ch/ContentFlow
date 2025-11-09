@@ -132,6 +132,12 @@ builder.Services.AddAuthorization(option =>
             RoleConstants.User,
             RoleConstants.Moderator,
             RoleConstants.Admin));
+    
+    option.AddPolicy("AdministrationDictionary",  policy =>
+        policy.RequireRole(
+            RoleConstants.ContentEditor,
+            RoleConstants.Moderator,
+            RoleConstants.Admin));
 });
 
 var app = builder.Build();
