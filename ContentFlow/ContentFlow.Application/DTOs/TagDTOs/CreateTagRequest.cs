@@ -1,3 +1,3 @@
 ﻿namespace ContentFlow.Application.DTOs.TagDTOs;
 
-public record CreateTagRequest(string Name, string Slug);
+public record CreateTagRequest(string Name);
