@@ -38,10 +38,6 @@ public class Tag
         Slug = GenerateSlug(newName);
     }
     
-    #endregion
-    
-    #region Private Methods
-    
     /// <summary>
     /// Генерирует URL-безопасный slug из имени.
     /// Может использоваться в бизнес-логике вне сущности.
@@ -56,6 +52,12 @@ public class Tag
             .Replace("--", "-")
             .Trim('-');
     }
+    
+    #endregion
+    
+    #region Private Methods
+    
+    
     
     #endregion
 }

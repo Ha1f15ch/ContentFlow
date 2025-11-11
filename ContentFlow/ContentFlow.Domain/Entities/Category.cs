@@ -37,14 +37,20 @@ public class Category
         Slug = GenerateSlug(name);
     }
     
+    public static string GenerateSlug(string name)
+    {
+        return name.Trim()
+            .ToLowerInvariant()
+            .Replace(" ", "-")
+            .Replace("--", "-")
+            .Trim('-');
+    }
+    
     #endregion
     
     #region Private Methods
     
-    private static string GenerateSlug(string name)
-    {
-        return name.ToLowerInvariant().Replace(" ", "-").Trim('-');
-    }
+    
     
     #endregion
 }

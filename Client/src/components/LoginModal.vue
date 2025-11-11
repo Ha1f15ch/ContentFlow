@@ -93,8 +93,11 @@ const error = ref('');
 
 const handleLogin = async () => {
   try {
-    await authService.login({ email: email.value, password: password.value });
-    $emit('close');
+    let result = await authService.login({ email: email.value, password: password.value });
+    
+    console.log("Результат - ",result);
+    
+    //$emit('close');
   } catch (err) {
     error.value = err.response?.data?.message || 'Ошибка входа';
   }

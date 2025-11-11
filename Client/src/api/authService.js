@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5006/api';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -27,6 +27,9 @@ export const authService = {
     if (token) {
       localStorage.setItem('token', token);
     }
+    
+    console.log(response);
+    
     return response.data;
   },
 
