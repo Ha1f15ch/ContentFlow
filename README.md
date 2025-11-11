@@ -14,4 +14,4 @@ CMS многоуровневая, модульная, с поддержкой р
 4. В папке (в терминале) .\ContentFlow\ContentFlow.Web\ выполнить - "dotnet run"
 
 Swagger - http://localhost:8080/swagger/index.html
-Hangfire dashbords - http://localhost:8080/hangfire
+Hangfire dashboards - http://localhost:8080/hangfire
