@@ -1,16 +1,12 @@
-// vue-project\ContentFlow\Client
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5006/api'; // правильный порт 5006
+const API_BASE_URL = 'http://localhost:5006/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
 });
 
-// Добавление токена в заголовки, если он есть
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -27,7 +23,7 @@ export const authService = {
 
   async login(credentials) {
     const response = await apiClient.post('/auth/login', credentials);
-    const { token } = response.data; // Предполагаем, что сервер возвращает токен
+    const { token } = response.data;
     if (token) {
       localStorage.setItem('token', token);
     }
