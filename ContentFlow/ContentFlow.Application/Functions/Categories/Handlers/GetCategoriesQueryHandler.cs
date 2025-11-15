@@ -23,6 +23,11 @@ public class GetCategoriesQueryHandler : IRequestHandler<GetCategoriesQuery, Pag
     public async Task<PaginatedResult<CategoryDto>> Handle(GetCategoriesQuery request,
         CancellationToken cancellationToken)
     {
-        throw new System.NotImplementedException();
+        _logger.LogInformation("Fetching categories. Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
+
+        var result = await _categoryRepository.GetPaginatedAsync(request.Page, request.PageSize, cancellationToken);
+        var dtos = result.Items.Select(c => new CategoryDto(c.Id, c.Name, c.Slug, c.Description ?? "")).ToList();
+
+        return new PaginatedResult<CategoryDto>(dtos, result.TotalCount, request.Page, request.PageSize);
     }
 }

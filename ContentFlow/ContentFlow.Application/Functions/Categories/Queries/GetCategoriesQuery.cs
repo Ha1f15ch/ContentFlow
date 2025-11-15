@@ -4,8 +4,4 @@ using MediatR;
 
 namespace ContentFlow.Application.Functions.Categories.Queries;
 
-public class GetCategoriesQuery() : IRequest<PaginatedResult<CategoryDto>>
-{
-    public int Page { get; set; } = 1;
-    public int PageSize { get; set; } = 10;
-}
+public record GetCategoriesQuery(int Page = 1, int PageSize = 10) : IRequest<PaginatedResult<CategoryDto>>;

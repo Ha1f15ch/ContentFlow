@@ -21,6 +21,9 @@ public class GetCategoriesByIdQueryHandler : IRequestHandler<GetCategoriesByIdQu
 
     public async Task<CategoryDto> Handle(GetCategoriesByIdQuery request, CancellationToken cancellationToken)
     {
-        throw new System.NotImplementedException();
+        _logger.LogInformation("Fetching category by ID: {CategoryId}", request.CategoryId);
+
+        var category = await _categoryRepository.GetByIdAsync(request.CategoryId, cancellationToken);
+        return new CategoryDto(category.Id, category.Name, category.Slug, category.Description ?? "");
     }
 }

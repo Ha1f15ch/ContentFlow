@@ -10,4 +10,6 @@ public interface ICategoryRepository
     Task UpdateAsync(Domain.Entities.Category category, CancellationToken ct);
     Task DeleteAsync(Domain.Entities.Category category, CancellationToken ct);
     Task<PaginatedResult<Domain.Entities.Category>> GetPaginatedAsync(int page, int pageSize, CancellationToken ct);
+    Task<Domain.Entities.Category?> GetCategoryByNameAsync(string name, CancellationToken ct);
+    Task<Domain.Entities.Category?> GetCategoryBySlugAsync(string slug, CancellationToken ct);
 }

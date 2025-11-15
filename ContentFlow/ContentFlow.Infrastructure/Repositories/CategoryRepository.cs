@@ -54,4 +54,26 @@ public class CategoryRepository : ICategoryRepository
         await _context.Categories.AddAsync(category, ct);
         await _context.SaveChangesAsync(ct);
     }
+
+    public async Task<Category?> GetCategoryByNameAsync(string name, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name cannot be null or empty", nameof(name));
+
+        var normalized = name.Trim();
+
+        return await _context.Categories
+            .FirstOrDefaultAsync(c => c.Name == normalized, ct);
+    }
+
+    public async Task<Category?> GetCategoryBySlugAsync(string slug, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+            throw new ArgumentException("Slug cannot be null or empty", nameof(slug));
+
+        var normalized = slug.Trim().ToLowerInvariant();
+
+        return await _context.Categories
+            .FirstOrDefaultAsync(c => c.Slug == normalized, ct);
+    }
 }
