@@ -15,3 +15,6 @@ CMS многоуровневая, модульная, с поддержкой р
 
 Swagger - http://localhost:8080/swagger/index.html
 Hangfire dashboards - http://localhost:8080/hangfire
+
+Запускается на порту, который указан при запуске.
+А именно  Now listening on: http://localhost:5006, как пример содержания порта на котором запустился.
