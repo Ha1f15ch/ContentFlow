@@ -93,11 +93,8 @@ const error = ref('');
 
 const handleLogin = async () => {
   try {
-    let result = await authService.login({ email: email.value, password: password.value });
-    
-    console.log("Результат - ",result);
-    
-    //$emit('close');
+    await authService.login({ email: email.value, password: password.value });
+    $emit('close');
   } catch (err) {
     error.value = err.response?.data?.message || 'Ошибка входа';
   }
@@ -112,6 +109,7 @@ const handleRegister = async () => {
       lastName: lastName.value,
     });
     alert('Регистрация успешна! Проверьте email для подтверждения.');
+    $emit('open-confirm-modal', email.value); // передаём email в App.vue
     $emit('close');
   } catch (err) {
     error.value = err.response?.data?.message || 'Ошибка регистрации';
@@ -124,7 +122,7 @@ const closeIfOutside = (e) => {
   }
 };
 
-defineEmits(['close']);
+defineEmits(['close', 'open-confirm-modal']); // добавь событие
 </script>
 
 <style scoped>
