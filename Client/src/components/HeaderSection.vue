@@ -45,3 +45,4 @@ const handleLogout = () => {
 // Для передачи событий в App.vue
 const emit = defineEmits(['open-login']);
 </script>
+
