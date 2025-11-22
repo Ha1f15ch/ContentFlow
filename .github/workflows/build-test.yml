@@ -19,10 +19,10 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore
-
+        run: dotnet restore ContentFlow/ContentFlow.sl
+      
       - name: Build
-        run: dotnet build --no-restore --configuration Release
-
+        run: dotnet build ContentFlow/ContentFlow.sln --no-restore --configuration Releas
+      
       - name: Test
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test ContentFlow/ContentFlow.sln --no-build --verbosity normal
