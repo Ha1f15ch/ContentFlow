@@ -46,10 +46,46 @@ public class Tag
     /// <returns>Нормализованный slug</returns>
     public static string GenerateSlug(string name)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            return "";
+        
         return name.Trim()
             .ToLowerInvariant()
+            .Replace("+", "-plus")
+            .Replace(".", "-dot ")
+            .Replace("&", "")
+            .Replace("?", "")
+            .Replace("!", "")
+            .Replace("@", "")
+            .Replace("#", "-sharp")
+            .Replace("$", "")
+            .Replace("%", "")
+            .Replace("*", "")
+            .Replace("/", "")
+            .Replace("\\", "")
+            .Replace("(", "")
+            .Replace(")", "")
+            .Replace("[", "")
+            .Replace("]", "")
+            .Replace("{", "")
+            .Replace("}", "")
+            .Replace("<", "")
+            .Replace(">", "")
+            .Replace("=", "")
+            .Replace(",", "")
+            .Replace(";", "")
+            .Replace(":", "")
+            .Replace("\"", "")
+            .Replace("'", "")
+            .Replace("`", "")
+            .Replace("~", "")
+            .Replace("^", "")
+            .Replace("|", "")
+            // После очистки — заменяем пробелы на дефисы
             .Replace(" ", "-")
+            // Убираем множественные дефисы
             .Replace("--", "-")
+            .Replace("--", "-") // Два раза — на случай тройных и более
             .Trim('-');
     }
     
