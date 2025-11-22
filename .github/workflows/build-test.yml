@@ -22,7 +22,7 @@ jobs:
         run: dotnet restore ContentFlow/ContentFlow.sln
       
       - name: Build
-        run: dotnet build ContentFlow/ContentFlow.sln --no-restore --configuration Releas
+        run: dotnet build ContentFlow/ContentFlow.sln --no-restore --configuration Release
       
       - name: Test
-        run: dotnet test ContentFlow/ContentFlow.sln --no-build --verbosity normal
+        run: dotnet test ContentFlow/ContentFlow.sln --no-build --verbosity normal --configuration Release
