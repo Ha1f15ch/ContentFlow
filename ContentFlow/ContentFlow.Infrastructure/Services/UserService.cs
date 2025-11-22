@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ContentFlow.Application.Common;
 using ContentFlow.Application.DTOs;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Domain.Exceptions;
@@ -200,5 +201,89 @@ public class UserService : IUserService
         var roles = await _userManager.GetRolesAsync(user);
         _logger.LogDebug("Roles for {Email}: [{Roles}]", email, string.Join(", ", roles));
         return [..roles];
+    }
+    
+    public async Task<List<UserDto>> SearchUsersAsync(string query, int limit, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return new List<UserDto>();
+
+        var users = await _userManager.Users
+            .Where(u => 
+                u.Email.Contains(query) ||
+                (u.FirstName != null && u.FirstName.Contains(query)) ||
+                (u.LastName != null && u.LastName.Contains(query)))
+            .OrderByDescending(u => u.CreatedAt)
+            .Take(limit)
+            .Select(u => new UserDto(
+                u.Id,
+                u.Email,
+                u.FirstName,
+                u.LastName,
+                u.AuthorAvatar,
+                u.CreatedAt,
+                u.EmailConfirmed))
+            .ToListAsync(ct);
+
+        return users;
+    }
+    
+    public async Task<PaginatedResult<UserDto>> GetBannedUsersAsync(int page, int pageSize, CancellationToken ct)
+    {
+        var query = _userManager.Users.Where(u => u.IsBlocked == true);
+
+        var totalCount = await query.CountAsync(ct);
+
+        var users = await query
+            .OrderByDescending(u => u.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(u => new UserDto(
+                u.Id,
+                u.Email,
+                u.FirstName,
+                u.LastName,
+                u.AuthorAvatar,
+                u.CreatedAt,
+                u.EmailConfirmed))
+            .ToListAsync(ct);
+
+        return new PaginatedResult<UserDto>(users, totalCount, page, pageSize);
+    }
+    
+    public async Task BanUserAsync(int userId, string reason, int adminId, CancellationToken ct)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString())
+                   ?? throw new NotFoundException($"User with ID {userId} was not found.");
+
+        if (user.IsBlocked)
+        {
+            _logger.LogDebug("User {UserId} is already blocked", userId);
+            return;
+        }
+
+        user.IsBlocked = true;
+        var result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+            throw new ValidationException($"Failed to block user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+    }
+    
+    public async Task UnbanUserAsync(int userId, int adminId, CancellationToken ct)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString())
+                   ?? throw new NotFoundException($"User with ID {userId} was not found.");
+
+        if (!user.IsBlocked)
+        {
+            _logger.LogDebug("User {UserId} is not blocked, no need to unban", userId);
+            return;
+        }
+
+        user.IsBlocked = false;
+        var result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+            throw new ValidationException($"Failed to unblock user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
     }
 }

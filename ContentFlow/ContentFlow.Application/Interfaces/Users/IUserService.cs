@@ -1,4 +1,5 @@
-﻿using ContentFlow.Application.DTOs;
+﻿using ContentFlow.Application.Common;
+using ContentFlow.Application.DTOs;
 
 namespace ContentFlow.Application.Interfaces.Users;
 
@@ -15,4 +16,8 @@ public interface IUserService
     Task<bool> CheckPasswordAsync(string email, string password, CancellationToken ct);
     Task<bool> ConfirmEmailAsync(int userId, CancellationToken ct);
     Task<List<string>> GetRolesAsync(string email, CancellationToken ct);
+    Task<List<UserDto>> SearchUsersAsync(string query, int limit, CancellationToken ct);
+    Task<PaginatedResult<UserDto>> GetBannedUsersAsync(int page, int pageSize, CancellationToken ct);
+    Task BanUserAsync(int userId, string reason, int adminId, CancellationToken ct);
+    Task UnbanUserAsync(int userId, int adminId, CancellationToken ct);
 }

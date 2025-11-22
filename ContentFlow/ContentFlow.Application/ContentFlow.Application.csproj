@@ -11,6 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="DTOs\AdminDTOs\" />
       <Folder Include="Interfaces\Common\" />
       <Folder Include="Services\" />
     </ItemGroup>
