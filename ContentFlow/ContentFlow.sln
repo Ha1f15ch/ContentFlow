@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentFlow.Application", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentFlow.Infrastructure", "ContentFlow.Infrastructure\ContentFlow.Infrastructure.csproj", "{1E35D857-1141-4F91-91DD-BA14747F9114}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentFlow.Domain.Tests", "Tests\ContentFlow.Domain.Tests\ContentFlow.Domain.Tests.csproj", "{15FD9263-85E5-4A88-A256-5FB4B620914C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{1E35D857-1141-4F91-91DD-BA14747F9114}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E35D857-1141-4F91-91DD-BA14747F9114}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E35D857-1141-4F91-91DD-BA14747F9114}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15FD9263-85E5-4A88-A256-5FB4B620914C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15FD9263-85E5-4A88-A256-5FB4B620914C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15FD9263-85E5-4A88-A256-5FB4B620914C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15FD9263-85E5-4A88-A256-5FB4B620914C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
