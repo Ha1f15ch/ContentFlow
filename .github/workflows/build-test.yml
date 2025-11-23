@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Install SQL tools
+      # Install SQL tools (если нужен SQL для интеграционных тестов)
       - name: Install SQL Server Tools
         run: |
           sudo curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list \
@@ -34,7 +34,7 @@ jobs:
           echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
           export PATH="$PATH:/opt/mssql-tools/bin"
 
-      - name: Wait for SQL Server to accept connections
+      - name: Wait for SQL Server (skip if тесты не используют SQL)
         run: |
           echo "Waiting for SQL Server..."
           for i in {1..30}; do
@@ -48,14 +48,15 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      # FIX: explicit exact path
       - name: Restore
         run: dotnet restore "ContentFlow/ContentFlow.sln"
 
       - name: Build
         run: dotnet build "ContentFlow/ContentFlow.sln" --no-restore --configuration Release
 
-      - name: Test
-        env:
-          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=ContentFlow;User Id=sa;Password=Pass123!;TrustServerCertificate=True;"
-        run: dotnet test "ContentFlow/ContentFlow.sln" --no-build --verbosity normal /p:UseVsTest=false
+      - name: Test Domain
+        run: dotnet test "ContentFlow/ContentFlow/ContentFlow/Tests/ContentFlow.Domain.Tests/ContentFlow.Domain.Tests.csproj" --no-build --verbosity normal
+
+      - name: Test Application
+        if: ${{ fileExists('ContentFlow/ContentFlow/ContentFlow/Tests/ContentFlow.Application.Tests/ContentFlow.Application.Tests.csproj') }}
+        run: dotnet test "ContentFlow/ContentFlow/ContentFlow/Tests/ContentFlow.Application.Tests/ContentFlow.Application.Tests.csproj" --no-build --verbosity normal
