@@ -25,6 +25,12 @@ public class Tag
         Slug = GenerateSlug(name);
     }
     
+    // Только для тестов
+    public Tag(int id, string name) : this(name)
+    {
+        Id = id;
+    }
+    
     #endregion
     
     #region Public Methods
