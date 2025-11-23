@@ -18,11 +18,17 @@ jobs:
           ACCEPT_EULA: "Y"
         ports:
           - 1433:1433
+        options: >-
+          --health-cmd="timeout 5 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Pass123! -Q 'SELECT 1'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install SQL Server Tools (compatible with Ubuntu 24.04)
+      # Install SQL tools
+      - name: Install SQL Server Tools
         run: |
           sudo curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list \
             -o /etc/apt/sources.list.d/mssql-release.list
@@ -31,12 +37,12 @@ jobs:
           echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
           export PATH="$PATH:/opt/mssql-tools/bin"
 
-      - name: Wait for SQL Server
+      - name: Wait for SQL Server to accept connections
         run: |
           echo "Waiting for SQL Server..."
           for i in {1..30}; do
             /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "Pass123!" -Q "SELECT 1" && break
-            echo "SQL not ready..."
+            echo "SQL not ready yet..."
             sleep 2
           done
 
@@ -45,8 +51,13 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore dependencies
-        run: dotnet restore ContentFlow/ContentFlow.sln
+      - name: Restore
+        run: dotnet restore "ContentFlow/ContentFlow.sln"
 
       - name: Build
-        run: dotnet build ContentFlow/ContentFlow.s
+        run: dotnet build "ContentFlow/ContentFlow.sln" --no-restore --configuration Release
+
+      - name: Test
+        env:
+          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=ContentFlow;User Id=sa;Password=Pass123!;TrustServerCertificate=True;"
+        run: dotnet test "ContentFlow/ContentFlow.sln" --no-build --verbosity normal
