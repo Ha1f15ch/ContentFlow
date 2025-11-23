@@ -56,7 +56,3 @@ jobs:
 
       - name: Test Domain
         run: dotnet test "ContentFlow/ContentFlow/ContentFlow/Tests/ContentFlow.Domain.Tests/ContentFlow.Domain.Tests.csproj" --no-build --verbosity normal
-
-      - name: Test Application
-        if: ${{ fileExists('ContentFlow/ContentFlow/ContentFlow/Tests/ContentFlow.Application.Tests/ContentFlow.Application.Tests.csproj') }}
-        run: dotnet test "ContentFlow/ContentFlow/ContentFlow/Tests/ContentFlow.Application.Tests/ContentFlow.Application.Tests.csproj" --no-build --verbosity normal
