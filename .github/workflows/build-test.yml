@@ -55,5 +55,5 @@ jobs:
         run: dotnet build "ContentFlow/ContentFlow.sln" --no-restore --configuration Release
 
       - name: Test Domain
-        run: dotnet test "ContentFlow/Tests/ContentFlow.Domain.Tests/ContentFlow.Domain.Tests.csproj" --no-build --verbosity normal
+        run: dotnet test "ContentFlow/Tests/ContentFlow.Domain.Tests/ContentFlow.Domain.Tests.csproj" --verbosity normal
       
