@@ -19,7 +19,7 @@ jobs:
         ports:
           - 1433:1433
         options: >-
-          --health-cmd="timeout 5 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Pass123! -Q 'SELECT 1'"
+          --health-cmd "echo 'SELECT 1' | /opt/mssql/bin/sqlservr"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
