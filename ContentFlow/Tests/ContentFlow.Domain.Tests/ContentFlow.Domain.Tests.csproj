@@ -7,6 +7,9 @@
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
+        
+        <UseVSTest>false</UseVSTest>
+        <VSTestUseStandardOutput>true</VSTestUseStandardOutput>
     </PropertyGroup>
 
     <ItemGroup>
