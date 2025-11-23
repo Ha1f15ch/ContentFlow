@@ -10,6 +10,20 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          SA_PASSWORD: "Pass123!"
+          ACCEPT_EULA: "Y"
+        ports:
+          - "1433:1433"
+        options: >-
+          --health-cmd "bash -c ' /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Pass123! -Q \"SELECT 1\" '"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - uses: actions/checkout@v4
 
@@ -20,9 +34,11 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore ContentFlow/ContentFlow.sln
-      
+
       - name: Build
         run: dotnet build ContentFlow/ContentFlow.sln --no-restore --configuration Release
-      
+
       - name: Test
+        env:
+          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=ContentFlow;User Id=sa;Password=Pass123!;TrustServerCertificate=True;"
         run: dotnet test ContentFlow/ContentFlow.sln --no-build --verbosity normal --configuration Release
