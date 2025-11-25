@@ -20,7 +20,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { authService } from '@/api/authService';
+import { authService } from '@/features/auth/api/authService';
 
 const confirmCode = ref('');
 const error = ref('');

@@ -5,71 +5,40 @@
 
       <!-- Переключение режимов -->
       <div class="tabs">
-        <button
-          :class="{ active: isLoginMode }"
-          @click="isLoginMode = true"
-        >
+        <button :class="{ active: isLoginMode }" @click="isLoginMode = true">
           Войти
         </button>
-        <button
-          :class="{ active: !isLoginMode }"
-          @click="isLoginMode = false"
-        >
+        <button :class="{ active: !isLoginMode }" @click="isLoginMode = false">
           Регистрация
         </button>
       </div>
 
       <!-- Форма входа -->
       <form v-if="isLoginMode" @submit.prevent="handleLogin">
-        <input
-          v-model="email"
-          type="text"
-          placeholder="Email"
-          required
-        />
-        <input
-          v-model="password"
-          type="password"
-          placeholder="Пароль"
-          required
-        />
+        <input v-model="email" type="text" placeholder="Email" required />
+        <input v-model="password" type="password" placeholder="Пароль" required />
         <div v-if="error" class="error-message">{{ error }}</div>
         <div class="btn-group">
           <button type="submit" class="btn">Войти</button>
-          <button type="button" class="btn" @click="$emit('close')">Закрыть</button>
+          <button type="button" class="btn" @click="closeModal">Закрыть</button>
         </div>
       </form>
 
       <!-- Форма регистрации -->
       <form v-else @submit.prevent="handleRegister">
-        <input
-          v-model="email"
-          type="email"
-          placeholder="Email"
-          required
-        />
+        <input v-model="email" type="email" placeholder="Email" required />
         <input
           v-model="password"
           type="password"
           placeholder="Пароль (мин. 6 символов)"
           required
         />
-        <input
-          v-model="firstName"
-          type="text"
-          placeholder="Имя"
-          required
-        />
-        <input
-          v-model="lastName"
-          type="text"
-          placeholder="Фамилия"
-          required
-        />
+        <input v-model="firstName" type="text" placeholder="Имя" required />
+        <input v-model="lastName" type="text" placeholder="Фамилия" required />
         <div v-if="error" class="error-message">{{ error }}</div>
         <div class="btn-group">
           <button type="submit" class="btn">Зарегистрироваться</button>
-          <button type="button" class="btn" @click="$emit('close')">Закрыть</button>
+          <button type="button" class="btn" @click="closeModal">Закрыть</button>
         </div>
       </form>
     </div>
@@ -78,13 +47,14 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useAuthStore } from '@/stores/auth';
-import { authService } from '@/api/authService';
+import { useAuthStore } from '@/features/auth/stores/authStore';
+import { useModalStore } from '@/shared/stores/modalStore';
+import { authService } from '@/features/auth/api/authService';
 
 const authStore = useAuthStore();
+const modalStore = useModalStore(); // используем store. Все события заменены на прямой вызов modalStore
 
 const isLoginMode = ref(true);
-
 const email = ref('');
 const password = ref('');
 const firstName = ref('');
@@ -94,11 +64,13 @@ const error = ref('');
 const handleLogin = async () => {
   try {
     await authService.login({ email: email.value, password: password.value });
-    $emit('close');
+    closeModal(); // или modalStore.closeModal()
   } catch (err) {
     error.value = err.response?.data?.message || 'Ошибка входа';
   }
 };
+
+// TODO Получать данные из authService после авторизации пользователя. Обновлять authStore.user
 
 const handleRegister = async () => {
   try {
@@ -109,8 +81,11 @@ const handleRegister = async () => {
       lastName: lastName.value,
     });
     alert('Регистрация успешна! Проверьте email для подтверждения.');
-    $emit('open-confirm-modal', email.value); // передаём email в App.vue
-    $emit('close');
+
+    //Открываем ConfirmModal через modalStore
+    modalStore.openModal('confirmEmail', { email: email.value });
+
+    closeModal();
   } catch (err) {
     error.value = err.response?.data?.message || 'Ошибка регистрации';
   }
@@ -118,11 +93,15 @@ const handleRegister = async () => {
 
 const closeIfOutside = (e) => {
   if (e.target.classList.contains('modal')) {
-    $emit('close');
+    closeModal();
   }
 };
 
-defineEmits(['close', 'open-confirm-modal']); // добавь событие
+// Закрываем через store — единообразно
+const closeModal = () => {
+  modalStore.closeModal();
+};
+
 </script>
 
 <style scoped>
