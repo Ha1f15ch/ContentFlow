@@ -32,6 +32,7 @@ public class Comment
         AuthorId = authorId;
         ParentCommentId = parentCommentId;
         CreatedAt = DateTime.UtcNow;
+        Status = CommentStatus.Pending;
     }
 
     #endregion
@@ -63,7 +64,7 @@ public class Comment
 
     public void Approve()
     {
-        if(Status != CommentStatus.Approved)
+        if(Status != CommentStatus.Pending)
             throw new InvalidOperationException("Only pending comments can be approved");
         
         Status = CommentStatus.Approved;
