@@ -10,7 +10,7 @@
 
     <div class="auth-section">
       <div id="guest-actions" v-if="!authStore.isAuthenticated">
-        <button class="btn" @click="emit('open-login')">Войти</button>
+        <button class="btn" @click="modalStore.openLoginModal">Войти</button>
       </div>
       
       <div id="user-actions" class="user-info" v-else>
@@ -23,11 +23,13 @@
 
 <script setup>
 import { computed } from 'vue';
-import { useThemeStore } from '@/stores/theme';
-import { useAuthStore } from '@/stores/auth';
+import { useThemeStore } from '@/shared/stores/theme';
+import { useAuthStore } from '@/features/auth/stores/authStore';
+import { useModalStore } from '@/shared/stores/modalStore';
 
 const themeStore = useThemeStore();
 const authStore = useAuthStore();
+const modalStore = useModalStore();
 
 const isDarkTheme = computed({
   get: () => themeStore.isDark,
@@ -42,6 +44,4 @@ const handleLogout = () => {
   authStore.logout();
 };
 
-// Для передачи событий в App.vue
-const emit = defineEmits(['open-login']);
 </script>

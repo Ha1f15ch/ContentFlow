@@ -1,10 +1,20 @@
 <template>
   <div id="app" :class="{ 'dark-theme': isDarkTheme, 'light-theme': !isDarkTheme }">
-    <HeaderSection @open-login="showLoginModal = true" />
+    <HeaderSection />
     <HeroSection />
     <ProtectedContent />
-    <LoginModal v-if="showLoginModal" @close="closeModal" />
-    <ConfirmModal v-if="showConfirmModal" @close="closeModal" />
+    
+    <LoginModal 
+      v-if="modalStore.currentModal === 'login'" 
+      @close="modalStore.closeModal" 
+    />
+
+    <ConfirmModal 
+      v-if="modalStore.currentModal === 'confirmEmail'"
+      :email="modalStore.modalData.email"
+      @close="modalStore.closeModal"
+    />
+    
     <footer>
       <p>&copy; 2025 Мой сайт. Все права защищены.</p>
     </footer>
@@ -12,28 +22,28 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useThemeStore } from '@/stores/theme';
-import HeaderSection from '@/components/HeaderSection.vue';
-import HeroSection from '@/components/HeroSection.vue';
-import ProtectedContent from '@/components/ProtectedContent.vue';
-import LoginModal from '@/components/LoginModal.vue';
-import ConfirmModal from '@/components/ConfirmModal.vue';
+import {computed, onMounted } from 'vue';
+import { useThemeStore } from '@/shared/stores/theme';
+import { useModalStore } from '@/shared/stores/modalStore';
 
-const themeStore = useThemeStore();
-const isDarkTheme = computed(() => themeStore.isDark);
+// Stores
+const themeStore = useThemeStore()
+const modalStore = useModalStore()
 
-const showLoginModal = ref(false);
-const showConfirmModal = ref(false);
+// Computed
+const isDarkTheme = computed(() => themeStore.isDark)
 
-const closeModal = () => {
-  showLoginModal.value = false;
-  showConfirmModal.value = false;
-};
-
+// Lifecycle
 onMounted(() => {
-  themeStore.loadTheme();
-});
+  themeStore.loadTheme()
+})
+
+// компоненты для всего приложения (shared/common)
+import HeaderSection from '@/shared/components/HeaderSection.vue';
+import HeroSection from '@/shared/components/HeroSection.vue';
+import ProtectedContent from '@/shared/components/ProtectedContent.vue';
+import LoginModal from '@/features/auth/components/LoginModal.vue';
+import ConfirmModal from '@/shared/components/ConfirmModal.vue';
 </script>
 
 <style src="@/assets/css/styles.css"></style>

@@ -43,7 +43,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { authService } from '@/api/authService';
+import { authService } from '@/features/auth/api/authService';
 
 const email = ref('');
 const password = ref('');
