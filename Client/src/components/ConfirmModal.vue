@@ -8,10 +8,20 @@
         type="text"
         placeholder="Введите код"
         required
+        :disabled="isRateLimited"
       />
       <div v-if="error" class="error-message">{{ error }}</div>
+      <div v-if="isRateLimited" class="rate-limit-message">
+        Лимит попыток исчерпан. Пожалуйста, подождите {{ timeLeft }} секунд.
+      </div>
       <div class="btn-group">
-        <button class="btn" @click="handleConfirm">Подтвердить</button>
+        <button
+          class="btn"
+          @click="handleConfirm"
+          :disabled="isRateLimited"
+        >
+          Подтвердить
+        </button>
         <button class="btn" @click="$emit('close')">Закрыть</button>
       </div>
     </div>
@@ -19,13 +29,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import { authService } from '@/api/authService';
 
 const confirmCode = ref('');
 const error = ref('');
+const attemptCount = ref(0); // счётчик попыток
+const isRateLimited = ref(false); // флаг лимита
+const timeLeft = ref(0); // оставшееся время
 
-// Получаем email через props
 const props = defineProps({
   email: {
     type: String,
@@ -33,16 +45,53 @@ const props = defineProps({
   },
 });
 
+let timer = null;
+
 const handleConfirm = async () => {
+  if (isRateLimited.value) {
+    error.value = 'Пожалуйста, подождите.';
+    return;
+  }
+
   try {
     await authService.confirmEmail({
-      email: props.email, // используем email из props
+      email: props.email,
       token: confirmCode.value,
     });
     alert('Email успешно подтверждён!');
+    resetAttempts();
     $emit('close');
   } catch (err) {
+    attemptCount.value++;
     error.value = err.response?.data?.message || 'Ошибка подтверждения';
+
+    if (attemptCount.value >= 3) {
+      isRateLimited.value = true;
+      timeLeft.value = 300; // 5 минут = 300 секунд
+      startTimer();
+    }
+  }
+};
+
+const startTimer = () => {
+  timer = setInterval(() => {
+    timeLeft.value--;
+    if (timeLeft.value <= 0) {
+      clearInterval(timer);
+      resetAttempts();
+    }
+  }, 1000);
+};
+
+const resetAttempts = () => {
+  attemptCount.value = 0;
+  isRateLimited.value = false;
+  timeLeft.value = 0;
+  confirmCode.value = '';
+  error.value = '';
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
   }
 };
 
@@ -53,6 +102,12 @@ const closeIfOutside = (e) => {
 };
 
 defineEmits(['close']);
+
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer);
+  }
+});
 </script>
 
 <style scoped>
@@ -94,9 +149,20 @@ defineEmits(['close']);
   border-color: #ff4d4d;
 }
 
+.modal-content input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
 .error-message {
   color: #ff4d4d;
   margin-bottom: 1rem;
+}
+
+.rate-limit-message {
+  color: #ff4d4d;
+  margin-bottom: 1rem;
+  font-weight: bold;
 }
 
 .btn-group {
@@ -107,5 +173,10 @@ defineEmits(['close']);
 
 .btn-group button {
   flex: 1;
+}
+
+.btn-group button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 </style>

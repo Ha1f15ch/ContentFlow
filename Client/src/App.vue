@@ -3,8 +3,16 @@
     <HeaderSection @open-login="showLoginModal = true" />
     <HeroSection />
     <ProtectedContent />
-    <LoginModal v-if="showLoginModal" @close="closeModal" />
-    <ConfirmModal v-if="showConfirmModal" @close="closeModal" />
+    <LoginModal
+      v-if="showLoginModal"
+      @close="closeModal"
+      @open-confirm-modal="openConfirmModal"
+    />
+    <ConfirmModal
+      v-if="showConfirmModal"
+      :email="confirmEmail"
+      @close="closeModal"
+    />
     <footer>
       <p>&copy; 2025 Мой сайт. Все права защищены.</p>
     </footer>
@@ -25,10 +33,17 @@ const isDarkTheme = computed(() => themeStore.isDark);
 
 const showLoginModal = ref(false);
 const showConfirmModal = ref(false);
+const confirmEmail = ref(''); // передаём email в ConfirmModal
 
 const closeModal = () => {
   showLoginModal.value = false;
   showConfirmModal.value = false;
+};
+
+const openConfirmModal = (email) => {
+  confirmEmail.value = email;
+  showConfirmModal.value = true;
+  // Не закрываем LoginModal — он остаётся открытым (супер важное уточнение)
 };
 
 onMounted(() => {

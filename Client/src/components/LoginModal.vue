@@ -110,7 +110,7 @@ const handleRegister = async () => {
     });
     alert('Регистрация успешна! Проверьте email для подтверждения.');
     $emit('open-confirm-modal', email.value); // передаём email в App.vue
-    $emit('close');
+    // Убираем $emit('close') — чтобы LoginModal не закрывался
   } catch (err) {
     error.value = err.response?.data?.message || 'Ошибка регистрации';
   }
