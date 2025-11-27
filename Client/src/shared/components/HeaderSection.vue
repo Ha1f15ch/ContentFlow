@@ -10,7 +10,7 @@
 
     <div class="auth-section">
       <div id="guest-actions" v-if="!authStore.isAuthenticated">
-        <button class="btn" @click="modalStore.openLoginModal">Войти</button>
+        <button class="btn" @click="modalStore.openModal('login')">Войти</button>
       </div>
       
       <div id="user-actions" class="user-info" v-else>

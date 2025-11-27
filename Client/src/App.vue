@@ -46,4 +46,4 @@ import LoginModal from '@/features/auth/components/LoginModal.vue';
 import ConfirmModal from '@/shared/components/ConfirmModal.vue';
 </script>
 
-<style src="@/assets/css/styles.css"></style>
+<style src="@/shared/assets/css/styles.css"></style>
