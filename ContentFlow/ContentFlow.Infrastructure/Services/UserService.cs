@@ -48,9 +48,8 @@ public class UserService : IUserService
             .Where(u => userIds.Contains(u.Id))
             .Select(u => new UserDto(
                 u.Id,
-                u.Email,
-                u.FirstName,
-                u.LastName,
+                u.Email!,
+                u.UserName!,
                 u.AuthorAvatar,
                 u.CreatedAt,
                 u.EmailConfirmed))
@@ -72,16 +71,14 @@ public class UserService : IUserService
         return _mapper.Map<UserDto>(user);
     }
 
-    public async Task<UserDto> CreateAsync(string email, string password, string? firstName = null, string? lastName = null)
+    public async Task<UserDto> CreateAsync(string email, string password, string userName)
     {
         _logger.LogInformation("Creating new user with email: {Email}", email);
 
         var user = new ApplicationUser
         {
             Email = email,
-            UserName = email,
-            FirstName = firstName,
-            LastName = lastName,
+            UserName = userName,
             CreatedAt = DateTime.UtcNow,
             IsBlocked = false
         };
@@ -210,16 +207,15 @@ public class UserService : IUserService
 
         var users = await _userManager.Users
             .Where(u => 
-                u.Email.Contains(query) ||
+                u.Email!.Contains(query) ||
                 (u.FirstName != null && u.FirstName.Contains(query)) ||
                 (u.LastName != null && u.LastName.Contains(query)))
             .OrderByDescending(u => u.CreatedAt)
             .Take(limit)
             .Select(u => new UserDto(
                 u.Id,
-                u.Email,
-                u.FirstName,
-                u.LastName,
+                u.Email!,
+                u.UserName!,
                 u.AuthorAvatar,
                 u.CreatedAt,
                 u.EmailConfirmed))
@@ -240,9 +236,8 @@ public class UserService : IUserService
             .Take(pageSize)
             .Select(u => new UserDto(
                 u.Id,
-                u.Email,
-                u.FirstName,
-                u.LastName,
+                u.Email!,
+                u.UserName!,
                 u.AuthorAvatar,
                 u.CreatedAt,
                 u.EmailConfirmed))
@@ -285,5 +280,50 @@ public class UserService : IUserService
 
         if (!result.Succeeded)
             throw new ValidationException($"Failed to unblock user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+    }
+
+    public async Task<UserDto?> GetUserByUserNameAsync(string userName, CancellationToken ct)
+    {
+        _logger.LogDebug("Start search user by userName {userName}", userName);
+        
+        var user  = await _userManager.FindByNameAsync(userName);
+
+        if (user == null)
+        {
+            _logger.LogDebug("User {UserName} was not found", userName);
+            return null;
+        }
+        else
+        {
+            _logger.LogDebug("User {UserName} was found", userName);
+            return _mapper.Map<UserDto>(user);
+        }
+    }
+
+    public async Task<List<UserDto>> GetUsersByUserNameAsync(string partUserName, int limit, CancellationToken ct)
+    {
+        _logger.LogDebug("Start search user by part userName {partString}", partUserName);
+
+        if (string.IsNullOrWhiteSpace(partUserName))
+        {
+            return new List<UserDto>();
+        }
+
+        var users = await _userManager.Users
+            .Where(u => u.UserName!.Contains(partUserName))
+            .OrderBy(u => u.UserName)
+            .Take(limit)
+            .Select(u => new UserDto(
+                u.Id,
+                u.Email!,
+                u.UserName!,
+                u.AuthorAvatar,
+                u.CreatedAt,
+                u.EmailConfirmed))
+            .ToListAsync(ct);
+
+        _logger.LogDebug("Finish search user by part userName {partString}. Founded {countUserRecords}", partUserName,  users.Count);
+        
+        return users;
     }
 }
