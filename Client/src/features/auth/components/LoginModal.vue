@@ -111,19 +111,26 @@ const handleRegister = async () => {
       firstName: firstName.value,
       lastName: lastName.value,
     });
-    
+
     // Проверяем, был ли успешный ответ
-    if (response.success) { // если сервер возвращает success: true
-      alert('Регистрация успешна! Проверьте email для подтверждения.');
-
-      //Открываем ConfirmModal через modalStore
-      modalStore.openModal('confirmEmail', { email: email.value });
-
-      closeModal();
-    } else {
-      error.value = response.message || 'Ошибка регистрации.';
+    if (response.status === 204) {
+      // Сервер вернул 204 — возможно, ошибка
+      error.value = 'Ошибка регистрации. Пожалуйста, попробуйте снова.';
+      return;
     }
+
+    if (response.data && response.data.success === false) {
+      // Сервер вернул успешный статус, но в теле ответа есть ошибка
+      error.value = response.data.message || 'Ошибка регистрации.';
+      return;
+    }
+
+    // Если всё ок — открываем ConfirmModal
+    alert('Регистрация успешна! Проверьте email для подтверждения.');
+    modalStore.openModal('confirmEmail', { email: email.value });
+    closeModal();
   } catch (err) {
+    // Обработка ошибок (4xx, 5xx и т.д.)
     const status = err.response?.status;
     const message = err.response?.data?.message || 'Ошибка регистрации';
 
