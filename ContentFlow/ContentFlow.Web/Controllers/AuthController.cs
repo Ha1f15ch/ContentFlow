@@ -26,11 +26,30 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> RegisterUser([FromBody] RegisterCommand userCommand)
     {
         _logger.LogInformation("Start register");
-        
-        var  result = await _mediator.Send(userCommand);
-        _logger.LogInformation("Register completed result = {Result}. With error message = {errorMessage}", result.Success, result.Errors);
-        
-        return Ok(result); // Todo: RegisterUser Добавить обработку ошибок
+
+        try
+        {
+            var result = await _mediator.Send(userCommand);
+            _logger.LogInformation("Register completed. Success: {Success}. Errors: {@Errors}",
+                result.Success, result.Errors);
+
+            if (!result.Success)
+            {
+                return BadRequest(new { message = "Registration failed", errors = result.Errors });
+            }
+
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Operation process was not successful during registration.");
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Internal Server Error during registration.");
+            return StatusCode(500, new { message = "An unexpected error occurred." });
+        }
     }
 
     [HttpPost("login")]
@@ -42,37 +61,62 @@ public class AuthController : ControllerBase
             DeviceId: Request.Headers["DeviceId"],
             Location: null
         );
-        _logger.LogInformation("Metadata compilated");
-        
+        _logger.LogInformation("Metadata compiled");
+
         var loginCommand = new LoginCommand(loginRequest.Email, loginRequest.Password, metadata);
-        
-        var result = await _mediator.Send(loginCommand);
-        _logger.LogInformation("Login method completed result login = {Result}. With errors message = {errorMessage}", result.Success, result.Errors);
-        
-        return Ok(result); // Todo: Login Добавить обработку ошибок. 
+
+        try
+        {
+            var result = await _mediator.Send(loginCommand);
+            _logger.LogInformation("Login completed. Success: {Success}. Errors: {@Errors}",
+                result.Success, result.Errors);
+
+            if (!result.Success)
+            {
+                return BadRequest(new { message = "Login failed", errors = result.Errors });
+            }
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during login.");
+            return StatusCode(500, new { message = "An unexpected error occurred during login." });
+        }
     }
 
     [HttpPost("confirm-email")]
     public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailCommand confirmEmailCommand)
     {
         _logger.LogInformation("Start confirm email");
-        
+    
         var result = await _mediator.Send(confirmEmailCommand);
-        _logger.LogInformation("Email confirmation completed result = {Result}. With errors message = {errorMessage}", result.Success, result.Errors);
-        
-        return Ok(result); // Todo: ConfirmEmail Добавить обработку ошибок.
+        _logger.LogInformation("Email confirmation completed. Success = {Success}, Errors = {Errors}", 
+            result.Success, string.Join(", ", result.Errors ?? new List<string>()));
+
+        if (!result.Success)
+        {
+            return BadRequest(new { Success = false, Errors = result.Errors });
+        }
+
+        return Ok(new { Success = true });
     }
 
     [HttpPost("resend-confirmation")]
     public async Task<IActionResult> ResendConfirmation([FromBody] ResendConfirmationCommand resendConfirmationCommand)
     {
-        _logger.LogInformation("Start resend confirmation to email {email}", resendConfirmationCommand.Email);
-        
+        _logger.LogInformation("Start resend confirmation to email {Email}", resendConfirmationCommand.Email);
+    
         var result = await _mediator.Send(resendConfirmationCommand);
-        _logger.LogInformation("Result resend confirmation to emailAddress {emailAddress}. Result {result}. With errorMessage {errorMessage}",
-            resendConfirmationCommand.Email, result.Success, result.Errors);
-        
-        return Ok(result); // Todo: ResendConfirmation Добавить обработку ошибок.
+        _logger.LogInformation("Resend confirmation result for {Email}. Success = {Success}, Errors = {Errors}",
+            resendConfirmationCommand.Email, result.Success, string.Join(", ", result.Errors ?? new List<string>()));
+
+        if (!result.Success)
+        {
+            return BadRequest(new { Success = false, Errors = result.Errors });
+        }
+
+        return Ok(new { Success = true });
     }
 
     [HttpGet("logout")]
@@ -89,8 +133,15 @@ public class AuthController : ControllerBase
 
         var result = await _mediator.Send(command);
         _logger.LogInformation("End logout. With result = {resultLogout}", result);
-        
-        return Ok(result);
+
+        if (result)
+        {
+            return Ok(result);
+        }
+        else
+        {
+            return BadRequest(new { message = "Logout failed" });
+        }
     }
     
     private string GetIpAddress()
