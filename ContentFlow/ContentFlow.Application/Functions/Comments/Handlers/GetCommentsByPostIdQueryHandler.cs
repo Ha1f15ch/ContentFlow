@@ -58,7 +58,7 @@ public class GetCommentsByPostIdQueryHandler : IRequestHandler<GetCommentsByPost
         _logger.LogDebug("Fetching user data for {UserCount} authors", authorIds.Count);
 
         var users = await _userService.GetByIdsAsync(authorIds, cancellationToken);
-        var userDict = users.ToDictionary(u => u.Id, u => $"{u.FirstName} {u.LastName}".Trim());
+        var userDict = users.ToDictionary(u => u.Id, u => $"{u.UserName}".Trim());
 
         _logger.LogDebug("Building comment tree structure for {CommentCount} comments", postComments.Count);
         

@@ -76,7 +76,7 @@ public class GetPostsQueryHandler : IRequestHandler<GetPostsQuery, PaginatedResu
                         post.Slug,
                         post.Excerpt,
                         post.AuthorId,
-                        author != null ? $"{author.FirstName} {author.LastName}".Trim() : "Unknown Author",
+                        author != null ? $"{author.UserName}".Trim() : "Unknown Author",
                         author?.AvatarUrl,
                         post.Status,
                         post.CreatedAt,

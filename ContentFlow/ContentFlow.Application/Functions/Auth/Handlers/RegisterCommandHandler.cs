@@ -46,8 +46,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
             UserDto userDto;
             try
             {
-                userDto = await _userService.CreateAsync(request.Email, request.Password, request.FirstName,
-                    request.LastName);
+                userDto = await _userService.CreateAsync(request.Email, request.Password, request.UserName);
                 _logger.LogInformation("User created successfully with ID: {UserId}", userDto.Id);
             }
             catch (ValidationException validationException)
