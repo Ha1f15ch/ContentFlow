@@ -73,7 +73,7 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, PostDto
             post.Slug,
             post.Excerpt,
             post.AuthorId,
-            $"{author.FirstName} {author.LastName}".Trim(),
+            $"{author.UserName}".Trim(),
             author.AvatarUrl,
             post.Status,
             post.CreatedAt,

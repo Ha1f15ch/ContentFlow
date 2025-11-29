@@ -38,8 +38,8 @@ public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, int>
             throw new NotFoundException($"Author with ID {request.AuthorId} was not found.");
         }
 
-        _logger.LogDebug("Author validated: {FirstName} {LastName} (Email: {Email})", 
-            postAuthor.FirstName, postAuthor.LastName, postAuthor.Email);
+        _logger.LogDebug("Author validated: {Id} {UserName} (Email: {Email})", 
+            postAuthor.Id, postAuthor.UserName, postAuthor.Email);
 
         var post = new Post(
             title: request.Title,
