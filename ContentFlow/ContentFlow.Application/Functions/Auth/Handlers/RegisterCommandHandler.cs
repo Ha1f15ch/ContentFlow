@@ -46,8 +46,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
             UserDto userDto;
             try
             {
-                userDto = await _userService.CreateAsync(request.Email, request.Password, request.FirstName,
-                    request.LastName);
+                userDto = await _userService.CreateAsync(request.Email, request.Password, request.UserName);
                 _logger.LogInformation("User created successfully with ID: {UserId}", userDto.Id);
             }
             catch (ValidationException validationException)
@@ -75,7 +74,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
                     ct: cancellationToken);
                 _logger.LogInformation("Verification code generated and saved for user: {UserId}", userDto.Id);
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, "Failed to save verification code for user: {UserId}", userDto.Id);
                 return new AuthResult(false, Errors: new() { "Failed to initiate email verification" });
@@ -84,19 +83,29 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
             await _userService.AddToRoleAsync(userDto.Email, RoleConstants.Guest.ToString(), cancellationToken);
             _logger.LogInformation("User {UserId} assigned to role: {Role}", userDto.Id, RoleConstants.Guest);
             
-            // try sand code to email
+            // try to send code to email
             try
             {
-                var emailSand = await _emailSender.SendVerificationEmailAsync(userDto.Email, code, cancellationToken);
+                var emailSend = await _emailSender.SendVerificationEmailAsync(userDto.Email, code, cancellationToken);
                 _logger.LogInformation("Verification email sent to: {Email}", userDto.Email);
+                
+                if (emailSend)
+                {
+                    _logger.LogInformation("User registration completed successfully: {Email}", request.Email);
+                    return new AuthResult(true);
+                }
+                else
+                {
+                    _logger.LogInformation("User registration failed: {Email}", request.Email);
+                    return new AuthResult(false, Errors: new() { "User registration failed: {Email}", request.Email });
+                }
+            
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to send verification email to: {Email}. User can retry later.", userDto.Email); //user can resend code again later
+                return new AuthResult(false, Errors: new() { "Internal server error:",  ex.Message });
             }
-            
-            _logger.LogInformation("User registration completed successfully: {Email}", request.Email);
-            return new AuthResult(true);
         }
     }
 }

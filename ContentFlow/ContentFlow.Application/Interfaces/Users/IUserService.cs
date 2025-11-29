@@ -8,7 +8,7 @@ public interface IUserService
     Task<UserDto?> GetByEmailAsync(string email, CancellationToken ct);
     Task<List<UserDto>> GetByIdsAsync(List<int> userIds, CancellationToken ct);
     Task<UserDto> GetByIdAsync(int userId, CancellationToken ct);
-    Task<UserDto> CreateAsync(string email, string password, string? firstName = null, string? lastName = null);
+    Task<UserDto> CreateAsync(string email, string password, string userName);
     Task AddToRoleAsync(string email, string role, CancellationToken ct);
     Task RemoveFromRoleAsync(string email, string role, CancellationToken ct);
     Task<bool> IsInRoleAsync(int userId, string role);
@@ -20,4 +20,6 @@ public interface IUserService
     Task<PaginatedResult<UserDto>> GetBannedUsersAsync(int page, int pageSize, CancellationToken ct);
     Task BanUserAsync(int userId, string reason, int adminId, CancellationToken ct);
     Task UnbanUserAsync(int userId, int adminId, CancellationToken ct);
+    Task<UserDto?> GetUserByUserNameAsync(string userName, CancellationToken ct);
+    Task<List<UserDto>> GetUsersByUserNameAsync(string partUserName, int limit, CancellationToken ct);
 }
