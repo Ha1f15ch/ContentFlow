@@ -1,9 +1,11 @@
 ﻿using ContentFlow.Application.Interfaces.Category;
 using ContentFlow.Application.Interfaces.Comment;
 using ContentFlow.Application.Interfaces.Common;
+using ContentFlow.Application.Interfaces.FileStorage;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.RefreshToken;
 using ContentFlow.Application.Interfaces.Tag;
+using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Infrastructure.Configuration;
 using ContentFlow.Infrastructure.DatabaseEngine;
@@ -55,6 +57,7 @@ public static class DependencyInjection
         services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<IUserTwoFactorCodeRepository, UserTwoFactorCodeRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IUserProfileRepository, UserProfileRepository>();
         
         // Services
         services.AddScoped<IUserService, UserService>();
@@ -62,6 +65,7 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IPostCommentsService, PostCommentsService>();
+        services.AddScoped<IFileStorageService, FileStorageService>();
         
         // Mappings
         services.AddAutoMapper(typeof(MappingProfile).Assembly);
