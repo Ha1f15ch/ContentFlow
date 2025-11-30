@@ -22,4 +22,5 @@ public interface IUserService
     Task UnbanUserAsync(int userId, int adminId, CancellationToken ct);
     Task<UserDto?> GetUserByUserNameAsync(string userName, CancellationToken ct);
     Task<List<UserDto>> GetUsersByUserNameAsync(string partUserName, int limit, CancellationToken ct);
+    Task DeleteUserAsync(int userId, CancellationToken ct);
 }

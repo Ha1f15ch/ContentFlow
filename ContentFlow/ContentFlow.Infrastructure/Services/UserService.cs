@@ -246,7 +246,7 @@ public class UserService : IUserService
         return new PaginatedResult<UserDto>(users, totalCount, page, pageSize);
     }
     
-    public async Task BanUserAsync(int userId, string reason, int adminId, CancellationToken ct)
+    public async Task BanUserAsync(int userId, string reason, int adminId, CancellationToken ct) // todo Есть сигнатура <string reason>, но не используется
     {
         var user = await _userManager.FindByIdAsync(userId.ToString())
                    ?? throw new NotFoundException($"User with ID {userId} was not found.");
@@ -325,5 +325,24 @@ public class UserService : IUserService
         _logger.LogDebug("Finish search user by part userName {partString}. Founded {countUserRecords}", partUserName,  users.Count);
         
         return users;
+    }
+
+    public async Task DeleteUserAsync(int userId, CancellationToken ct)
+    {
+        _logger.LogDebug("Start delete user, userId {userId}", userId);
+        
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        
+        if (user == null) 
+            throw new NotFoundException($"User with ID {userId} was not found.");
+        
+        user.IsBlocked = true;
+        
+        var result = await _userManager.UpdateAsync(user);
+        
+        if (!result.Succeeded) 
+            throw new ValidationException($"Failed to delete user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        
+        _logger.LogInformation("User {UserId} was deleted", userId);
     }
 }
