@@ -3,6 +3,7 @@ using ContentFlow.Application.Common;
 using ContentFlow.Application.DTOs;
 using ContentFlow.Application.Functions.Auth.Commands;
 using ContentFlow.Application.Interfaces.Common;
+using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Application.Security;
 using FluentValidation;
@@ -16,17 +17,20 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
     private readonly IUserService  _userService;
     private readonly IEmailSender  _emailSender;
     private readonly IUserTwoFactorCodeRepository _userTwoFactorCodeRepository;
+    private readonly IUserProfileRepository _userProfileRepository;
     private readonly ILogger<RegisterCommandHandler> _logger;
     
     public RegisterCommandHandler(
         IUserService userService, 
         IEmailSender emailSender, 
         IUserTwoFactorCodeRepository userTwoFactorCodeRepository,
+        IUserProfileRepository userProfileRepository,
         ILogger<RegisterCommandHandler> logger)
     {
             _emailSender  = emailSender;
             _userService = userService;
             _userTwoFactorCodeRepository = userTwoFactorCodeRepository;
+            _userProfileRepository = userProfileRepository;
             _logger = logger;
     }
 
@@ -59,6 +63,15 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
                 _logger.LogCritical(exception, "Unexpected error creating user with email: {Email}", request.Email);
                 return new AuthResult(Success: false, Errors: new() {$"{exception.Message}"});
             }
+            
+            // Создаем профиль пользователя
+            _logger.LogInformation("Creating user profile for user ID: {UserId}", userDto.Id);
+
+            var profile = new Domain.Entities.UserProfile(userId: userDto.Id);
+            await _userProfileRepository.CreateAsync(profile, cancellationToken);
+
+            _logger.LogInformation("UserProfile created successfully with ID: {UserProfileId} for user ID: {UserId}", 
+                profile.Id, userDto.Id);
             
             // Creating 2FA code
             var code = TokenGenerator.GenerateSixValueCode();
