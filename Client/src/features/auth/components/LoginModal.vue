@@ -1,22 +1,38 @@
 <template>
   <div class="modal" @click="closeIfOutside">
     <div class="modal-content">
-      <h2>{{ isLoginMode ? 'Вход' : 'Регистрация' }}</h2>
+      <h2>{{ isLoginMode ? 'Вход' : isCodeInputMode ? 'Подтверждение регистрации' : 'Регистрация' }}</h2>
 
       <!-- Переключение режимов -->
-      <div class="tabs">
-        <button :class="{ active: isLoginMode }" @click="isLoginMode = true">
+      <div class="tabs" v-if="!isCodeInputMode">
+        <button
+          :class="{ active: isLoginMode }"
+          @click="isLoginMode = true"
+        >
           Войти
         </button>
-        <button :class="{ active: !isLoginMode }" @click="isLoginMode = false">
+        <button
+          :class="{ active: !isLoginMode }"
+          @click="isLoginMode = false"
+        >
           Регистрация
         </button>
       </div>
 
       <!-- Форма входа -->
-      <form v-if="isLoginMode" @submit.prevent="handleLogin">
-        <input v-model="email" type="text" placeholder="Email" required />
-        <input v-model="password" type="password" placeholder="Пароль" required />
+      <form v-if="isLoginMode && !isCodeInputMode" @submit.prevent="handleLogin">
+        <input
+          v-model="email"
+          type="text"
+          placeholder="Email"
+          required
+        />
+        <input
+          v-model="password"
+          type="password"
+          placeholder="Пароль"
+          required
+        />
         <div v-if="error" class="error-message">{{ error }}</div>
         <div class="btn-group">
           <button type="submit" class="btn">Войти</button>
@@ -25,19 +41,44 @@
       </form>
 
       <!-- Форма регистрации -->
-      <form v-else @submit.prevent="handleRegister">
-        <input v-model="email" type="email" placeholder="Email" required />
+      <form v-else-if="!isCodeInputMode" @submit.prevent="handleRegister">
+        <input
+          v-model="email"
+          type="email"
+          placeholder="Email"
+          required
+        />
         <input
           v-model="password"
           type="password"
           placeholder="Пароль (мин. 6 символов)"
           required
         />
-        <input v-model="firstName" type="text" placeholder="Имя" required />
-        <input v-model="lastName" type="text" placeholder="Фамилия" required />
+        <input
+          v-model="userName"
+          type="text"
+          placeholder="Имя пользователя"
+          required
+        />
         <div v-if="error" class="error-message">{{ error }}</div>
         <div class="btn-group">
           <button type="submit" class="btn">Зарегистрироваться</button>
+          <button type="button" class="btn" @click="closeModal">Закрыть</button>
+        </div>
+      </form>
+
+      <!-- Форма ввода кода -->
+      <form v-else @submit.prevent="handleConfirmCode">
+        <p>Мы отправили код на вашу почту. Введите его ниже.</p>
+        <input
+          v-model="confirmCode"
+          type="text"
+          placeholder="Введите код"
+          required
+        />
+        <div v-if="error" class="error-message">{{ error }}</div>
+        <div class="btn-group">
+          <button type="submit" class="btn">Подтвердить</button>
           <button type="button" class="btn" @click="closeModal">Закрыть</button>
         </div>
       </form>
@@ -55,10 +96,11 @@ const authStore = useAuthStore();
 const modalStore = useModalStore(); // используем store. Все события заменены на прямой вызов modalStore
 
 const isLoginMode = ref(true);
+const isCodeInputMode = ref(false); // новое состояние
 const email = ref('');
 const password = ref('');
-const firstName = ref('');
-const lastName = ref('');
+const userName = ref('');
+const confirmCode = ref(''); // новое поле
 const error = ref('');
 
 const handleLogin = async () => {
@@ -74,20 +116,67 @@ const handleLogin = async () => {
 
 const handleRegister = async () => {
   try {
-    await authService.register({
+    const response = await authService.register({
       email: email.value,
       password: password.value,
-      firstName: firstName.value,
-      lastName: lastName.value,
+      userName: userName.value,
     });
+
+    // Проверяем, был ли успешный ответ
+    if (response.status === 204) {
+      error.value = 'Ошибка регистрации. Пожалуйста, попробуйте снова.';
+      return;
+    }
+
+    if (response.data && response.data.success === false) {
+      error.value = response.data.message || 'Ошибка регистрации.';
+      return;
+    }
+
+    // Если всё ок — показываем поле ввода кода
     alert('Регистрация успешна! Проверьте email для подтверждения.');
+    isCodeInputMode.value = true;
+    error.value = '';
+  } catch (err) {
+    const status = err.response?.status;
+    const data = err.response?.data;
 
-    //Открываем ConfirmModal через modalStore
-    modalStore.openModal('confirmEmail', { email: email.value });
+    if (status === 409) {
+      error.value = 'Пользователь с таким email уже зарегистрирован.';
+    } else if (status === 400) {
+      if (data?.errors?.length > 0) {
+        // Переводим ошибки
+        const translatedErrors = data.errors.map(msg => {
+          if (msg.includes('already exists')) {
+            return 'Пользователь с таким email уже зарегистрирован.';
+          } else if (msg.includes('UserName')) {
+            return 'Пользователь с таким именем пользователя уже существует.';
+          } else if (msg.includes('non alphanumeric')) {
+            return 'В пароле не хватает символа для обеспечения безопасности.';
+          } else {
+            return msg; // если нет перевода — оставляем как есть
+          }
+        });
+        error.value = translatedErrors.join(', ');
+      } else {
+        error.value = data?.message || 'Ошибка регистрации.';
+      }
+    } else {
+      error.value = 'Ошибка регистрации. Пожалуйста, попробуйте снова.';
+    }
+  }
+};
 
+const handleConfirmCode = async () => {
+  try {
+    await authService.confirmEmail({
+      email: email.value,
+      token: confirmCode.value,
+    });
+    alert('Email успешно подтверждён!');
     closeModal();
   } catch (err) {
-    error.value = err.response?.data?.message || 'Ошибка регистрации';
+    error.value = err.response?.data?.message || 'Ошибка подтверждения';
   }
 };
 
@@ -99,9 +188,14 @@ const closeIfOutside = (e) => {
 
 // Закрываем через store — единообразно
 const closeModal = () => {
+  isCodeInputMode.value = false;
+  email.value = '';
+  password.value = '';
+  userName.value = '';
+  confirmCode.value = '';
+  error.value = '';
   modalStore.closeModal();
 };
-
 </script>
 
 <style scoped>
