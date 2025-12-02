@@ -55,15 +55,9 @@
           required
         />
         <input
-          v-model="firstName"
+          v-model="userName"
           type="text"
-          placeholder="Имя"
-          required
-        />
-        <input
-          v-model="lastName"
-          type="text"
-          placeholder="Фамилия"
+          placeholder="Имя пользователя"
           required
         />
         <div v-if="error" class="error-message">{{ error }}</div>
@@ -88,8 +82,7 @@ const modalStore = useModalStore(); // используем store. Все соб
 const isLoginMode = ref(true);
 const email = ref('');
 const password = ref('');
-const firstName = ref('');
-const lastName = ref('');
+const userName = ref(''); // новое поле
 const error = ref('');
 
 const handleLogin = async () => {
@@ -108,39 +101,46 @@ const handleRegister = async () => {
     const response = await authService.register({
       email: email.value,
       password: password.value,
-      firstName: firstName.value,
-      lastName: lastName.value,
+      userName: userName.value,
     });
 
     // Проверяем, был ли успешный ответ
     if (response.status === 204) {
-      // Сервер вернул 204 — возможно, ошибка
       error.value = 'Ошибка регистрации. Пожалуйста, попробуйте снова.';
       return;
     }
 
     if (response.data && response.data.success === false) {
-      // Сервер вернул успешный статус, но в теле ответа есть ошибка
       error.value = response.data.message || 'Ошибка регистрации.';
       return;
     }
 
-    // Если всё ок — открываем ConfirmModal
     alert('Регистрация успешна! Проверьте email для подтверждения.');
     modalStore.openModal('confirmEmail', { email: email.value });
     closeModal();
   } catch (err) {
-    // Обработка ошибок (4xx, 5xx и т.д.)
     const status = err.response?.status;
-    const message = err.response?.data?.message || 'Ошибка регистрации';
+    const data = err.response?.data;
 
     if (status === 409) {
       error.value = 'Пользователь с таким email уже зарегистрирован.';
     } else if (status === 400) {
-      if (message.includes('non alphanumeric')) {
-        error.value = 'В пароле не хватает символа для обеспечения безопасности.';
+      if (data?.errors?.length > 0) {
+        // Переводим ошибки
+        const translatedErrors = data.errors.map(msg => {
+          if (msg.includes('already exists')) {
+            return 'Пользователь с таким email уже зарегистрирован.';
+          } else if (msg.includes('UserName')) {
+            return 'Пользователь с таким именем пользователя уже существует.';
+          } else if (msg.includes('non alphanumeric')) {
+            return 'В пароле не хватает символа для обеспечения безопасности.';
+          } else {
+            return msg; // если нет перевода — оставляем как есть
+          }
+        });
+        error.value = translatedErrors.join(', ');
       } else {
-        error.value = message; // сообщение от сервера
+        error.value = data?.message || 'Ошибка регистрации.';
       }
     } else {
       error.value = 'Ошибка регистрации. Пожалуйста, попробуйте снова.';
