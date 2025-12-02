@@ -5,18 +5,34 @@
 
       <!-- Переключение режимов -->
       <div class="tabs">
-        <button :class="{ active: isLoginMode }" @click="isLoginMode = true">
+        <button
+          :class="{ active: isLoginMode }"
+          @click="isLoginMode = true"
+        >
           Войти
         </button>
-        <button :class="{ active: !isLoginMode }" @click="isLoginMode = false">
+        <button
+          :class="{ active: !isLoginMode }"
+          @click="isLoginMode = false"
+        >
           Регистрация
         </button>
       </div>
 
       <!-- Форма входа -->
       <form v-if="isLoginMode" @submit.prevent="handleLogin">
-        <input v-model="email" type="text" placeholder="Email" required />
-        <input v-model="password" type="password" placeholder="Пароль" required />
+        <input
+          v-model="email"
+          type="text"
+          placeholder="Email"
+          required
+        />
+        <input
+          v-model="password"
+          type="password"
+          placeholder="Пароль"
+          required
+        />
         <div v-if="error" class="error-message">{{ error }}</div>
         <div class="btn-group">
           <button type="submit" class="btn">Войти</button>
@@ -26,15 +42,24 @@
 
       <!-- Форма регистрации -->
       <form v-else @submit.prevent="handleRegister">
-        <input v-model="email" type="email" placeholder="Email" required />
+        <input
+          v-model="email"
+          type="email"
+          placeholder="Email"
+          required
+        />
         <input
           v-model="password"
           type="password"
           placeholder="Пароль (мин. 6 символов)"
           required
         />
-        <input v-model="firstName" type="text" placeholder="Имя" required />
-        <input v-model="lastName" type="text" placeholder="Фамилия" required />
+        <input
+          v-model="userName"
+          type="text"
+          placeholder="Имя пользователя"
+          required
+        />
         <div v-if="error" class="error-message">{{ error }}</div>
         <div class="btn-group">
           <button type="submit" class="btn">Зарегистрироваться</button>
@@ -57,8 +82,7 @@ const modalStore = useModalStore(); // используем store. Все соб
 const isLoginMode = ref(true);
 const email = ref('');
 const password = ref('');
-const firstName = ref('');
-const lastName = ref('');
+const userName = ref(''); // новое поле
 const error = ref('');
 
 const handleLogin = async () => {
@@ -74,20 +98,53 @@ const handleLogin = async () => {
 
 const handleRegister = async () => {
   try {
-    await authService.register({
+    const response = await authService.register({
       email: email.value,
       password: password.value,
-      firstName: firstName.value,
-      lastName: lastName.value,
+      userName: userName.value,
     });
+
+    // Проверяем, был ли успешный ответ
+    if (response.status === 204) {
+      error.value = 'Ошибка регистрации. Пожалуйста, попробуйте снова.';
+      return;
+    }
+
+    if (response.data && response.data.success === false) {
+      error.value = response.data.message || 'Ошибка регистрации.';
+      return;
+    }
+
     alert('Регистрация успешна! Проверьте email для подтверждения.');
-
-    //Открываем ConfirmModal через modalStore
     modalStore.openModal('confirmEmail', { email: email.value });
-
     closeModal();
   } catch (err) {
-    error.value = err.response?.data?.message || 'Ошибка регистрации';
+    const status = err.response?.status;
+    const data = err.response?.data;
+
+    if (status === 409) {
+      error.value = 'Пользователь с таким email уже зарегистрирован.';
+    } else if (status === 400) {
+      if (data?.errors?.length > 0) {
+        // Переводим ошибки
+        const translatedErrors = data.errors.map(msg => {
+          if (msg.includes('already exists')) {
+            return 'Пользователь с таким email уже зарегистрирован.';
+          } else if (msg.includes('UserName')) {
+            return 'Пользователь с таким именем пользователя уже существует.';
+          } else if (msg.includes('non alphanumeric')) {
+            return 'В пароле не хватает символа для обеспечения безопасности.';
+          } else {
+            return msg; // если нет перевода — оставляем как есть
+          }
+        });
+        error.value = translatedErrors.join(', ');
+      } else {
+        error.value = data?.message || 'Ошибка регистрации.';
+      }
+    } else {
+      error.value = 'Ошибка регистрации. Пожалуйста, попробуйте снова.';
+    }
   }
 };
 
@@ -101,7 +158,6 @@ const closeIfOutside = (e) => {
 const closeModal = () => {
   modalStore.closeModal();
 };
-
 </script>
 
 <style scoped>
