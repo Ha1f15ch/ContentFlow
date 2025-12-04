@@ -43,7 +43,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
         if (existingUser != null)
         {
             _logger.LogWarning("Registration attempt with already registered email: {Email}", request.Email);
-            return new AuthResult(Success: false, Errors: new() {$"User with email {request.Email} already exists"});
+            return new AuthResult(Success: false, Errors: $"User with email {request.Email} already exists");
         }
         else
         {
@@ -56,12 +56,12 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
             catch (ValidationException validationException)
             {
                 _logger.LogError(validationException, "Validation failed during registration for email: {Email}", request.Email);
-                return new AuthResult(Success: false, Errors: new() {$"{validationException.Errors}"});
+                return new AuthResult(Success: false, Errors: $"{validationException.Errors}");
             }
             catch (Exception exception)
             {
                 _logger.LogCritical(exception, "Unexpected error creating user with email: {Email}", request.Email);
-                return new AuthResult(Success: false, Errors: new() {$"{exception.Message}"});
+                return new AuthResult(Success: false, Errors: $"{exception.Message}");
             }
             
             // Создаем профиль пользователя
@@ -90,7 +90,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
             catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, "Failed to save verification code for user: {UserId}", userDto.Id);
-                return new AuthResult(false, Errors: new() { "Failed to initiate email verification" });
+                return new AuthResult(false, Errors: "Failed to initiate email verification");
             }
             
             await _userService.AddToRoleAsync(userDto.Email, RoleConstants.Guest.ToString(), cancellationToken);
@@ -110,14 +110,14 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
                 else
                 {
                     _logger.LogInformation("User registration failed: {Email}", request.Email);
-                    return new AuthResult(false, Errors: new() { "User registration failed: {Email}", request.Email });
+                    return new AuthResult(false, Errors: $"User registration failed: {request.Email}");
                 }
             
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to send verification email to: {Email}. User can retry later.", userDto.Email); //user can resend code again later
-                return new AuthResult(false, Errors: new() { "Internal server error:",  ex.Message });
+                return new AuthResult(false, Errors: $"Internal server error: {ex.Message}");
             }
         }
     }
