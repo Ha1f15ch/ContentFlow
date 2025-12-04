@@ -35,14 +35,14 @@ public class ResendConfirmationCommandHandler : IRequestHandler<ResendConfirmati
         if (user == null)
         {
             _logger.LogWarning("Resend failed: user not found - {Email}", request.Email);
-            return new AuthResult(false, Errors: new() {"User not found"});
+            return new AuthResult(false, Errors: "User not found");
         }
         
         var code = await _userTwoFactorCodeRepository.GetValidByUserIdAndPurposeAsync(user.Id, "EmailVerification", cancellationToken);
         if(code != null && DateTime.UtcNow < code.NextResendAt)
         {
             _logger.LogWarning("Resend blocked by cooldown for user: {Email}. Available after: {NextResendAt}", request.Email, code.NextResendAt);
-            return new AuthResult(false, Errors: new() {$"Resend available after {code.NextResendAt}"});
+            return new AuthResult(false, Errors: $"Resend available after {code.NextResendAt}");
         }
 
         if (code != null)
@@ -67,7 +67,7 @@ public class ResendConfirmationCommandHandler : IRequestHandler<ResendConfirmati
         catch (Exception ex)
         {
             Console.WriteLine($"Failed to save new verification code: {ex.Message}");
-            return new AuthResult(false, Errors: new() { "Failed to generate verification code" });
+            return new AuthResult(false, Errors: "Failed to generate verification code");
         }
         
         try
@@ -78,7 +78,7 @@ public class ResendConfirmationCommandHandler : IRequestHandler<ResendConfirmati
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to send confirmation email to: {Email}", user.Email);
-            return new AuthResult(false, Errors: new() { "Email sending failed" });
+            return new AuthResult(false, Errors: "Email sending failed");
         }
         
         _logger.LogInformation("Resend confirmation flow completed for: {Email}", request.Email);
