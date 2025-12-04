@@ -35,7 +35,7 @@ public class ConfirmEmailCommandHandler :  IRequestHandler<ConfirmEmailCommand, 
         if (user == null)
         {
             _logger.LogWarning("Email confirmation failed: user not found - {Email}", request.Email);
-            return new AuthResult(false, Errors: new() {"User not found"});
+            return new AuthResult(false, Errors: "User not found");
         }
         
         var activeCodeDto = await _userTwoFactorCodeRepository.GetVerificationCodeForValidationAsync(user.Id, "EmailVerification", cancellationToken);
@@ -43,7 +43,7 @@ public class ConfirmEmailCommandHandler :  IRequestHandler<ConfirmEmailCommand, 
         if (activeCodeDto == null)
         {
             _logger.LogWarning("No active verification code found for user: {UserId}", user.Id);
-            return new AuthResult(false, Errors: new() { "No active verification code" });
+            return new AuthResult(false, Errors: "No active verification code");
         }
 
         bool isCodeValid = PasswordHasher.Verify(
@@ -55,7 +55,7 @@ public class ConfirmEmailCommandHandler :  IRequestHandler<ConfirmEmailCommand, 
         {
             await _userTwoFactorCodeRepository.IncrementAttemptAsync(activeCodeDto.Id, cancellationToken);
             _logger.LogWarning("Invalid verification code provided by user: {Email}", request.Email);
-            return new AuthResult(false, Errors: new() { "Invalid verification code" });
+            return new AuthResult(false, Errors: "Invalid verification code");
         }
         
         var setEmailConfirmed = await _userService.ConfirmEmailAsync(user.Id, cancellationToken);
@@ -63,7 +63,7 @@ public class ConfirmEmailCommandHandler :  IRequestHandler<ConfirmEmailCommand, 
         if (!setEmailConfirmed)
         {
             _logger.LogError("Failed to confirm email in user service for user: {UserId}", user.Id);
-            return new AuthResult(false, Errors: new() { "Email not confirmed" });
+            return new AuthResult(false, Errors: "Email not confirmed");
         }
         
         await _userTwoFactorCodeRepository.MarkAsUsedAsync(activeCodeDto.Id, cancellationToken);

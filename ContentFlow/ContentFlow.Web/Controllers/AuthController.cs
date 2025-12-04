@@ -92,7 +92,7 @@ public class AuthController : ControllerBase
     
         var result = await _mediator.Send(confirmEmailCommand);
         _logger.LogInformation("Email confirmation completed. Success = {Success}, Errors = {Errors}", 
-            result.Success, string.Join(", ", result.Errors ?? new List<string>()));
+            result.Success, result.Errors);
 
         if (!result.Success)
         {
@@ -109,7 +109,7 @@ public class AuthController : ControllerBase
     
         var result = await _mediator.Send(resendConfirmationCommand);
         _logger.LogInformation("Resend confirmation result for {Email}. Success = {Success}, Errors = {Errors}",
-            resendConfirmationCommand.Email, result.Success, string.Join(", ", result.Errors ?? new List<string>()));
+            resendConfirmationCommand.Email, result.Success, result.Errors);
 
         if (!result.Success)
         {
