@@ -10,7 +10,7 @@
 
     <div class="auth-section">
       <div id="guest-actions" v-if="!authStore.isAuthenticated">
-        <button class="btn" @click="modalStore.openModal('login')">Войти</button>
+        <button class="btn" @click="goToLogin">Войти</button>
       </div>
       
       <div id="user-actions" class="user-info" v-else>
@@ -23,13 +23,13 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useThemeStore } from '@/shared/stores/theme';
 import { useAuthStore } from '@/features/auth/stores/authStore';
-import { useModalStore } from '@/shared/stores/modalStore';
 
+const router = useRouter();
 const themeStore = useThemeStore();
 const authStore = useAuthStore();
-const modalStore = useModalStore();
 
 const isDarkTheme = computed({
   get: () => themeStore.isDark,
@@ -40,8 +40,11 @@ const isDarkTheme = computed({
   },
 });
 
+const goToLogin = () => {
+  router.push('/login');
+};
+
 const handleLogout = () => {
   authStore.logout();
 };
-
 </script>

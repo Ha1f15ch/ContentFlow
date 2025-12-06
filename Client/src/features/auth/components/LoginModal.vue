@@ -1,10 +1,10 @@
 <template>
   <div class="modal" @click="closeIfOutside">
     <div class="modal-content">
-      <h2>{{ isLoginMode ? 'Вход' : 'Регистрация' }}</h2>
+      <h2>{{ isLoginMode ? 'Вход' : isCodeInputMode ? 'Подтверждение регистрации' : 'Регистрация' }}</h2>
 
       <!-- Переключение режимов -->
-      <div class="tabs">
+      <div class="tabs" v-if="!isCodeInputMode">
         <button
           :class="{ active: isLoginMode }"
           @click="isLoginMode = true"
@@ -20,7 +20,7 @@
       </div>
 
       <!-- Форма входа -->
-      <form v-if="isLoginMode" @submit.prevent="handleLogin">
+      <form v-if="isLoginMode && !isCodeInputMode" @submit.prevent="handleLogin">
         <input
           v-model="email"
           type="text"
@@ -41,7 +41,7 @@
       </form>
 
       <!-- Форма регистрации -->
-      <form v-else @submit.prevent="handleRegister">
+      <form v-else-if="!isCodeInputMode" @submit.prevent="handleRegister">
         <input
           v-model="email"
           type="email"
@@ -66,6 +66,22 @@
           <button type="button" class="btn" @click="closeModal">Закрыть</button>
         </div>
       </form>
+
+      <!-- Форма ввода кода -->
+      <form v-else @submit.prevent="handleConfirmCode">
+        <p>Мы отправили код на вашу почту. Введите его ниже.</p>
+        <input
+          v-model="confirmCode"
+          type="text"
+          placeholder="Введите код"
+          required
+        />
+        <div v-if="error" class="error-message">{{ error }}</div>
+        <div class="btn-group">
+          <button type="submit" class="btn">Подтвердить</button>
+          <button type="button" class="btn" @click="closeModal">Закрыть</button>
+        </div>
+      </form>
     </div>
   </div>
 </template>
@@ -80,9 +96,11 @@ const authStore = useAuthStore();
 const modalStore = useModalStore(); // используем store. Все события заменены на прямой вызов modalStore
 
 const isLoginMode = ref(true);
+const isCodeInputMode = ref(false); // новое состояние
 const email = ref('');
 const password = ref('');
-const userName = ref(''); // новое поле
+const userName = ref('');
+const confirmCode = ref(''); // новое поле
 const error = ref('');
 
 const handleLogin = async () => {
@@ -115,9 +133,10 @@ const handleRegister = async () => {
       return;
     }
 
+    // Если всё ок — показываем поле ввода кода
     alert('Регистрация успешна! Проверьте email для подтверждения.');
-    modalStore.openModal('confirmEmail', { email: email.value });
-    closeModal();
+    isCodeInputMode.value = true;
+    error.value = '';
   } catch (err) {
     const status = err.response?.status;
     const data = err.response?.data;
@@ -148,6 +167,19 @@ const handleRegister = async () => {
   }
 };
 
+const handleConfirmCode = async () => {
+  try {
+    await authService.confirmEmail({
+      email: email.value,
+      Code: confirmCode.value,
+    });
+    alert('Email успешно подтверждён!');
+    closeModal();
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Ошибка подтверждения';
+  }
+};
+
 const closeIfOutside = (e) => {
   if (e.target.classList.contains('modal')) {
     closeModal();
@@ -156,6 +188,12 @@ const closeIfOutside = (e) => {
 
 // Закрываем через store — единообразно
 const closeModal = () => {
+  isCodeInputMode.value = false;
+  email.value = '';
+  password.value = '';
+  userName.value = '';
+  confirmCode.value = '';
+  error.value = '';
   modalStore.closeModal();
 };
 </script>
