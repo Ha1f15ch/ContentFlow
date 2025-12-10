@@ -40,10 +40,23 @@ const error = ref('');
 
 const handleLogin = async () => {
   try {
-    await authService.login({ email: email.value, password: password.value });
-    router.push('/'); // перенаправление на главную
+    const response = await authService.login({ email: email.value, password: password.value });
+    console.log('response:', response); // ← добавь это
+
+    // Проверяем, есть ли Token в response
+    if (response && response.token) {
+      const { token } = response; // ← используй token (с маленькой буквы)
+      console.log('Полученный токен:', token);
+      authStore.setToken(token);
+      console.log('Токен сохранён в store');
+      router.push('/'); // ← перенаправление на главную
+    } else {
+      console.error('Token не найден в ответе:', response);
+      error.value = 'Ошибка входа: токен не получен.';
+    }
   } catch (err) {
     error.value = err.response?.data?.message || 'Ошибка входа';
+    console.error('Ошибка входа:', err); // ← добавь это
   }
 };
 </script>
