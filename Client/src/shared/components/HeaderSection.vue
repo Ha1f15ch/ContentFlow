@@ -14,7 +14,7 @@
       </div>
       
       <div id="user-actions" class="user-info" v-else>
-        <span id="username">{{ authStore.user?.name || 'Пользователь' }}</span>
+        <span id="username">{{ authStore.user?.userName || 'Пользователь' }}</span>
         <button class="btn" @click="handleLogout">Выйти</button>
       </div>
     </div>
