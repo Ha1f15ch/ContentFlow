@@ -12,6 +12,7 @@
 
     <ItemGroup>
       <Folder Include="DTOs\AdminDTOs\" />
+      <Folder Include="Functions\Subscriptions\Commands\" />
       <Folder Include="Interfaces\Common\" />
       <Folder Include="Services\" />
     </ItemGroup>
