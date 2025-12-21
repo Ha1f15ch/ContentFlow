@@ -1,8 +1,11 @@
-﻿namespace ContentFlow.Application.DTOs.UserProfileDTOs;
+﻿using ContentFlow.Application.DTOs.SubscriptionDTOs;
+
+namespace ContentFlow.Application.DTOs.UserProfileDTOs;
 
 public record UserProfileDto(
     int Id,
     int UserId,
+    string UserName,
     string? FirstName,
     string? LastName,
     string? MiddleName,
@@ -14,4 +17,5 @@ public record UserProfileDto(
     string Gender,
     DateTime CreatedAt,
     DateTime? UpdatedAt,
-    bool IsDeleted);
+    bool IsDeleted,
+    SubscriptionInfoDto? SubscriptionInfo);

@@ -24,6 +24,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<UserTwoFactorCode> UserTwoFactorCodes { get; set; }
     public DbSet<TrustedDevice> TrustedDevices { get; set; }
     public DbSet<UserProfile> UserProfiles { get; set; }
+    public DbSet<Subscription> Subscriptions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

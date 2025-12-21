@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ContentFlow.Application.DTOs;
+using ContentFlow.Application.DTOs.SubscriptionDTOs;
 using ContentFlow.Domain.Entities;
 using ContentFlow.Infrastructure.Identity;
 
@@ -25,5 +26,11 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(src => src.AuthorAvatar ?? "https://example.com/avatar-placeholder.png"))
             .ForMember(dto => dto.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
             .ForMember(dto => dto.EmailConfirmed, opt => opt.MapFrom(src => src.EmailConfirmed));
+        
+        CreateMap<Subscription, SubscriptionInfoDto>()
+            .ForMember(dto => dto.IsActive, opt => opt.MapFrom(src => src.IsActive))
+            .ForMember(dto => dto.IsPaused, opt => opt.MapFrom(src => src.IsPaused))
+            .ForMember(dto => dto.NotificationsEnabled, opt => opt.MapFrom(src => src.NotificationsEnabled))
+            .ForMember(dto => dto.SubscribedAt, opt => opt.MapFrom(src => src.CreatedAt));
     }
 }

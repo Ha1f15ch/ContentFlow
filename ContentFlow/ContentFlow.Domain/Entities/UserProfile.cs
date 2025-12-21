@@ -20,7 +20,6 @@ public class UserProfile
         public DateTime? UpdatedAt { get; private set; }
         public DateTime? DeletedAt { get; private set; }
         public bool IsDeleted => DeletedAt.HasValue;
-        
     #endregion
     
     #region Constructors

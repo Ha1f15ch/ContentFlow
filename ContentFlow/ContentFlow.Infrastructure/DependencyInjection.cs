@@ -4,6 +4,7 @@ using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.FileStorage;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.RefreshToken;
+using ContentFlow.Application.Interfaces.Subscription;
 using ContentFlow.Application.Interfaces.Tag;
 using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Application.Interfaces.Users;
@@ -58,6 +59,7 @@ public static class DependencyInjection
         services.AddScoped<IUserTwoFactorCodeRepository, UserTwoFactorCodeRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+        services.AddTransient<ISubscriptionRepository, SubscriptionRepository>();
         
         // Services
         services.AddScoped<IUserService, UserService>();

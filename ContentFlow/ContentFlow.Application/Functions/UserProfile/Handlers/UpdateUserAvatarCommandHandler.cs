@@ -2,6 +2,7 @@
 using ContentFlow.Application.Functions.UserProfile.Commands;
 using ContentFlow.Application.Interfaces.FileStorage;
 using ContentFlow.Application.Interfaces.UserProfile;
+using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Domain.Exceptions;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -13,15 +14,18 @@ public class UpdateUserAvatarCommandHandler : IRequestHandler<UpdateUserAvatarCo
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly ILogger<UpdateUserAvatarCommandHandler> _logger;
     private readonly IFileStorageService _fileStorageService;
+    private readonly IUserService _userService;
 
     public UpdateUserAvatarCommandHandler(
         IUserProfileRepository userProfileRepository,
         ILogger<UpdateUserAvatarCommandHandler> logger,
-        IFileStorageService fileStorageService)
+        IFileStorageService fileStorageService,
+        IUserService userService)
     {
         _userProfileRepository = userProfileRepository;
         _logger = logger;
         _fileStorageService = fileStorageService;
+        _userService = userService;
     }
 
     public async Task<UserProfileDto> Handle(UpdateUserAvatarCommand command, CancellationToken cancellationToken)
@@ -49,10 +53,12 @@ public class UpdateUserAvatarCommandHandler : IRequestHandler<UpdateUserAvatarCo
         
         profile.UpdateUserAvatarUri(newAvatarUri);
         var result = await _userProfileRepository.UpdateAsync(profile, cancellationToken);
+        var user = await _userService.GetByIdAsync(profile.UserId, cancellationToken);
         
         return new UserProfileDto(
             result.Id, 
             result.UserId, 
+            user.UserName,
             result.FirstName, 
             result.LastName, 
             result.MiddleName, 
@@ -64,6 +70,7 @@ public class UpdateUserAvatarCommandHandler : IRequestHandler<UpdateUserAvatarCo
             result.Gender.ToString(), 
             result.CreatedAt, 
             result.UpdatedAt, 
-            result.IsDeleted);
+            result.IsDeleted,
+            null);
     }
 }
