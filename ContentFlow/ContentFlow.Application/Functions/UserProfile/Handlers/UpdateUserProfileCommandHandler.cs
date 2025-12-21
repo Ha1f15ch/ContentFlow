@@ -1,6 +1,7 @@
 ﻿using ContentFlow.Application.DTOs.UserProfileDTOs;
 using ContentFlow.Application.Functions.UserProfile.Commands;
 using ContentFlow.Application.Interfaces.UserProfile;
+using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -11,13 +12,16 @@ public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfile
 {
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly ILogger<UpdateUserProfileCommandHandler> _logger;
+    private readonly IUserService _userService;
     
     public UpdateUserProfileCommandHandler(
         IUserProfileRepository userProfileRepository,
-        ILogger<UpdateUserProfileCommandHandler> logger)
+        ILogger<UpdateUserProfileCommandHandler> logger,
+        IUserService userService)
     {
         _userProfileRepository = userProfileRepository;
         _logger = logger;
+        _userService = userService;
     }
 
     public async Task<UserProfileDto> Handle(UpdateUserProfileCommand request, CancellationToken cancellationToken)
@@ -51,10 +55,12 @@ public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfile
         }
         
         profile = await _userProfileRepository.UpdateAsync(profile, cancellationToken);
+        var user = await _userService.GetByIdAsync(profile.UserId, cancellationToken);
         
         var dto = new UserProfileDto(
             Id: profile.Id,
             UserId: profile.UserId,
+            UserName: user.UserName,
             FirstName: profile.FirstName,
             LastName: profile.LastName,
             MiddleName: profile.MiddleName,
@@ -66,7 +72,8 @@ public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfile
             Gender: profile.Gender.ToString(),
             CreatedAt: profile.CreatedAt,
             UpdatedAt: profile.UpdatedAt,
-            IsDeleted: profile.IsDeleted
+            IsDeleted: profile.IsDeleted,
+            null
         );
 
         _logger.LogInformation("Profile successfully updated for user ID: {UserId}", request.UserId);

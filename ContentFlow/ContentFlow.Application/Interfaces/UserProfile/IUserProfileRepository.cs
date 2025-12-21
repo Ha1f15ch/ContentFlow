@@ -7,4 +7,5 @@ public interface IUserProfileRepository
     Task<Domain.Entities.UserProfile> UpdateAsync(Domain.Entities.UserProfile profile, CancellationToken ct = default);
     Task DeleteAsync(int userId, CancellationToken ct = default);
     Task<bool> ExistsByUserIdAsync(int userId, CancellationToken ct = default);
+    Task<Domain.Entities.UserProfile?> GetByIdAsync(int userProfileId, CancellationToken ct = default);
 }

@@ -1,4 +1,5 @@
 ﻿using ContentFlow.Application.DTOs.UserProfileDTOs;
+using ContentFlow.Application.Functions.Subscriptions.Queries;
 using ContentFlow.Application.Functions.UserProfile.Commands;
 using ContentFlow.Application.Functions.UserProfile.Queries;
 using MediatR;
@@ -26,31 +27,37 @@ public class UserProfileController : ControllerBase
     }
     
     /// <summary>
-    /// Получить свой профиль
+    /// Получить профиль пользователя
     /// </summary>
-    [HttpGet]
-    public async Task<IActionResult> GetMyProfileAsync()
+    [HttpGet("{userProfileId:int}")]
+    public async Task<IActionResult> GetUserProfileAsync(int userProfileId)
     {
-        var userId = User.GetAuthenticatedUserId();
-        _logger.LogInformation("Fetching profile for user ID: {UserId}", userId);
+        var requesterUserId = User.GetAuthenticatedUserId();
+        _logger.LogInformation("Fetching user profile - {UserprofileId} for user ID: {UserId}", userProfileId, requesterUserId);
 
         try
         {
-            var query = new GetUserProfileQuery(userId);
+            var query = new GetUserProfileQuery(requesterUserId, userProfileId);
             var profile = await _mediator.Send(query);
-            
-            _logger.LogInformation("Profile found for user ID: {UserId}", userId);
-            
+
+            _logger.LogInformation("Profile user - {UserProfile} founded, for user Id: {RequesterUserId}",
+                profile.UserId, requesterUserId);
+
             return Ok(profile);
         }
         catch (NotFoundException ex)
         {
-            _logger.LogWarning(ex, "Profile not found for user ID: {UserId}", userId);
+            _logger.LogWarning(ex, "Profile not found for user ID: {UserId}", userProfileId);
             return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Access denied to profile for user ID: {UserId}. Error - {ErrorMessage}", userProfileId, ex.Message);
+            return Unauthorized(new { message = $"Access denied to profile for user ID: {userProfileId}" });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to fetch profile for user ID: {UserId}", userId);
+            _logger.LogError(ex, "Failed to fetch profile for user ID: {UserId}", userProfileId);
             return StatusCode(500, new { message = "Internal server error." });
         }
     }
@@ -172,6 +179,62 @@ public class UserProfileController : ControllerBase
         {
             _logger.LogError(ex, "Failed to upload avatar for user {UserId}", userId);
             return StatusCode(500, new { message = "Failed to process image." });
+        }
+    }
+
+    // Мои подписчики
+    [HttpGet("my-followers")]
+    public async Task<IActionResult> GetMyFollowersAsync()
+    {
+        var userId = User.GetAuthenticatedUserId();
+
+        try
+        {
+            var commands = new GetFollowingProfileDtoQuery(userId);
+            var result = await _mediator.Send(commands);
+
+            _logger.LogInformation("Following profiles for user ID: {UserId}. Count is {CountFollowers}", userId,
+                result.Count);
+
+            return Ok(result);
+        }
+        catch (NullReferenceException ex)
+        {
+            _logger.LogWarning(ex, "User profile not found for user ID: {UserId}", userId);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to getting userid {UserId} followers", userId);
+            return StatusCode(500, new { message = "Failed to process getting followers." });
+        }
+    }
+    
+    // Мои подписки
+    [HttpGet("my-following")]
+    public async Task<IActionResult> GetMyFollowingAsync()
+    {
+        var userId = User.GetAuthenticatedUserId();
+        
+        try
+        {
+            var commands = new GetFollowersProfileDtoQuery(userId);
+            var result = await _mediator.Send(commands);
+
+            _logger.LogInformation("Subscription profiles for user ID: {UserId}. Count is {CountFollowers}", userId,
+                result.Count);
+
+            return Ok(result);
+        }
+        catch (NullReferenceException ex)
+        {
+            _logger.LogWarning(ex, "User profile not found for user ID: {UserId}", userId);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to getting userid {UserId} followers", userId);
+            return StatusCode(500, new { message = "Failed to process getting followers." });
         }
     }
 }

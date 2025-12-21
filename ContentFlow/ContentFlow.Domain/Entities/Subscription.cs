@@ -26,7 +26,7 @@ public class Subscription
     /// <summary>
     /// Поставить отображаемый контент на паузу
     /// </summary>
-    public bool IsPaused { get; private set; } = false;
+    public bool IsPaused { get; private set; } = false;// TODO убрать функционал паузы
     public bool IsActive => !DeactivatedAt.HasValue;
     /// <summary>
     /// Тип подписки

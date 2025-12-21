@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ContentFlow.Infrastructure.Repositories;
 
-public class UserProfileRepository :  IUserProfileRepository
+public class UserProfileRepository : IUserProfileRepository
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<UserProfileRepository> _logger;
@@ -24,6 +24,11 @@ public class UserProfileRepository :  IUserProfileRepository
     {
         return await _context.UserProfiles
             .FirstOrDefaultAsync(p => p.UserId == userId, ct);
+    }
+
+    public async Task<UserProfile?> GetByIdAsync(int userProfileId, CancellationToken ct = default)
+    {
+        return await _context.UserProfiles.FindAsync(userProfileId);
     }
 
     public async Task<UserProfile> CreateAsync(UserProfile profile, CancellationToken ct = default)

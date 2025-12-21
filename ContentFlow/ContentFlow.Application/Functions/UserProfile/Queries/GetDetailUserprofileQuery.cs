@@ -3,4 +3,4 @@ using MediatR;
 
 namespace ContentFlow.Application.Functions.UserProfile.Queries;
 
-public record GetUserProfileQuery(int RequesterId, int UserProfileId) : IRequest<UserProfileDto>;
+public record GetDetailUserprofileQuery(int RequesterId, int UserProfileId) : IRequest<UserProfileDto>;
