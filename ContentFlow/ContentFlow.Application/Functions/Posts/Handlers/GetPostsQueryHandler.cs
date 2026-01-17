@@ -31,22 +31,17 @@ public class GetPostsQueryHandler : IRequestHandler<GetPostsQuery, PaginatedResu
     public async Task<PaginatedResult<PostDto>> Handle(GetPostsQuery request, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Fetching posts. User: {UserId}, Page: {Page}, PageSize: {PageSize}, Search: '{Search}', CategoryId: {CategoryId}, Status: {Status}",
+            "Fetching posts. User: {UserId}, Page: {Page}, PageSize: {PageSize}",
             request.CurrentUserId ?? 0,
             request.Page,
-            request.PageSize,
-            request.Search,
-            request.CategoryId,
-            request.Status);
+            request.PageSize);
 
         try
         {
             var posts = await _postRepository.GetAllAsync(
                 page: request.Page, 
                 pageSize: request.PageSize,
-                search: request.Search,
-                categoryId: request.CategoryId,
-                status: request.Status,
+                filter: request.Filter,
                 currentUserId: request.CurrentUserId,
                 ct: cancellationToken);
             
