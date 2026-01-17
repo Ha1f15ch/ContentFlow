@@ -11,9 +11,7 @@ public interface IPostRepository
     Task<PaginatedResult<PostReadModel>> GetAllAsync(
         int page, 
         int pageSize, 
-        string? search = null, 
-        int? categoryId = null, 
-        PostStatus? status = null, 
+        PostFilter? filter,
         int? currentUserId = null,
         CancellationToken ct = default);
     Task<List<Post>> GetPublishedAsync(CancellationToken ct);
