@@ -1,9 +1,9 @@
 <template>
   <div id="app" :class="{ 'dark-theme': isDarkTheme, 'light-theme': !isDarkTheme }">
-    <HeaderSection />
+    <Header />
     <HeroSection />
     <ProtectedContent />
-    <router-view /> <!-- ← Новое место для отображения страниц -->
+    <router-view />
     <footer>
       <p>&copy; 2025 Мой сайт. Все права защищены.</p>
     </footer>
@@ -25,8 +25,8 @@ onMounted(() => {
   themeStore.loadTheme();
 });
 
-// компоненты для всего приложения (shared/common)
-import HeaderSection from '@/shared/components/HeaderSection.vue';
+// Компоненты для всего приложения (shared/common)
+import Header from '@/shared/components/Header.vue';
 import HeroSection from '@/shared/components/HeroSection.vue';
 import ProtectedContent from '@/shared/components/ProtectedContent.vue';
 </script>
