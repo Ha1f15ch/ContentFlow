@@ -107,6 +107,20 @@ public class SubscriptionRepository : ISubscriptionRepository
                 })
             .ToListAsync(ct);
     }
+    
+    public async Task<List<int>> GetUserIdsWithActiveNotification(int followingId,
+        CancellationToken ct = default)
+    {
+        return await _context.Subscriptions
+            .Where(el => el.UserProfileFollowingId == followingId && 
+                                   el.IsActive && el.NotificationsEnabled)
+            .Join(
+                _context.UserProfiles,
+                subscription => subscription.UserProfileFollowingId,
+                userProfile => userProfile.Id,
+                (subscription, profile) => profile.UserId)
+            .ToListAsync(ct);
+    }
 
     public async Task SaveChangesAsync(CancellationToken ct = default)
     {

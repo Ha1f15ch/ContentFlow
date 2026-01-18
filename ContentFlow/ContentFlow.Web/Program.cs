@@ -2,6 +2,7 @@ using ContentFlow.Application;
 using ContentFlow.Application.Common;
 using ContentFlow.Infrastructure;
 using ContentFlow.Infrastructure.Jobs;
+using ContentFlow.Infrastructure.Notifications.SignalR;
 using ContentFlow.Web.Extensions;
 using ContentFlow.Web.Security;
 using Hangfire;
@@ -175,6 +176,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// SignalR настройка хаба
+app.MapHub<NotificationsHub>("/hubs/notifications");
 
 // Start work job scheduler
 using (var scope = app.Services.CreateScope())

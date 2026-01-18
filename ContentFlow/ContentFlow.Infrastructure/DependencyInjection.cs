@@ -1,7 +1,9 @@
 ﻿using ContentFlow.Application.Interfaces.Category;
 using ContentFlow.Application.Interfaces.Comment;
 using ContentFlow.Application.Interfaces.Common;
+using ContentFlow.Application.Interfaces.Common.Jobs;
 using ContentFlow.Application.Interfaces.FileStorage;
+using ContentFlow.Application.Interfaces.Notification;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.RefreshToken;
 using ContentFlow.Application.Interfaces.Subscription;
@@ -13,6 +15,7 @@ using ContentFlow.Infrastructure.DatabaseEngine;
 using ContentFlow.Infrastructure.Identity;
 using ContentFlow.Infrastructure.Jobs;
 using ContentFlow.Infrastructure.Mappings;
+using ContentFlow.Infrastructure.Notifications.SignalR;
 using ContentFlow.Infrastructure.Repositories;
 using ContentFlow.Infrastructure.Services;
 using Hangfire;
@@ -45,6 +48,7 @@ public static class DependencyInjection
         
         // Jobs
         services.AddScoped<TokenCleanupJob>();
+        services.AddScoped<INotificationSenderJob, NotificationSenderJob>();
         
         // Identity
         services.AddIdentity<ApplicationUser, IdentityRole<int>>()
@@ -60,6 +64,7 @@ public static class DependencyInjection
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
         services.AddTransient<ISubscriptionRepository, SubscriptionRepository>();
+        services.AddTransient<INotificationRepository, NotificationRepository>();
         
         // Services
         services.AddScoped<IUserService, UserService>();
@@ -68,6 +73,8 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IPostCommentsService, PostCommentsService>();
         services.AddScoped<IFileStorageService, FileStorageService>();
+        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IRealtimeNotificationSender, SignalRNotificationSender>();
         
         // Mappings
         services.AddAutoMapper(typeof(MappingProfile).Assembly);
