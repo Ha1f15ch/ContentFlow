@@ -41,16 +41,21 @@ public class PostRepository : IPostRepository
         CancellationToken ct = default)
     {
         var baseQuery = _context.Posts
-            .AsNoTracking();
+            .AsNoTracking()
+            .Apply(
+                new PostVisibilitySpecification(currentUserId),
+                new PostFilterSpecification(filter),
+                new PostSortingSpecification(filter?.Sort)
+            );
 
-        var query = baseQuery.Apply(
-            new PostVisibilitySpecification(currentUserId),
-            new PostFilterSpecification(filter),
-            new PostSortingSpecification(filter?.Sort)
-        );
-
-        var postQuery =
-            from post in query
+        var totalCount = await baseQuery.CountAsync(ct);
+        
+        var pagedPosts = baseQuery
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize);
+        
+        var posts = await (
+            from post in pagedPosts
             join author in _context.Users on post.AuthorId equals author.Id
             join comment in _context.Comments on post.Id equals comment.PostId into comments
             select new PostReadModel(
@@ -63,16 +68,10 @@ public class PostRepository : IPostRepository
                 post.CreatedAt,
                 post.PublishedAt,
                 comments.Count(),
-                $"{author.FirstName} {author.LastName}".Trim(),
+                (author.FirstName + " " + author.LastName).Trim(),
                 author.AuthorAvatar
-            );
-
-        var totalCount = await postQuery.CountAsync(ct);
-
-        var posts = await postQuery
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(ct);
+            )
+        ).ToListAsync(ct);
 
         return new PaginatedResult<PostReadModel>(
             posts,
