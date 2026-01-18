@@ -46,6 +46,14 @@ public interface ISubscriptionRepository
     /// <param name="ct">Оборвать запрос</param>
     /// <returns>Список Dto моделей пользователей с данными о параметрах подписки.</returns>
     Task<List<SubscriptionWithFollowerProfileDto>> GetListSubscriptionFollowingAsync(int followingId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Получить список id профилей пользователей, кто подписан на пользователя, у кого включены уведомления
+    /// </summary>
+    /// <param name="followingId">UserProfile на кого подписаны</param>
+    /// <param name="ct"></param>
+    /// <returns>List of UserProfile Ids</returns>
+    public Task<List<int>> GetUserIdsWithActiveNotification(int followingId, CancellationToken ct = default);
     
     /// <summary>
     /// Сохранить 

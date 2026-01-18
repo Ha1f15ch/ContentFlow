@@ -100,6 +100,37 @@ namespace ContentFlow.Infrastructure.Migrations
                     b.ToTable("Comments", "dbo");
                 });
 
+            modelBuilder.Entity("ContentFlow.Domain.Entities.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications", "dbo");
+                });
+
             modelBuilder.Entity("ContentFlow.Domain.Entities.Post", b =>
                 {
                     b.Property<int>("Id")
@@ -705,6 +736,15 @@ namespace ContentFlow.Infrastructure.Migrations
                     b.HasOne("ContentFlow.Domain.Entities.Post", null)
                         .WithMany()
                         .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ContentFlow.Domain.Entities.Notification", b =>
+                {
+                    b.HasOne("ContentFlow.Domain.Entities.UserProfile", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

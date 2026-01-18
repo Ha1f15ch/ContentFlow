@@ -35,4 +35,9 @@
       <PackageReference Include="SqlServerSpatial.Toolkit" Version="1.0.3" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Notifications\Email\" />
+      <Folder Include="Notifications\Push\" />
+    </ItemGroup>
+
 </Project>

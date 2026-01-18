@@ -1,5 +1,7 @@
 ﻿using ContentFlow.Application.Common;
 using ContentFlow.Application.Functions.Posts.Commands;
+using ContentFlow.Application.Functions.Posts.Events;
+using ContentFlow.Application.Interfaces.Notification;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.Users;
 using MediatR;
@@ -11,15 +13,19 @@ public class PublishPostCommandHandler : IRequestHandler<PublishPostCommand, boo
 {
     private readonly IPostRepository _postRepository;
     private readonly IUserService _userService;
+    private readonly IMediator _mediator;
     private readonly ILogger<PublishPostCommandHandler> _logger;
     
     public PublishPostCommandHandler(
         IPostRepository postRepository,
         IUserService userService,
+        INotificationService notificationService,
+        IMediator mediator,
         ILogger<PublishPostCommandHandler> logger)
     {
         _postRepository = postRepository;
         _userService = userService;
+        _mediator = mediator;
         _logger = logger;
     }
 
@@ -58,7 +64,10 @@ public class PublishPostCommandHandler : IRequestHandler<PublishPostCommand, boo
             _logger.LogInformation(
                 "Post {PostId} published successfully. Title: '{Title}', PublishedBy: {UserId}", 
                 post.Id, post.Title, request.UserId);
-                
+            
+            // При публикации поста создаем событие, рассылаем его подписчикам
+            await _mediator.Publish(new PostPublishedNotification(post.Id, post.AuthorId, new DateTime()), cancellationToken);
+            
             return true;
         }
         catch (Exception ex)
