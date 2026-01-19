@@ -46,6 +46,9 @@ public static class DependencyInjection
         
         services.AddHangfireServer();
         
+        // SignalR
+        services.AddScoped<NotificationsHub>();
+        
         // Jobs
         services.AddScoped<TokenCleanupJob>();
         services.AddScoped<INotificationSenderJob, NotificationSenderJob>();
