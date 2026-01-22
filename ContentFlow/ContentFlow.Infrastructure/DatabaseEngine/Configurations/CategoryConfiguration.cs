@@ -13,18 +13,17 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         
         builder.Property(c => c.Name)
             .IsRequired()
-            .HasColumnType("text")
-            .HasMaxLength(100);
+            .HasMaxLength(100)
+            .HasColumnType("nvarchar(100)");
         
         builder.Property(c => c.Slug)
             .IsRequired()
             .HasMaxLength(100)
-            .IsUnicode(false);
+            .HasColumnType("varchar(100)");
         
         builder.Property(c => c.Description)
-            .IsRequired(false)
-            .HasColumnType("text")
-            .HasMaxLength(500);
+            .HasMaxLength(500)
+            .HasColumnType("nvarchar(500)");
         
         builder.HasIndex(c => c.Slug)
             .IsUnique();

@@ -56,7 +56,7 @@ public class CategoryController : ControllerBase
     /// </summary>
     /// <param name="categoryId"></param>
     /// <returns></returns>
-    [HttpGet("{categoryId:int}")]
+    [HttpGet("{categoryId:int}", Name = "GetCategoryById")]
     [Authorize(Policy = "AdministrationDictionary")]
     public async Task<IActionResult> GetCategoryByIdAsync(int categoryId)
     {
@@ -92,7 +92,7 @@ public class CategoryController : ControllerBase
         try
         {
             var categoryId = await _mediator.Send(commandRequest);
-            return CreatedAtAction(nameof(GetCategoryByIdAsync), new { categoryId }, new { id = categoryId });
+            return CreatedAtRoute("GetCategoryById", new { categoryId }, new { id = categoryId });
         }
         catch (ArgumentException ex)
         {

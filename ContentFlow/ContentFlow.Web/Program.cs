@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using System.Text;
 using ContentFlow.Application;
 using ContentFlow.Application.Common;
 using ContentFlow.Infrastructure;
@@ -6,7 +8,9 @@ using ContentFlow.Infrastructure.Notifications.SignalR;
 using ContentFlow.Web.Extensions;
 using ContentFlow.Web.Security;
 using Hangfire;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
@@ -86,10 +90,10 @@ builder.Services.AddSwaggerGen(c =>
     // support JWT in swagger
     c.AddSecurityDefinition("Bearer", new()
     {
-        Description = "JWT Authorization header: Bearer {token}",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "Введите: Bearer {token}"
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement()
@@ -116,6 +120,35 @@ builder.Services.AddApplication();
 
 // Add Infrastructure (DbContext, Identity, Repositories, Email, Mappings)
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]!)
+            ),
+
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["JwtSettings:Audience"],
+
+            ValidateLifetime = true,
+            
+            RoleClaimType = ClaimTypes.Role,
+            NameClaimType = ClaimTypes.NameIdentifier
+        };
+    });
+
 
 //Policy for endpoints
 builder.Services.AddAuthorization(option =>
@@ -174,6 +207,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("AllowLocalFrontend");
+
+app.UseResponseCaching();
 
 app.UseAuthentication();
 app.UseAuthorization();
