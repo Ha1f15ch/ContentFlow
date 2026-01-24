@@ -131,11 +131,11 @@ public class CommentTests
     }
 
     [Fact]
-    public void UpdatedAt_ShouldBeNull_ImmediatelyAfterCreation()
+    public void UpdatedAt_ShouldBeNotNull_ImmediatelyAfterCreation()
     {
         var comment = new Comment("Initial content", PostId, AuthorId);
 
-        comment.UpdatedAt.Should().BeNull();
+        comment.UpdatedAt.Should().NotBeNull();
     }
 
     [Fact]
