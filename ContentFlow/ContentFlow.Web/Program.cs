@@ -177,6 +177,7 @@ app.UseCors("AllowLocalFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseResponseCaching();
 
 app.MapControllers();
 
