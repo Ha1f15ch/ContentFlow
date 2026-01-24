@@ -23,7 +23,7 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
         
         builder.Property(p => p.Content)
             .IsRequired()
-            .HasColumnType("text");
+            .HasColumnType("nvarchar(4000)");
 
         builder.Property(p => p.Status)
             .HasConversion<int>();

@@ -32,6 +32,7 @@ public class Comment
         AuthorId = authorId;
         ParentCommentId = parentCommentId;
         CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
         Status = CommentStatus.Pending;
     }
 

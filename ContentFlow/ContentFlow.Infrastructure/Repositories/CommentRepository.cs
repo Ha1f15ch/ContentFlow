@@ -20,8 +20,7 @@ public class CommentRepository : ICommentRepository
     public async Task<Comment?> GetByIdAsync(int id, CancellationToken ct)
     {
         return await _context.Comments
-            .FirstOrDefaultAsync(c => c.Id == id, ct)
-            ?? throw new NotFoundException($"Comment with id {id} not found");
+            .FirstOrDefaultAsync(c => c.Id == id, ct);
     }
 
     public async Task<int> GetCountAsync(int postId, CancellationToken ct)

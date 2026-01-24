@@ -13,7 +13,7 @@ public class CommentConfiguration :  IEntityTypeConfiguration<Comment>
         builder.HasKey(x => x.Id);
         
         builder.Property(p => p.Content)
-            .HasColumnType("text")
+            .HasColumnType("nvarchar(2000)")
             .IsRequired();
 
         builder.Property(c => c.CreatedAt)

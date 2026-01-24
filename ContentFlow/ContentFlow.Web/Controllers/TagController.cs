@@ -146,7 +146,7 @@ public class TagController : ControllerBase
         var userIdByClaims = User.GetAuthenticatedUserId();
         _logger.LogInformation("Request to update tag by id = {tagId}. UserId requested command = {userId}", tagId, userIdByClaims);
         
-        var command = new UpdateTagCommand(request.Name, request.Slug, tagId, userIdByClaims);
+        var command = new UpdateTagCommand(request.Name, tagId, userIdByClaims);
 
         try
         {

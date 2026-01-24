@@ -24,6 +24,6 @@ public class UserProfileConfiguration : IEntityTypeConfiguration<UserProfile>
         builder.Property(up => up.MiddleName).HasMaxLength(200);
         builder.Property(up => up.City).HasMaxLength(500);
         builder.Property(up => up.Bio).HasMaxLength(2000);
-        builder.Property(up => up.AvatarUrl).HasMaxLength(1000);
+        builder.Property(up => up.AvatarUrl).HasMaxLength(2000);
     }
 }

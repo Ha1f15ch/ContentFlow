@@ -13,12 +13,10 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         
         builder.Property(c => c.Name)
             .IsRequired()
-            .HasMaxLength(100)
             .HasColumnType("nvarchar(100)");
         
         builder.Property(c => c.Slug)
             .IsRequired()
-            .HasMaxLength(100)
             .HasColumnType("varchar(100)");
         
         builder.Property(c => c.Description)

@@ -62,10 +62,10 @@ public class SubscriptionRepository : ISubscriptionRepository
     public async Task<List<SubscriptionWithFollowingProfileDto>> GetListSubscriptionFollowersByFollowerAsync(int follower, CancellationToken ct = default)
     {
         return await _context.Subscriptions
-            .Where(s => s.UserProfileFollowerId == follower && s.IsActive)
+            .Where(s => s.UserProfileFollowerId == follower && s.DeactivatedAt == null)
             .Join(
                 _context.UserProfiles, 
-                subscription => subscription.UserProfileFollowerId, 
+                subscription => subscription.UserProfileFollowingId, 
                 userProfile => userProfile.Id, 
                 (subscription, userProfile) => new SubscriptionWithFollowingProfileDto
                 {
@@ -90,7 +90,7 @@ public class SubscriptionRepository : ISubscriptionRepository
     public async Task<List<SubscriptionWithFollowerProfileDto>> GetListSubscriptionFollowingAsync(int followingId, CancellationToken ct = default)
     {
         return await _context.Subscriptions
-            .Where(s => s.UserProfileFollowingId == followingId && s.IsActive)
+            .Where(s => s.UserProfileFollowingId == followingId && s.DeactivatedAt == null)
             .Join(
                 _context.UserProfiles,
                 subscription => subscription.UserProfileFollowerId,
@@ -113,10 +113,11 @@ public class SubscriptionRepository : ISubscriptionRepository
     {
         return await _context.Subscriptions
             .Where(el => el.UserProfileFollowingId == followingId && 
-                                   el.IsActive && el.NotificationsEnabled)
+                                   el.DeactivatedAt == null && 
+                                   el.NotificationsEnabled)
             .Join(
                 _context.UserProfiles,
-                subscription => subscription.UserProfileFollowingId,
+                subscription => subscription.UserProfileFollowerId,
                 userProfile => userProfile.Id,
                 (subscription, profile) => profile.UserId)
             .ToListAsync(ct);

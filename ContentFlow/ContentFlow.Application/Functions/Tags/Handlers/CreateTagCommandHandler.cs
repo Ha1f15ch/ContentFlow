@@ -31,7 +31,7 @@ public class CreateTagCommandHandler : IRequestHandler<CreateTagCommand, int>
             throw new ArgumentException("Tag name is required", nameof(request.Name));
         }
         
-        var normalizedName = request.Name.Trim();
+        var normalizedName = request.Name.Trim().ToLower();
         
         _logger.LogDebug("Normalized tag data: Name='{NormalizedName}'", 
             normalizedName);

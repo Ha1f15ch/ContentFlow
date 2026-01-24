@@ -26,7 +26,7 @@ public class CommentsController : ControllerBase
     }
 
     [HttpGet]
-    [AllowAnonymous]
+    [Authorize(Policy = "CanEditContent")]
     public async Task<IActionResult> GetComments(int postId)
     {
         var userIdByClaims = User.GetAuthenticatedUserId();
@@ -80,7 +80,7 @@ public class CommentsController : ControllerBase
             var result = await _mediator.Send(command);
             _logger.LogInformation("Comment is created. Id = {Result}.", result);
             
-            return CreatedAtAction(nameof(GetComments), new { id = result }, new {id = result});
+            return CreatedAtAction(nameof(GetComments), new { postId }, new { id = result });
         }
         catch (NotFoundException ex)
         {

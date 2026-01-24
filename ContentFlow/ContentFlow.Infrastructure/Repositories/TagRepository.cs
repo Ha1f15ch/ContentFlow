@@ -16,31 +16,30 @@ public class TagRepository : ITagRepository
         _context = context;
     }
     
-    public async Task<Tag> GetByIdAsync(int id, CancellationToken ct)
+    public async Task<Tag?> GetByIdAsync(int id, CancellationToken ct)
     {
         return await _context.Tags
-                   .FirstOrDefaultAsync(t => t.Id == id, ct)
-               ?? throw new NotFoundException($"Tags with id {id} not found");
+                   .FirstOrDefaultAsync(t => t.Id == id, ct);
     }
 
-    public async Task<Tag> GetByNameAsync(string name, CancellationToken ct)
+    public async Task<Tag?> GetByNameAsync(string name, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Name cannot be null or empty", nameof(name));
+            throw new ArgumentException("Name cannot be empty", nameof(name));
+        
+        var normalizedName = name.Trim().ToLower();
         
         return await _context.Tags
-            .FirstOrDefaultAsync(t => t.Name == name, ct)
-            ?? throw new NotFoundException($"Tag with name {name} not found");
+            .FirstOrDefaultAsync(t => t.Name.Trim().ToLower() == normalizedName, ct);
     }
 
-    public async Task<Tag> GetBySlugAsync(string slug, CancellationToken ct)
+    public async Task<Tag?> GetBySlugAsync(string slug, CancellationToken ct)
     {
         if(string.IsNullOrWhiteSpace(slug))
             throw new ArgumentException("Slug cannot be null or empty", nameof(slug));
         
         return await _context.Tags
-            .FirstOrDefaultAsync(t => t.Slug == slug, ct)
-            ?? throw new NotFoundException($"Tag with slug {slug} not found");
+            .FirstOrDefaultAsync(t => t.Slug == slug, ct);
     }
 
     public async Task<PaginatedResult<Tag>> GetAllAsync(int page, int pageSize, CancellationToken ct)

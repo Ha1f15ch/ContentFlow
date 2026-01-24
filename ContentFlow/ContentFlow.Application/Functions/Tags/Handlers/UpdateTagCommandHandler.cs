@@ -22,8 +22,8 @@ public class UpdateTagCommandHandler : IRequestHandler<UpdateTagCommand, Unit>
     public async Task<Unit> Handle(UpdateTagCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "User {UserId} requested to update tag with new name: '{Name}', slug: '{Slug}'",
-            request.UserId, request.Name, request.Slug);
+            "User {UserId} requested to update tag with new name: '{Name}'",
+            request.UserId, request.Name);
         
         if (string.IsNullOrWhiteSpace(request.Name))
         {
@@ -32,31 +32,29 @@ public class UpdateTagCommandHandler : IRequestHandler<UpdateTagCommand, Unit>
         }
         
         var normalizedName = request.Name.Trim();
-        var slug = !string.IsNullOrWhiteSpace(request.Slug)
-            ? request.Slug.Trim().ToLowerInvariant()
-            : Tag.GenerateSlug(normalizedName);
+        var slug = Tag.GenerateSlug(normalizedName);
         
         _logger.LogDebug("Normalized update data: Name='{NormalizedName}', Slug='{Slug}'", 
             normalizedName, slug);
         
         var existingTag = await _tagRepository.GetByIdAsync(request.TagId, cancellationToken);
         
+        if(existingTag == null)
+            throw new InvalidOperationException($"Tag with id '{request.TagId}' does not exist.");
+        
         var existingByName = await _tagRepository.GetByNameAsync(normalizedName, cancellationToken);
-        if (existingByName != null && existingByName.Id != existingTag.Id)
+
+        if (existingByName == null)
+        {
+            existingTag.Rename(normalizedName);
+        }
+        
+        if(existingByName != null && existingByName.Id != existingTag.Id)
         {
             _logger.LogWarning(
                 "Tag update failed: tag with name '{Name}' already exists (ID: {ExistingId})", 
                 normalizedName, existingByName.Id);
             throw new InvalidOperationException($"Tag with name '{normalizedName}' already exists.");
-        }
-        
-        var existingBySlug = await _tagRepository.GetBySlugAsync(slug, cancellationToken);
-        if (existingBySlug != null && existingBySlug.Id != existingTag.Id)
-        {
-            _logger.LogWarning(
-                "Tag update failed: tag with slug '{Slug}' already exists (ID: {ExistingId})", 
-                slug, existingBySlug.Id);
-            throw new InvalidOperationException($"Tag with slug '{slug}' already exists.");
         }
         
         // Изменяем сущность через доменную сущность

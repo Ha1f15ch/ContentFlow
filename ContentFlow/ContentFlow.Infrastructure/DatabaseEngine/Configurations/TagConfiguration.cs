@@ -10,15 +10,14 @@ public class TagConfiguration : IEntityTypeConfiguration<Tag>
     {
         builder.ToTable("Tags", schema: "dict");
         builder.HasKey(p => p.Id);
-        
+
         builder.Property(t => t.Name)
             .IsRequired()
-            .HasColumnType("text")
-            .HasMaxLength(50);
+            .HasColumnType("varchar(20)");
         
         builder.Property(t => t.Slug)
             .IsRequired()
-            .HasMaxLength(50)
+            .HasMaxLength(200)
             .IsUnicode(false);
         
         builder.HasMany(t => t.PostTags)
