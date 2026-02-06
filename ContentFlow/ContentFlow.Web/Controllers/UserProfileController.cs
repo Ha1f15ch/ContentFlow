@@ -26,6 +26,16 @@ public class UserProfileController : ControllerBase
         _mediator = mediator;
     }
     
+    [HttpGet("me")]
+    public async Task<IActionResult> GetMyProfileAsync()
+    {
+        var userId = User.GetAuthenticatedUserId();
+        _logger.LogInformation("Fetching my profile for userId={UserId}", userId);
+
+        var profile = await _mediator.Send(new GetMyUserProfileQuery(userId));
+        return Ok(profile);
+    }
+    
     /// <summary>
     /// Получить профиль пользователя
     /// </summary>

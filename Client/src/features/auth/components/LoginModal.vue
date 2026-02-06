@@ -90,7 +90,7 @@
 import { ref } from 'vue';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useModalStore } from '@/shared/stores/modalStore';
-import { authService } from '@/features/auth/api/authService';
+import { authService } from '@/features/auth/api/authApi';
 
 const authStore = useAuthStore();
 const modalStore = useModalStore(); // используем store. Все события заменены на прямой вызов modalStore

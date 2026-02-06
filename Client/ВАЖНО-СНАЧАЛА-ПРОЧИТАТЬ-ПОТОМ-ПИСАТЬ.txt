@@ -1,0 +1,14 @@
+Правило на проект:
+
+1) shared/api/client.js — единственное место, где:
+ - baseURL
+ - заголовки
+ - токены
+ - refresh
+ - withCredentials
+
+2) В фичах (features/*/api/*.js) — только функции/сервисы вида:
+ - apiClient.get("/categories")
+ - apiClient.post("/auth/login")
+
+3) В UI компонентах — никаких axios напрямую, только сервисы/сторы.
