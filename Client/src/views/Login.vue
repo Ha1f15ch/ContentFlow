@@ -29,7 +29,8 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/stores/authStore';
-import { authService } from '@/features/auth/api/authService';
+import { authService } from '@/features/auth/api/authApi';
+import { userProfileService } from "@/features/userProfile/api/userProfileService";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -39,24 +40,26 @@ const password = ref('');
 const error = ref('');
 
 const handleLogin = async () => {
-  try {
-    const response = await authService.login({ email: email.value, password: password.value });
-    console.log('response:', response); // ← добавь это
+  error.value = "";
 
-    // Проверяем, есть ли Token в response
-    if (response && response.token) {
-      const { token } = response; // ← используй token (с маленькой буквы)
-      console.log('Полученный токен:', token);
-      authStore.setToken(token);
-      console.log('Токен сохранён в store');
-      router.push('/'); // ← перенаправление на главную
-    } else {
-      console.error('Token не найден в ответе:', response);
-      error.value = 'Ошибка входа: токен не получен.';
+  try {
+    const data = await authService.login({ email: email.value, password: password.value });
+    const token = data?.accessToken ?? data?.token;
+
+    if (!token) {
+      console.error("Login response:", data);
+      error.value = "Ошибка входа: токен не получен.";
+      return;
     }
+
+    authStore.setToken(token);
+
+    await authStore.bootstrap();
+
+    router.push("/");
   } catch (err) {
-    error.value = err.response?.data?.message || 'Ошибка входа';
-    console.error('Ошибка входа:', err); // ← добавь это
+    console.error("Ошибка входа:", err);
+    error.value = err.response?.data?.message || err.message || "Ошибка входа";
   }
 };
 </script>

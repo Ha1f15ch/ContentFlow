@@ -1,9 +1,7 @@
 <template>
   <div id="app" :class="{ 'dark-theme': isDarkTheme, 'light-theme': !isDarkTheme }">
     <HeaderSection />
-    <HeroSection />
-    <ProtectedContent />
-    <router-view /> <!-- ← Новое место для отображения страниц -->
+    <router-view />
     <footer>
       <p>&copy; 2025 Мой сайт. Все права защищены.</p>
     </footer>
@@ -11,24 +9,28 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
-import { useThemeStore } from '@/shared/stores/theme';
+import { computed, onMounted } from "vue";
+import { useThemeStore } from "@/shared/stores/theme";
+import { useAuthStore } from "@/features/auth/stores/authStore";
 
-// Stores
+import HeaderSection from "@/shared/components/HeaderSection.vue";
+
 const themeStore = useThemeStore();
+const authStore = useAuthStore();
 
-// Computed
 const isDarkTheme = computed(() => themeStore.isDark);
 
-// Lifecycle
-onMounted(() => {
+onMounted(async () => {
   themeStore.loadTheme();
-});
 
-// компоненты для всего приложения (shared/common)
-import HeaderSection from '@/shared/components/HeaderSection.vue';
-import HeroSection from '@/shared/components/HeroSection.vue';
-import ProtectedContent from '@/shared/components/ProtectedContent.vue';
+  // если есть токен — подтягиваем пользователя
+  try {
+    await authStore.bootstrap();
+  } catch (e) {
+    // чтобы не спамить ошибками в консоли, просто логируем и продолжаем
+    console.warn("bootstrap failed", e);
+  }
+});
 </script>
 
 <style src="@/shared/assets/css/styles.css"></style>

@@ -53,7 +53,8 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResult>
         var accessToken = _tokenService.GenerateToken(
             user.Id,
             user.Email!,
-            roles: roles);
+            roles: roles,
+            user.UserName);
         
         var refreshToken = TokenGenerator.GenerateRefreshToken();
         var (tokenHash, tokenSalt) = PasswordHasher.Hash(refreshToken);

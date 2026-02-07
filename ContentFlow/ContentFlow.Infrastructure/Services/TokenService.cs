@@ -22,7 +22,7 @@ public class TokenService : ITokenService
         _logger = logger;
     }
     
-    public string GenerateToken(int userId, string email, IEnumerable<string> roles)
+    public string GenerateToken(int userId, string email, IEnumerable<string> roles, string userName)
     {
         try
         {
@@ -34,6 +34,7 @@ public class TokenService : ITokenService
             {
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                 new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Name, userName),
             };
 
             foreach (var role in roles)

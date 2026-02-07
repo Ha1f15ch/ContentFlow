@@ -37,21 +37,21 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
     public async Task<UserProfileDto> Handle(GetUserProfileQuery request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Fetching profile for user ID: {UserId}", request.UserProfileId);
-        var requesterUserProfile = await _userProfileRepository.GetByUserIdAsync(request.RequesterId, cancellationToken);
+        var requesterUserProfile = await _userProfileRepository.GetByUserIdAsync(request.RequesterUserId, cancellationToken);
 
         if (requesterUserProfile == null)
         {
-            _logger.LogError("Requester UserProfile not found for user ID: {UserId}", request.RequesterId);
-            throw  new NotFoundException($"Requester UserProfile not found for user ID: {request.RequesterId}");
+            _logger.LogError("Requester UserProfile not found for user ID: {UserId}", request.RequesterUserId);
+            throw  new NotFoundException($"Requester UserProfile not found for user ID: {request.RequesterUserId}");
         }
 
-        if (request.UserProfileId == request.RequesterId)
+        if (request.UserProfileId == requesterUserProfile.Id)
         {
-            _logger.LogInformation("Fetching himself profile: {UserId}", request.RequesterId);
+            _logger.LogInformation("Fetching himself profile: {UserId}", request.RequesterUserId);
         }
         else
         {
-             _logger.LogInformation("User {request.RequesterId} fetching other profile ID: {request.UserProfileId}",  request.RequesterId, request.UserProfileId);
+             _logger.LogInformation("User {request.RequesterId} fetching other profile ID: {request.UserProfileId}",  request.RequesterUserId, request.UserProfileId);
              var isTrusted = await _userService.IsInRoleAsync(requesterUserProfile.UserId, RoleConstants.User) ||
                              await _userService.IsInRoleAsync(requesterUserProfile.UserId, RoleConstants.ContentEditor) ||
                              await _userService.IsInRoleAsync(requesterUserProfile.UserId, RoleConstants.Moderator) ||
@@ -59,7 +59,7 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
              
              if (!isTrusted)
              {
-                 _logger.LogWarning("Access denied: user {UserId} does not have permission to look other userprofile", request.RequesterId);
+                 _logger.LogWarning("Access denied: user {UserId} does not have permission to look other userprofile", request.RequesterUserId);
                  throw new UnauthorizedAccessException("You do not have permission for watch.");
              }
         }
@@ -73,7 +73,7 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
         }
         
         var user = await _userService.GetByIdAsync(profile.UserId, cancellationToken);
-        var subscriptionInfo = await _subscriptionRepository.GetByFollowerAndFollowingAsync(request.RequesterId, request.UserProfileId, cancellationToken);
+        var subscriptionInfo = await _subscriptionRepository.GetByFollowerAndFollowingAsync(request.RequesterUserId, request.UserProfileId, cancellationToken);
 
         var dto = new UserProfileDto(
             Id: profile.Id,

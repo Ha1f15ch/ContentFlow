@@ -1,32 +1,31 @@
 <template>
-  <div class="category-list">
-    <h3>Категории</h3>
+  <div>
     <ul>
-      <li v-for="category in categories" :key="category.id">
-        {{ category.name }}
+      <li v-for="c in items" :key="c.id">
+        <strong>{{ c.name }}</strong>
+        <div>{{ c.description }}</div>
       </li>
     </ul>
+
+    <div v-if="isLoading">Загрузка...</div>
+    <div v-else-if="!hasMore">Конец списка</div>
+    <div v-if="error">Ошибка загрузки</div>
+
+    <div v-if="showSentinel" ref="sentinel" style="height:1px;"></div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { categoryService } from '@/features/category/api/categoryService';
+import { ref } from "vue";
 
-const categories = ref([]);
-
-onMounted(async () => {
-  try {
-    const response = await categoryService.getCategories();
-    categories.value = response.data;
-  } catch (err) {
-    console.error('Ошибка загрузки категорий:', err);
-  }
+defineProps({
+  items: { type: Array, default: () => [] },
+  isLoading: Boolean,
+  hasMore: Boolean,
+  error: null,
+  showSentinel: { type: Boolean, default: true },
 });
-</script>
 
-<style scoped>
-.category-list {
-  padding: 1rem;
-}
-</style>
+const sentinel = ref(null);
+defineExpose({ sentinel });
+</script>

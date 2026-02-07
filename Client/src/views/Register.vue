@@ -34,7 +34,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { authService } from '@/features/auth/api/authService';
+import { authService } from '@/features/auth/api/authApi';
 
 const router = useRouter();
 

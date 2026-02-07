@@ -1,48 +1,23 @@
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:5006/api';
-
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import apiClient from "@/shared/api/HttpClient.js";
 
 export const postService = {
-  // Получить все посты
-  async getPosts() {
-    const response = await apiClient.get('/posts');
-    return response;
+  getPosts(params) {
+    return apiClient.get("/posts", { params }); // используется фильтрация + пагинация
   },
 
-  // Получить пост по ID
-  async getPostById(id) {
-    const response = await apiClient.get(`/posts/${id}`);
-    return response;
+  getPostById(id) {
+    return apiClient.get(`/posts/${id}`);
   },
 
-  // Создать новый пост
-  async createPost(postData) {
-    const response = await apiClient.post('/posts', postData);
-    return response;
+  createPost(postData) {
+    return apiClient.post("/posts", postData);
   },
 
-  // Обновить пост
-  async updatePost(id, postData) {
-    const response = await apiClient.put(`/posts/${id}`, postData);
-    return response;
+  updatePost(id, postData) {
+    return apiClient.put(`/posts/${id}`, postData);
   },
 
-  // Удалить пост
-  async deletePost(id) {
-    const response = await apiClient.delete(`/posts/${id}`);
-    return response;
+  deletePost(id) {
+    return apiClient.delete(`/posts/${id}`);
   },
 };

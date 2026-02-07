@@ -10,23 +10,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { tagService } from '@/features/tag/api/tagService';
-
-const tags = ref([]);
-
-onMounted(async () => {
-  try {
-    const response = await tagService.getTags();
-    tags.value = response.data;
-  } catch (err) {
-    console.error('Ошибка загрузки тегов:', err);
-  }
+defineProps({
+  tags: { type: Array, default: () => [] },
 });
 </script>
 
 <style scoped>
-.tag-list {
-  padding: 1rem;
-}
+.tag-list { padding: 1rem; }
 </style>
