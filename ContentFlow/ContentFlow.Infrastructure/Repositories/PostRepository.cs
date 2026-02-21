@@ -6,7 +6,6 @@ using ContentFlow.Application.Specifications;
 using ContentFlow.Application.Specifications.Posts;
 using ContentFlow.Domain.Entities;
 using ContentFlow.Domain.Enums;
-using ContentFlow.Domain.Exceptions;
 using ContentFlow.Infrastructure.DatabaseEngine;
 using Microsoft.EntityFrameworkCore;
 

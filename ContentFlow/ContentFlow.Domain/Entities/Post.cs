@@ -97,6 +97,15 @@ public class Post
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public void RemoveCategory()
+    {
+        if (CategoryId <= 0)
+            return;
+        
+        CategoryId = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void AddTag(Tag tag)
     {
         if (tag == null) throw new ArgumentNullException(nameof(tag));

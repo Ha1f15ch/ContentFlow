@@ -44,8 +44,7 @@ public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, int>
         var post = new Post(
             title: request.Title,
             content: request.Content,
-            authorId: request.AuthorId,
-            categoryId: request.CategoryId
+            authorId: request.AuthorId
         );
 
         _logger.LogDebug("Post entity created in memory with ID {TempId}, AuthorId: {AuthorId}", 
