@@ -144,7 +144,7 @@ namespace ContentFlow.Infrastructure.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("nvarchar(10000)");
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -466,6 +466,11 @@ namespace ContentFlow.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("TokenLookupHash")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("TokenSalt")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -478,7 +483,7 @@ namespace ContentFlow.Infrastructure.Migrations
 
                     b.HasIndex("ExpiresAt");
 
-                    b.HasIndex("TokenHash")
+                    b.HasIndex("TokenLookupHash")
                         .IsUnique();
 
                     b.HasIndex("UserId");

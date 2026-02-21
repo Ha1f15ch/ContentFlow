@@ -12,6 +12,10 @@ public class RefreshTokenConfiguration :  IEntityTypeConfiguration<RefreshToken>
         
         builder.HasKey(x => x.Id);
         
+        builder.Property(x => x.TokenLookupHash)
+            .IsRequired()
+            .HasMaxLength(100);
+        
         builder.Property(x => x.TokenHash)
             .IsRequired()
             .HasMaxLength(500);
@@ -37,7 +41,7 @@ public class RefreshTokenConfiguration :  IEntityTypeConfiguration<RefreshToken>
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.NoAction);
         
-        builder.HasIndex(x => x.TokenHash).IsUnique();
+        builder.HasIndex(x => x.TokenLookupHash).IsUnique();
         builder.HasIndex(x => x.UserId);
         builder.HasIndex(x => x.ExpiresAt);
     }

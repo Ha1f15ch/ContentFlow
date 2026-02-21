@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices.JavaScript;
 using ContentFlow.Application.Common;
+using ContentFlow.Application.DTOs;
 using ContentFlow.Application.Functions.Auth.Commands;
 using ContentFlow.Application.Interfaces.RefreshToken;
 using ContentFlow.Application.Interfaces.Users;
@@ -56,33 +57,31 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResult>
             roles: roles,
             user.UserName);
         
-        var refreshToken = TokenGenerator.GenerateRefreshToken();
-        var (tokenHash, tokenSalt) = PasswordHasher.Hash(refreshToken);
-        
-        try
+        // 1) (опционально) ревокаем старые refresh на этом девайсе
+        // можно сделать отдельным методом, но минимум — найти активный и revoke
+        var active = await _refreshTokenRepository.GetActiveByUserAndDeviceAsync(user.Id, request.Metadata.DeviceId, cancellationToken);
+        if (active != null)
         {
-            await _refreshTokenRepository.AddAsync(
-                userId: user.Id,
-                tokenHash: tokenHash,
-                tokenSalt: tokenSalt,
-                createdByIp: request.Metadata.IpAddress,
-                deviceId: request.Metadata.DeviceId,
-                expiresAt: DateTime.UtcNow.AddDays(7),
-                ct: cancellationToken);
-            _logger.LogInformation("Refresh token generated and saved for user: {UserId}", user.Id);
+            // в replacedByTokenHash запишем lookup нового (создадим ниже)
+            // пока просто revoke, replaced проставим после генерации нового
+            await _refreshTokenRepository.RevokeAsync(active.Id, request.Metadata.IpAddress, replacedByTokenHash: null, cancellationToken);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to save refresh token for user: {UserId}", user.Id);
-            return new AuthResult(false, Errors: "Authentication failed");
-        }
-        
-        _logger.LogInformation("Login completed successfully for user: {Email}", request.Email);
-        
-        return new AuthResult(
-            true,
-            Token: accessToken,
-            RefreshToken: refreshToken,
-            Errors: null);
+
+        // 2) генерим новый refresh
+        var refreshPlain = TokenGenerator.GenerateRefreshToken();
+        var lookup = TokenLookup.Sha256Base64(refreshPlain);
+        var (hash, salt) = PasswordHasher.Hash(refreshPlain);
+
+        await _refreshTokenRepository.AddAsync(
+            userId: user.Id,
+            tokenLookupHash: lookup,
+            tokenHash: hash,
+            tokenSalt: salt,
+            createdByIp: request.Metadata.IpAddress,
+            deviceId: request.Metadata.DeviceId,
+            expiresAt: DateTime.UtcNow.AddDays(7),
+            ct: cancellationToken);
+
+        return new AuthResult(true, Token: accessToken, RefreshToken: refreshPlain);
     }
 }

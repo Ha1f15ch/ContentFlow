@@ -5,7 +5,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
+  withCredentials: true
 })
 
 // аттачим access токен
@@ -34,6 +35,11 @@ function resolveWaiters(newToken) {
 function rejectWaiters(err) {
   refreshWaiters.forEach((w) => w.reject(err));
   refreshWaiters = [];
+}
+
+async function refreshAccessTokenApi() {
+  const resp = await apiClient.post("/auth/refresh", null);
+  return resp.data; 
 }
 
 apiClient.interceptors.response.use(
