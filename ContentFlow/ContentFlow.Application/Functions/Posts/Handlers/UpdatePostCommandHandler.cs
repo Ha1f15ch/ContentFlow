@@ -56,7 +56,6 @@ public class UpdatePostCommandHandler : IRequestHandler<UpdatePostCommand>
             _logger.LogDebug("Updating content and metadata for post {PostId}", post.Id);
             
             post.UpdateContent(request.Content);
-            post.SetCategory(request.CategoryId);
             post.SetSlug(request.Title);
             
             await _postRepository.UpdateAsync(post, cancellationToken);

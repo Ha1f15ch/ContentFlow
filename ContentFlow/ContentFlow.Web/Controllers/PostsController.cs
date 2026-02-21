@@ -48,8 +48,7 @@ public class PostsController : ControllerBase
         var command = new CreatePostCommand(
             Title: request.Title,
             Content: request.Content,
-            AuthorId: authorId,
-            CategoryId: request.CategoryId);
+            AuthorId: authorId);
         
         var postId = await _mediator.Send(command);
         _logger.LogInformation("Post {PostId} created.", postId);
@@ -80,7 +79,6 @@ public class PostsController : ControllerBase
             PostId: id,
             Title: request.Title,
             Content: request.Content,
-            CategoryId: request.CategoryId,
             TagIds: request.TagIds,
             AuthorId: authorId);
         

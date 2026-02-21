@@ -2,5 +2,4 @@
 
 public record CreatePostRequest(
     string Title,
-    string Content,
-    int? CategoryId);
+    string Content);
