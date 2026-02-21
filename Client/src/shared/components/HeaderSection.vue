@@ -15,6 +15,8 @@
       
       <div id="user-actions" class="user-info" v-else>
         <span id="username">{{ authStore.user?.userName || 'Пользователь' }}</span>
+        <!-- Кнопка "Создать пост" -->
+        <button class="btn create-post-btn" @click="goToCreatePost">+ Create</button>
         <button class="btn" @click="handleLogout">Выйти</button>
       </div>
     </div>
@@ -44,8 +46,35 @@ const goToLogin = () => {
   router.push('/login');
 };
 
+const goToCreatePost = () => {
+  // Проверка авторизации (на всякий случай)
+  if (!authStore.isAuthenticated) {
+    router.push('/login');
+    return;
+  }
+  router.push('/create-post');
+};
+
 const handleLogout = async () => {
   await authStore.logout();
   router.push("/login");
 };
 </script>
+
+<style scoped>
+
+.create-post-btn {
+  margin-right: 10px; 
+  background-color: #007bff; 
+  color: white; 
+  border: none; 
+  padding: 8px 12px; 
+  border-radius: 4px; 
+  cursor: pointer; 
+  font-size: 14px; 
+}
+
+.create-post-btn:hover {
+  background-color: #0056b3; 
+}
+</style>

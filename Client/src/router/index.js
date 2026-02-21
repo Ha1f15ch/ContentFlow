@@ -4,6 +4,7 @@ import HomeView from '@/views/HomeView.vue';
 import LoginView from '@/views/Login.vue';
 import RegisterView from '@/views/Register.vue';
 import ConfirmEmailView from '@/views/ConfirmEmail.vue';
+import CreatePostView from '@/features/post/components/CreatePostView.vue';
 
 const routes = [
   {
@@ -25,6 +26,13 @@ const routes = [
     path: '/confirm-email',
     name: 'confirmEmail',
     component: ConfirmEmailView,
+  },
+
+  {
+    path: '/create-post',
+    name: 'createPost',
+    component: CreatePostView,
+    meta: { requiresAuth: true } // Защита: только для авторизованных
   },
 ];
 
