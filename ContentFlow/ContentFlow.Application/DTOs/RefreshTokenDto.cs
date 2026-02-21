@@ -4,8 +4,11 @@ public record RefreshTokenDto(
     int Id,
     int UserId,
     string TokenHash,
+    string TokenSalt,
+    string TokenLookupHash,
     DateTime ExpiresAt,
     DateTime CreatedAt,
     string CreatedByIp,
     bool IsRevoked,
-    string? DeviceId);
+    string? DeviceId
+);

@@ -30,7 +30,6 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { authService } from '@/features/auth/api/authApi';
-import { userProfileService } from "@/features/userProfile/api/userProfileService";
 
 const router = useRouter();
 const authStore = useAuthStore();

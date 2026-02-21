@@ -6,6 +6,7 @@ public class RefreshToken
 {
     public int Id { get; set; }
     public int UserId { get; set; }
+    public string TokenLookupHash { get; set; } = default!;
     public string TokenHash { get; set; }
     public string TokenSalt { get; set; }
     public DateTime ExpiresAt  { get; set; }

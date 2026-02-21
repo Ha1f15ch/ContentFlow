@@ -22,6 +22,7 @@ export const authService = {
   },
 
   async logout() {
-    return;
+    const { data } = await apiClient.get("/auth/logout");
+    return data;
   },
 };

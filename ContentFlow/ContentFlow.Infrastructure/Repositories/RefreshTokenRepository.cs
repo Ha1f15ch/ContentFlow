@@ -15,85 +15,84 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         _context = context;
     }
     
-    public async Task AddAsync(int userId, string tokenHash, string tokenSalt, string createdByIp, string? deviceId, DateTime expiresAt,
+    public async Task AddAsync(
+        int userId,
+        string tokenLookupHash,
+        string tokenHash,
+        string tokenSalt,
+        string createdByIp,
+        string? deviceId,
+        DateTime expiresAt,
         CancellationToken ct)
     {
-        try
+        var newToken = new RefreshToken
         {
-            var newToken = new RefreshToken
-            {
-                UserId = userId,
-                TokenHash = tokenHash,
-                TokenSalt = tokenSalt,
-                ExpiresAt = expiresAt,
-                CreatedAt = DateTime.UtcNow,
-                CreatedByIp = createdByIp,
-                DeviceId = deviceId,
-                IsRevoked = false
-            };
-        
-            await _context.RefreshTokens.AddAsync(newToken, ct);
-            await _context.SaveChangesAsync(ct);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"Ошибка при выполнении создания refreshToken. {e.Message}");
-            throw;
-        }
+            UserId = userId,
+            TokenLookupHash = tokenLookupHash,
+            TokenHash = tokenHash,
+            TokenSalt = tokenSalt,
+            ExpiresAt = expiresAt,
+            CreatedAt = DateTime.UtcNow,
+            CreatedByIp = createdByIp,
+            DeviceId = deviceId,
+            IsRevoked = false
+        };
+
+        await _context.RefreshTokens.AddAsync(newToken, ct);
+        await _context.SaveChangesAsync(ct);
     }
 
-    public async Task<RefreshTokenDto?> GetValidByIdAsync(int tokenId, CancellationToken ct)
+    public async Task<RefreshTokenDto?> GetActiveByLookupHashAsync(string lookupHash, CancellationToken ct)
     {
         var token = await _context.RefreshTokens
+            .AsNoTracking()
             .FirstOrDefaultAsync(t =>
-                t.Id == tokenId &&
+                t.TokenLookupHash == lookupHash &&
                 !t.IsRevoked &&
-                t.ExpiresAt > DateTime.UtcNow, ct
-            );
-        
+                t.ExpiresAt > DateTime.UtcNow, ct);
+
         return token == null ? null : GetTokenDto(token);
     }
 
-    public async Task<RefreshTokenDto?> GetValidByHashAsync(string tokenHash, CancellationToken ct)
+    public async Task<RefreshTokenDto?> GetActiveByUserAndDeviceAsync(int userId, string? deviceId, CancellationToken ct)
     {
         var token = await _context.RefreshTokens
-            .FirstOrDefaultAsync(t =>
-                t.TokenHash == tokenHash &&
+            .AsNoTracking()
+            .Where(t =>
+                t.UserId == userId &&
+                t.DeviceId == deviceId &&
                 !t.IsRevoked &&
-                t.ExpiresAt > DateTime.UtcNow, ct
-            );
-        
+                t.ExpiresAt > DateTime.UtcNow)
+            .OrderByDescending(t => t.CreatedAt)
+            .FirstOrDefaultAsync(ct);
+
         return token == null ? null : GetTokenDto(token);
     }
 
-    public async Task<bool> RevokeAsync(int tokenId, string revokedByIp, string? newTokenHash, CancellationToken ct)
+    public async Task<bool> RevokeAsync(int tokenId, string revokedByIp, string? replacedByTokenHash, CancellationToken ct)
     {
-        var token = await _context.RefreshTokens.FindAsync([tokenId], ct);
+        var token = await _context.RefreshTokens.FirstOrDefaultAsync(t => t.Id == tokenId, ct);
         if (token == null) return false;
-        
+
         token.IsRevoked = true;
-        token.ExpiresAt = DateTime.UtcNow;
+        token.RevokedAt = DateTime.UtcNow;
         token.RevokedByIp = revokedByIp;
-        token.ReplacedByTokenHash = newTokenHash;
-        
-        _context.RefreshTokens.Update(token);
+        token.ReplacedByTokenHash = replacedByTokenHash;
+
         return await _context.SaveChangesAsync(ct) > 0;
     }
 
     public async Task RevokeAllActiveByUserIdAsync(int userId, string reason, CancellationToken ct)
     {
         var tokens = await _context.RefreshTokens
-            .Where(t =>
-                t.UserId == userId &&
-                !t.IsRevoked &&
-                t.ExpiresAt > DateTime.UtcNow)
+            .Where(t => t.UserId == userId && !t.IsRevoked && t.ExpiresAt > DateTime.UtcNow)
             .ToListAsync(ct);
 
         foreach (var token in tokens)
         {
             token.IsRevoked = true;
             token.RevokedAt = DateTime.UtcNow;
-            token.RevokedByIp = "API";
+            token.RevokedByIp = reason;
             token.ReplacedByTokenHash = null;
         }
 
@@ -103,44 +102,45 @@ public class RefreshTokenRepository : IRefreshTokenRepository
 
     public async Task<bool> ExistsByUserIdAndDeviceAsync(int userId, string? deviceId, CancellationToken ct)
     {
-        return await _context.RefreshTokens
-            .AnyAsync(t =>
-                t.UserId == userId &&
-                t.DeviceId == deviceId &&
-                !t.IsRevoked && 
-                t.ExpiresAt > DateTime.UtcNow, ct
-            );
+        return await _context.RefreshTokens.AnyAsync(t =>
+            t.UserId == userId &&
+            t.DeviceId == deviceId &&
+            !t.IsRevoked &&
+            t.ExpiresAt > DateTime.UtcNow, ct);
+    }
+
+    public async Task<int> DeleteExpiredTokenAsync(CancellationToken ct = default)
+    {
+        var expiredTokens = await _context.RefreshTokens
+            .Where(t => t.ExpiresAt < DateTime.UtcNow)
+            .ToListAsync(ct);
+
+        if (!expiredTokens.Any()) return 0;
+
+        _context.RefreshTokens.RemoveRange(expiredTokens);
+        await _context.SaveChangesAsync(ct);
+        return expiredTokens.Count;
+    }
+
+    public async Task<List<RefreshTokenDto>> GetRefreshTokenByUserid(int userId, CancellationToken ct)
+    {
+        var refreshTokens = await _context.RefreshTokens.Where(el => el.UserId == userId).ToListAsync(ct);
+        return refreshTokens.Select(GetTokenDto).ToList();
     }
 
     private static RefreshTokenDto GetTokenDto(RefreshToken token)
     {
-        return new RefreshTokenDto
-        (
+        return new RefreshTokenDto(
             Id: token.Id,
             UserId: token.UserId,
             TokenHash: token.TokenHash,
+            TokenSalt: token.TokenSalt,
+            TokenLookupHash: token.TokenLookupHash,
             ExpiresAt: token.ExpiresAt,
             CreatedAt: token.CreatedAt,
             CreatedByIp: token.CreatedByIp,
             IsRevoked: token.IsRevoked,
             DeviceId: token.DeviceId
         );
-    }
-
-    public async Task<int> DeleteExpiredTokenAsync(CancellationToken ct)
-    {
-        var expiredTokens = await _context.RefreshTokens
-            .Where(t => t.ExpiresAt < DateTime.UtcNow)
-            .ToListAsync(ct);
-
-        if (!expiredTokens.Any())
-        {
-            return 0;
-        }
-        
-        _context.RefreshTokens.RemoveRange(expiredTokens);
-        await _context.SaveChangesAsync(ct);
-        
-        return expiredTokens.Count;
     }
 }

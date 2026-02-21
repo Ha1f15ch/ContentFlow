@@ -75,8 +75,21 @@ public class AuthController : ControllerBase
             {
                 return BadRequest(new { message = "Login failed", errors = result.Errors });
             }
+            
+            Response.Cookies.Append("refresh_token", result.RefreshToken!, new CookieOptions
+            {
+                HttpOnly = true,
+#if DEBUG
+                Secure = false,
+#else
+            Secure = true,
+#endif
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(7),
+                Path = "/api/auth"
+            });
 
-            return Ok(result);
+            return Ok(new { token = result.Token });
         }
         catch (Exception ex)
         {
@@ -136,12 +149,48 @@ public class AuthController : ControllerBase
 
         if (result)
         {
+            Response.Cookies.Delete("refresh_token", new CookieOptions { Path = "/api/auth" });
             return Ok(result);
         }
         else
         {
             return BadRequest(new { message = "Logout failed" });
         }
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh()
+    {
+        var refresh = Request.Cookies["refresh_token"];
+        if (string.IsNullOrWhiteSpace(refresh))
+            return Unauthorized(new { message = "Refresh token missing" });
+
+        var metadata = new ClientMetadata(
+            IpAddress: GetIpAddress(),
+            UserAgent: HttpContext.Request.Headers.UserAgent,
+            DeviceId: Request.Headers["DeviceId"],
+            Location: null
+        );
+
+        var result = await _mediator.Send(new RefreshCommand(refresh, metadata));
+
+        if (!result.Success)
+            return Unauthorized(new { message = "Refresh failed", errors = result.Errors });
+        
+        Response.Cookies.Append("refresh_token", result.RefreshToken!, new CookieOptions
+        {
+            HttpOnly = true,
+#if DEBUG
+            Secure = false,
+#else
+            Secure = true,
+#endif
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTimeOffset.UtcNow.AddDays(7),
+            Path = "/api/auth"
+        });
+        
+        return Ok(new { token = result.Token });
     }
     
     private string GetIpAddress()
