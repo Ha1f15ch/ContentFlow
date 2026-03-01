@@ -67,11 +67,15 @@ const submitPost = async () => {
 </script>
 
 <style scoped>
+
 .create-post-form {
   max-width: 600px;
   margin: 2rem auto;
   padding: 1rem;
-  background: #222;
+
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
 }
 
@@ -83,25 +87,30 @@ label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: bold;
+  color: var(--text-primary);
 }
 
 input, textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #444;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  background: #333;
-  color: white;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 button {
-  background-color: #007bff;
+  background-color: var(--btn-primary-bg);
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
+}
+
+button:hover {
+  background-color: var(--btn-primary-hover);
 }
 
 button:disabled {
@@ -113,4 +122,5 @@ button:disabled {
   color: #ff6b6b;
   margin-top: 0.5rem;
 }
+
 </style>
