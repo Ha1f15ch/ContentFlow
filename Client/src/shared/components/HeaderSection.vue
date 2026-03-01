@@ -13,68 +13,86 @@
         <button class="btn" @click="goToLogin">Войти</button>
       </div>
       
-      <div id="user-actions" class="user-info" v-else>
-        <span id="username">{{ authStore.user?.userName || 'Пользователь' }}</span>
-        <!-- Кнопка "Создать пост" -->
+      <div v-else class="user-area">
         <button class="btn create-post-btn" @click="goToCreatePost">+ Create</button>
-        <button class="btn" @click="handleLogout">Выйти</button>
+
+        <UserMenu 
+          :userName="authStore.user?.userName || 'Пользователь'" 
+          :avatarUrl="authStore.user?.avatarUrl"
+        />
       </div>
     </div>
   </header>
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useThemeStore } from '@/shared/stores/theme';
-import { useAuthStore } from '@/features/auth/stores/authStore';
+  import { computed } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { useThemeStore } from '@/shared/stores/theme';
+  import { useAuthStore } from '@/features/auth/stores/authStore';
 
-const router = useRouter();
-const themeStore = useThemeStore();
-const authStore = useAuthStore();
+  // Импортируем компонент UserMenu
+  import UserMenu from '@/shared/components/UserMenu.vue';
 
-const isDarkTheme = computed({
-  get: () => themeStore.isDark,
-  set: (value) => {
-    themeStore.isDark = value;
-    themeStore.applyTheme();
-    localStorage.setItem('theme', value ? 'dark' : 'light');
-  },
-});
+  const router = useRouter();
+  const themeStore = useThemeStore();
+  const authStore = useAuthStore();
 
-const goToLogin = () => {
-  router.push('/login');
-};
+  const isDarkTheme = computed({
+    get: () => themeStore.isDark,
+    set: (value) => {
+      themeStore.isDark = value;
+      themeStore.applyTheme();
+      localStorage.setItem('theme', value ? 'dark' : 'light');
+    },
+  });
 
-const goToCreatePost = () => {
-  // Проверка авторизации (на всякий случай)
-  if (!authStore.isAuthenticated) {
+  const goToLogin = () => {
     router.push('/login');
-    return;
-  }
-  router.push('/create-post');
-};
+  };
 
-const handleLogout = async () => {
-  await authStore.logout();
-  router.push("/login");
-};
+  const goToCreatePost = () => {
+    // Проверка авторизации (на всякий случай)
+    if (!authStore.isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    router.push('/create-post');
+  };
+
 </script>
 
 <style scoped>
 
-.create-post-btn {
-  margin-right: 10px; 
-  background-color: #007bff; 
-  color: white; 
-  border: none; 
-  padding: 8px 12px; 
-  border-radius: 4px; 
-  cursor: pointer; 
-  font-size: 14px; 
-}
+  .create-post-btn {
+    margin-right: 10px; 
+    background-color: #007bff; 
+    color: white; 
+    border: none; 
+    padding: 8px 12px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-size: 14px; 
+  }
 
-.create-post-btn:hover {
-  background-color: #0056b3; 
-}
+  .create-post-btn:hover {
+    background-color: #0056b3; 
+  }
+
+  .auth-section {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .user-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .theme-toggle span {
+    color: var(--text-primary);
+  }
+
 </style>

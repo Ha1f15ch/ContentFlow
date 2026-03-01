@@ -1,0 +1,26 @@
+﻿{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    },
+    "LogPath": "Logs"
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=SQLServerName;Database=ContentFlow;User Id=SQLServerLogin;Password=SQLServerPass;Encrypt=True;TrustServerCertificate=True;"
+  },
+  "EmailSettings": {
+    "Host": "hostName",
+    "Port": port,
+    "Username": "username",
+    "Password": "password",
+    "From": "email"
+  },
+  "JwtSettings": {
+    "Secret": "super-secretsuper-secretsuper-secretsuper-secretsuper-secretsuper-secret",
+    "Issuer": "contentflow-api",
+    "Audience": "contentflow-client",
+    "ExpiresInMinutes": 30
+  }
+}

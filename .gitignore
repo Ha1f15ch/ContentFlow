@@ -59,3 +59,10 @@ ContentFlow/ContentFlow.sln.DotSettings.user
 /ContentFlow/.vs/
 /ContentFlow/ContentFlow/
 /.idea/.gitignore
+
+# --- Server local config (do not commit)
+ContentFlow/ContentFlow.Web/appsettings.Development.json
+ContentFlow/ContentFlow.Web/appsettings.*.local.json
+
+# keep templates tracked
+!ContentFlow/ContentFlow.Web/appsettings.Development.json.example

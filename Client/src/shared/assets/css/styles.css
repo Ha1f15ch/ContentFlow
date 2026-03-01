@@ -5,37 +5,29 @@
   box-sizing: border-box;
 }
 
-body {
-  font-family: Arial, sans-serif;
-  transition: background-color 0.3s, color 0.3s;
+:root {
+  --header-bg: #ffffff;
+  --text-primary: #333;
+  --text-secondary: #666;
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --border-color: #ddd;
+  --btn-primary-bg: #007bff;
+  --btn-primary-hover: #0056b3;
+
+  --menu-bg: #ffffff;
+  --menu-text: #111;
+  --menu-hover: rgba(0,0,0,0.06);
 }
 
-/* Светлая тема */
-.light-theme {
-  background-color: #f5f5f5;
-  color: #333;
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color .3s, color .3s;
 }
 
 /* Тёмная тема */
-.dark-theme {
-  background-color: #222;
-  color: #f5f5f5;
-}
-
-/* Шапка */
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-  background-color: #333;
-  color: white;
-  /* Улучшаем контраст на тёмной теме */
-  background-color: var(--header-bg, #333);
-}
-
-/* Глобальные CSS переменные для темы */
-body:not(.light-theme) {
+body.dark-theme {
   --header-bg: #1e1e1e;
   --text-primary: #e0e0e0;
   --text-secondary: #a0a0a0;
@@ -44,6 +36,19 @@ body:not(.light-theme) {
   --border-color: #333;
   --btn-primary-bg: #1a73e8;
   --btn-primary-hover: #0d5db8;
+
+  --menu-bg: #1e1e1e;
+  --menu-text: #e0e0e0;
+  --menu-hover: rgba(255,255,255,0.08);
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: var(--header-bg);
+  color: var(--text-primary);
 }
 
 body.light-theme {
@@ -55,11 +60,14 @@ body.light-theme {
   --border-color: #ddd;
   --btn-primary-bg: #007bff;
   --btn-primary-hover: #0056b3;
+
+  --menu-bg: #ffffff;
+  --menu-text: #111;
+  --menu-hover: rgba(0,0,0,0.06);
 }
 
-/* Улучшаем стиль кнопки + Create */
 .create-post-btn {
-  margin-left: 10px; /* если до неё есть другие элементы */
+  margin-left: 10px;
   background-color: var(--btn-primary-bg);
   color: white;
   border: none;
@@ -67,7 +75,6 @@ body.light-theme {
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  /* Улучшаем контраст на тёмных фонах */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   transition: background-color 0.2s, transform 0.2s;
 }
@@ -77,15 +84,13 @@ body.light-theme {
   transform: translateY(-1px);
 }
 
-/* Улучшаем стиль юзернейма */
 .user-info span#username {
   color: var(--text-primary);
   font-weight: 500;
 }
 
-/* Улучшаем стиль кнопки "Выйти" */
 .user-info .btn {
-  background-color: #dc3545; /* красная кнопка "Выйти" */
+  background-color: #dc3545;
   color: white;
 }
 
@@ -93,7 +98,6 @@ body.light-theme {
   background-color: #bd2130;
 }
 
-/* Переносим сюда стиль для кнопки "Читать далее", если используется */
 .read-more {
   background: transparent;
   color: #007bff;
@@ -103,13 +107,6 @@ body.light-theme {
   font-size: 12px;
   cursor: pointer;
 }
-
-.dark-theme .read-more {
-  color: #4da6ff;
-  border-color: #4da6ff;
-}
-
-/* Остальные стили остаются без изменений */
 
 .theme-toggle {
   display: flex;
@@ -188,7 +185,6 @@ input:checked + .slider:before {
   background-color: var(--btn-primary-hover);
 }
 
-/* Герой */
 .hero {
   padding: 4rem 2rem;
   text-align: center;
@@ -220,7 +216,6 @@ input:checked + .slider:before {
   display: none;
 }
 
-/* Модальное окно */
 .modal {
   position: fixed;
   top: 0;
@@ -311,18 +306,4 @@ footer {
 
 .tabs button:hover {
   background-color: #ddd;
-}
-
-/* Для тёмной темы */
-.dark-theme .tabs button {
-  background-color: #444;
-  color: var(--text-primary);
-}
-
-.dark-theme .tabs button:hover {
-  background-color: #555;
-}
-
-.dark-theme .tabs button.active {
-  background-color: var(--btn-primary-bg);
 }
