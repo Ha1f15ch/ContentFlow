@@ -12,4 +12,12 @@ export const userProfileService = {
   deleteMe() {
     return apiClient.delete("/userprofile");
   },
+
+  getMyFollowers() {
+    return apiClient.get("/userprofile/my-followers");
+  },
+
+  getMyFollowing() {
+    return apiClient.get("/userprofile/my-following");
+  }
 };

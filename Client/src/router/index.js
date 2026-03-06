@@ -4,7 +4,8 @@ import HomeView from '@/views/HomeView.vue';
 import LoginView from '@/views/Login.vue';
 import RegisterView from '@/views/Register.vue';
 import ConfirmEmailView from '@/views/ConfirmEmail.vue';
-import CreatePostView from '@/features/post/components/CreatePostView.vue';
+import CreatePostView from '@/features/post/views/CreatePostView.vue';
+import MyProfileView from '@/features/userProfile/views/MyProfileView.vue';
 
 const routes = [
   {
@@ -33,6 +34,12 @@ const routes = [
     name: 'createPost',
     component: CreatePostView,
     meta: { requiresAuth: true } // Защита: только для авторизованных
+  },
+  {
+    path: '/me',
+    name: 'myProfile',
+    component: MyProfileView,
+    meta: { requiresAuth: true }
   },
 ];
 

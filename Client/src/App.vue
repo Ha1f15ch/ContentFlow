@@ -2,7 +2,7 @@
   <div id="app" :class="{ 'dark-theme': isDarkTheme, 'light-theme': !isDarkTheme }">
     <HeaderSection />
     <router-view />
-    <footer>
+    <footer class="app-footer">
       <p>&copy; 2025 Мой сайт. Все права защищены.</p>
     </footer>
   </div>
