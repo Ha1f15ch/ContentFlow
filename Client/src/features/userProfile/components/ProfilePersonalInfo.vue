@@ -107,7 +107,7 @@
         <div class="label">Пол</div>
         <div v-if="!isEditing" class="value">{{ profile.gender || "—" }}</div>
         <select v-else v-model="form.gender" class="form-input">
-          <option value="">Не указан</option>
+          <option value="Undefined">Не указан</option>
           <option value="Male">Мужской</option>
           <option value="Female">Женский</option>
         </select>
