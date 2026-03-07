@@ -53,8 +53,12 @@
           v-model="form.firstName"
           class="form-input"
           type="text"
+          :maxlength="LIMITS.firstName"
           placeholder="Введите имя"
         />
+        <div v-if="isEditing" class="field-hint">
+          {{ form.firstName.length }}/{{ LIMITS.firstName }}
+        </div>
       </div>
       <div class="info-item">
         <div class="label">Фамилия</div>
@@ -64,8 +68,12 @@
           v-model="form.lastName"
           class="form-input"
           type="text"
+          :maxlength="LIMITS.lastName"
           placeholder="Введите фамилию"
         />
+        <div v-if="isEditing" class="field-hint">
+          {{ form.lastName.length }}/{{ LIMITS.lastName }}
+        </div>
       </div>
       <div class="info-item">
         <div class="label">Отчество</div>
@@ -75,8 +83,12 @@
           v-model="form.middleName"
           class="form-input"
           type="text"
+          :maxlength="LIMITS.middleName"
           placeholder="Введите отчество"
         />
+        <div v-if="isEditing" class="field-hint">
+          {{ form.middleName.length }}/{{ LIMITS.middleName }}
+        </div>
       </div>
       <div class="info-item">
         <div class="label">Дата рождения</div>
@@ -100,8 +112,12 @@
           v-model="form.city"
           class="form-input"
           type="text"
+          :maxlength="LIMITS.city"
           placeholder="Введите город"
         />
+        <div v-if="isEditing" class="field-hint">
+          {{ form.city.length }}/{{ LIMITS.city }}
+        </div>
       </div>
       <div class="info-item">
         <div class="label">Пол</div>
@@ -120,8 +136,12 @@
           v-model="form.bio"
           class="form-input form-textarea"
           rows="5"
+          maxlength="2000"
           placeholder="Расскажите о себе"
         />
+        <div v-if="isEditing" class="field-hint">
+          {{ form.bio.length }}/2000
+        </div>
       </div>
       <div class="info-item">
         <div class="label">Профиль создан</div>
@@ -143,7 +163,6 @@
   const props = defineProps({
       profile: {
           type: Object,
-          required: null,
           default: null,
       },
   });
@@ -163,6 +182,14 @@
     bio: "",
     gender: "",
   });
+
+  const LIMITS = {
+    firstName: 200,
+    lastName: 200,
+    middleName: 200,
+    city: 500,
+    bio: 2000,
+  };
 
   function normalizeString(value) {
     return value ?? "";
@@ -220,6 +247,12 @@
   async function saveChanges() {
     if (!props.profile || !hasChanges.value) return;
 
+    const validationError = validateForm();
+    if (validationError) {
+      saveError.value = validationError;
+      return;
+    }
+
     saving.value = true;
     saveError.value = "";
 
@@ -267,6 +300,31 @@
 
     return date.toLocaleString("ru-RU");
   }
+
+  function validateForm() {
+    if (form.firstName.length > LIMITS.firstName) {
+      return `Имя не должно превышать ${LIMITS.firstName} символов.`;
+    }
+
+    if (form.lastName.length > LIMITS.lastName) {
+      return `Фамилия не должна превышать ${LIMITS.lastName} символов.`;
+    }
+
+    if (form.middleName.length > LIMITS.middleName) {
+      return `Отчество не должно превышать ${LIMITS.middleName} символов.`;
+    }
+
+    if (form.city.length > LIMITS.city) {
+      return `Город не должен превышать ${LIMITS.city} символов.`;
+    }
+
+    if (form.bio.length > LIMITS.bio) {
+      return `Поле "О себе" не должно превышать ${LIMITS.bio} символов.`;
+    }
+
+    return "";
+  }
+
 </script>
 
 <style scoped>
@@ -360,4 +418,12 @@
   resize: vertical;
   min-height: 120px;
 }
+
+.field-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
 </style>
