@@ -40,9 +40,21 @@
   const showMenu = ref(false);
   const root = ref(null);
   
-  const avatarError = ref(false)
+  const avatarError = ref(false);
 
-  const resolvedAvatar = computed(() => props.avatarUrl?.trim() || '')
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+  const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
+
+  const resolvedAvatar = computed(() => {
+    const raw = props.avatarUrl?.trim() || "";
+    if (!raw) return "";
+
+    if (raw.startsWith("http://") || raw.startsWith("https://")) {
+      return raw;
+    }
+
+    return `${API_ORIGIN}${raw}`;
+  });
 
   watch(resolvedAvatar, () => (avatarError.value = false))
   

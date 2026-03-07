@@ -19,5 +19,17 @@ export const userProfileService = {
 
   getMyFollowing() {
     return apiClient.get("/userprofile/my-following");
-  }
+  },
+
+  updateAvatar(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return apiClient.put("/userprofile/avatar", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
+
 };
