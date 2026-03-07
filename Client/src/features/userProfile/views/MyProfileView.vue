@@ -52,6 +52,7 @@
             <ProfilePersonalInfo
                 v-if="activeTab === 'personal' && profile"
                 :profile="profile"
+                @updated="handleProfileUpdated"
             />
 
             <ProfileSubscriptions
@@ -78,6 +79,10 @@
     const followers = ref([]);
     const following = ref([]);
     const activeTab = ref("personal");
+
+    function handleProfileUpdated(updatedProfile) {
+        profile.value = updatedProfile;
+    }
 
     const fullName = computed(() => {
         if(!profile.value) return "";
