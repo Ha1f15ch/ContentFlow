@@ -25,8 +25,7 @@ public class FileStorageService : IFileStorageService
     
     if (file.Length > MaxFileSizeBytes)
         throw new ArgumentException($"Avatar size exceeds maximum of {MaxFileSizeBytes / (1024 * 1024)} MB.");
-
-    // Проверка по Content-Type (можно подделать, но быстро отсеивает 90%)
+    
     if (!AllowedMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
         throw new ArgumentException("Only JPEG, PNG, GIF, and WebP images are allowed.");
 

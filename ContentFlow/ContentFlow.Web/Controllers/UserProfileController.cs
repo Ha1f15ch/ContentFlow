@@ -164,7 +164,7 @@ public class UserProfileController : ControllerBase
     }
 
     [HttpPut("avatar")]
-    public async Task<IActionResult> UpdateAvatarAsync([FromForm] IFormFile file)
+    public async Task<IActionResult> UpdateAvatarAsync(IFormFile file)
     {
         if (file == null || file.Length == 0)
         {
