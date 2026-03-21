@@ -62,6 +62,7 @@ public class PostRepository : IPostRepository
                 post.Title,
                 post.Slug,
                 post.Excerpt,
+                post.Content,
                 post.AuthorId,
                 post.Status,
                 post.CreatedAt,
