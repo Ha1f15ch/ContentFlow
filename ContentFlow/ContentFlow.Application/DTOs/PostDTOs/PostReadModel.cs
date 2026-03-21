@@ -7,6 +7,7 @@ public record PostReadModel(
     string Title,
     string Slug,
     string Excerpt,
+    string Content,
     int AuthorId,
     PostStatus Status,
     DateTime CreatedAt,

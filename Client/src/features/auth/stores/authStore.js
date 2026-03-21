@@ -8,7 +8,6 @@ export const useAuthStore = defineStore("auth", {
     token: getToken(),
     user: null,
 
-    // чтобы не дергать /me много раз параллельно
     _mePromise: null,
   }),
 

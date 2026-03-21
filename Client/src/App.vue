@@ -27,7 +27,6 @@ onMounted(async () => {
   try {
     await authStore.bootstrap();
   } catch (e) {
-    // чтобы не спамить ошибками в консоли, просто логируем и продолжаем
     console.warn("bootstrap failed", e);
   }
 });

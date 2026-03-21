@@ -7,6 +7,7 @@ public record PostDto(
     string Title,
     string Slug,
     string Excerpt,
+    string? Content,
     int AuthorId,
     string AuthorName,
     string? AuthorAvatar,
