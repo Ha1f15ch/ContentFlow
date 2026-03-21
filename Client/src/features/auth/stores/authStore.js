@@ -32,8 +32,12 @@ export const useAuthStore = defineStore("auth", {
     },
 
     async logout() {
+      const hadToken = !!this.token;
+
       try {
-        await authService.logout();
+        if (hadToken) {
+          await authService.logout();
+        }
       } catch (e) {
         console.warn("server logout failed", e);
       } finally {
@@ -42,6 +46,11 @@ export const useAuthStore = defineStore("auth", {
     },
 
     async bootstrap() {
+      if (!this.token) {
+        this.user = null;
+        return null;
+      }
+
       if (this.user) return this.user;
 
       if (this._mePromise) return this._mePromise;
@@ -54,7 +63,7 @@ export const useAuthStore = defineStore("auth", {
         } catch (err) {
           const status = err?.response?.status;
           if (status === 401 || status === 403) {
-            await this.logout();
+            this.clearToken();
             return null;
           } 
           throw err;

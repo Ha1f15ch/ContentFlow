@@ -116,12 +116,14 @@
 
 <script setup>
     import { computed, onMounted, ref } from "vue";
+    import { useRouter } from "vue-router";
     import { userProfileService } from "@/features/userProfile/api/userProfileService";
     import ProfilePersonalInfo from "@/features/userProfile/components/ProfilePersonalInfo.vue";
     import ProfileSubscriptions from "@/features/userProfile/components/ProfileSubscriptions.vue";
     import { useAuthStore } from "@/features/auth/stores/authStore";
 
     const authStore = useAuthStore();
+    const router = useRouter();
 
     const loading = ref(true);
     const subscriptionsLoading = ref(false);
@@ -230,6 +232,11 @@
     }
 
     onMounted(async () => {
+        if (!authStore.isAuthenticated) {
+            router.replace("/login");
+            return;
+        }
+
         loading.value = true;
         error.value = "";
 

@@ -105,10 +105,20 @@ const error = ref('');
 
 const handleLogin = async () => {
   try {
-    await authService.login({ email: email.value, password: password.value });
-    closeModal(); // или modalStore.closeModal()
+    const data = await authService.login({
+      email: email.value,
+      password: password.value,
+    });
+
+    const token = data.accessToken ?? data.token;
+    if (token) {
+      authStore.setToken(token);
+      await authStore.bootstrap();
+    }
+
+    closeModal();
   } catch (err) {
-    error.value = err.response?.data?.message || 'Ошибка входа';
+    error.value = err.response?.data?.message || "Ошибка входа";
   }
 };
 
