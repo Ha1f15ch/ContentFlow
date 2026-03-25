@@ -1,6 +1,5 @@
 <template>
   <div class="create-post-container">
-    <h1>Создать пост</h1>
     <CreatePostForm />
   </div>
 </template>
@@ -11,8 +10,9 @@ import CreatePostForm from '@/features/post/components/CreatePost.vue';
 
 <style scoped>
 .create-post-container {
-  max-width: 800px;
-  margin: 2rem auto;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
   padding: 1rem;
 }
 </style>
