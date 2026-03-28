@@ -42,17 +42,19 @@ public class GetCommentsByPostIdQueryHandler : IRequestHandler<GetCommentsByPost
             _logger.LogWarning("Failed to load comments: post not found. PostId: {PostId}", request.PostId);
             throw new NotFoundException($"Post with id: {request.PostId} not found");
         }
+        
+        var includeDeleted = request.UserId > 0;
 
         _logger.LogDebug("Loading approved comments for post {PostId}", request.PostId);
-        var postComments = await _commentRepository.GetApprovedByPostIdAsync(request.PostId, cancellationToken);
-
-        _logger.LogInformation("Loaded {CommentCount} approved comments for post {PostId}", postComments.Count, request.PostId);
+        var postComments = await _commentRepository.GetVisibleByPostIdAsync(
+            request.PostId,
+            includeDeleted,
+            cancellationToken);
 
         if (!postComments.Any())
-        {
-            _logger.LogInformation("No approved comments found for post {PostId}", request.PostId);
             return new List<CommentDto>();
-        }
+
+        _logger.LogInformation("Loaded {CommentCount} approved comments for post {PostId}", postComments.Count, request.PostId);
 
         var authorIds = postComments.Select(c => c.AuthorId).Distinct().ToList();
         _logger.LogDebug("Fetching user data for {UserCount} authors", authorIds.Count);

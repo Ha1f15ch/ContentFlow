@@ -37,9 +37,15 @@ function rejectWaiters(err) {
   refreshWaiters = [];
 }
 
+const refreshClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: { "Content-Type": "application/json" },
+  withCredentials: true,
+});
+
 async function refreshAccessTokenApi() {
-  const resp = await apiClient.post("/auth/refresh", null);
-  return resp.data; 
+  const resp = await refreshClient.post("/auth/refresh", null);
+  return resp.data;
 }
 
 apiClient.interceptors.response.use(
