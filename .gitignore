@@ -66,3 +66,4 @@ ContentFlow/ContentFlow.Web/appsettings.*.local.json
 
 # keep templates tracked
 !ContentFlow/ContentFlow.Web/appsettings.Development.json.example
+ContentFlow/ContentFlow.Web/wwwroot/uploads/avatars/
