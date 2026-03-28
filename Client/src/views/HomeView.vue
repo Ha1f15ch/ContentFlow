@@ -1,12 +1,8 @@
 <template>
   <div class="home">
-    <h1>Добро пожаловать!</h1>
+    <div class="home-top">
+      <h1>Добро пожаловать!</h1>
 
-    <div v-if="loading">
-      <p>Загрузка...</p>
-    </div>
-
-    <div v-else>
       <div v-if="authStore.isAuthenticated" class="welcome-block">
         <h2>Привет, {{ userProfile?.firstName || 'Пользователь' }}!</h2>
       </div>
@@ -14,23 +10,41 @@
       <div v-else class="guest-block">
         <p>Вы вошли как гость. Посты и комментарии доступны для чтения.</p>
       </div>
-
-      <PostList :posts="posts" @open="openPost" />
-
-      <CategoryListSmart />
-
-      <TagList :tags="tags" />
-
-      <PostDetailsModal
-        v-model="isPostModalOpen"
-        :post-id="selectedPostId"
-        :is-authenticated="authStore.isAuthenticated"
-      />
     </div>
+
+    <div v-if="loading" class="home-loading">
+      <p>Загрузка...</p>
+    </div>
+
+    <div v-else class="home-layout">
+      <div class="home-sidebar">
+        <PostFilters
+          v-model="filters"
+          :categories="categories"
+          :view-mode="viewMode"
+          :is-authenticated="authStore.isAuthenticated"
+          @update:viewMode="handleViewModeChange"
+          @apply="loadPosts"
+          @reset="resetFilters"
+        />
+      </div>
+
+      <div class="home-content">
+        <PostList :posts="posts" @open="openPost" />
+      </div>
+    </div>
+
+    <CategoryListSmart />
+    <TagList :tags="tags" />
+
+    <PostDetailsModal
+      v-model="isPostModalOpen"
+      :post-id="selectedPostId"
+      :is-authenticated="authStore.isAuthenticated"
+    />
   </div>
 </template>
 
-// Логика для HomeView.vue
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
@@ -38,12 +52,18 @@ import { useAuthStore } from "@/features/auth/stores/authStore";
 
 import PostList from "@/shared/components/PostList.vue";
 import PostDetailsModal from "@/features/post/components/PostDetailsModal.vue";
+import PostFilters from "@/features/post/components/PostFilters.vue";
 import TagList from "@/shared/components/TagList.vue";
 import CategoryListSmart from "@/features/category/components/CategoryListSmart.vue";
 
 import { userProfileService } from "@/features/userProfile/api/userProfileService";
 import { tagService } from "@/features/tag/api/tagService";
-import { postService } from "@/features/post/api/postService";
+import {
+  postService,
+  POST_SORT_BY,
+  SORT_DIRECTION,
+  POST_STATUS,
+} from "@/features/post/api/postService";
 
 const router = useRouter();
 const route = useRoute();
@@ -52,7 +72,20 @@ const authStore = useAuthStore();
 const userProfile = ref(null);
 const tags = ref([]);
 const posts = ref([]);
+const categories = ref([]);
 const loading = ref(true);
+
+const viewMode = ref("feed");
+
+const filters = ref({
+  search: "",
+  categoryId: null,
+  createdFrom: "",
+  sort: {
+    sortBy: POST_SORT_BY.CreatedAt,
+    direction: SORT_DIRECTION.Desc,
+  },
+});
 
 const selectedPostId = computed(() => {
   const raw = route.query.postId;
@@ -87,13 +120,84 @@ const openPost = async (id) => {
   });
 };
 
+const currentAuthorId = computed(() => {
+  return authStore.user?.userId ?? null;
+});
+
+function buildPostFilter() {
+  const filter = {
+    search: filters.value.search || null,
+    categoryId: filters.value.categoryId,
+    createdFrom: filters.value.createdFrom || null,
+    sort: {
+      sortBy: filters.value.sort.sortBy,
+      direction: filters.value.sort.direction,
+    },
+  };
+
+  if (viewMode.value === "feed") {
+    filter.status = POST_STATUS.Published;
+  }
+
+  if (viewMode.value === "myPublished") {
+    filter.status = POST_STATUS.Published;
+    filter.authorId = currentAuthorId.value;
+  }
+
+  if (viewMode.value === "myDrafts") {
+    filter.status = POST_STATUS.Draft;
+    filter.authorId = currentAuthorId.value;
+  }
+
+  if (viewMode.value === "myArchived") {
+    filter.status = POST_STATUS.Archived;
+    filter.authorId = currentAuthorId.value;
+  }
+
+  return filter;
+}
+
+async function loadPosts() {
+  try {
+    const response = await postService.getPosts({
+      page: 1,
+      pageSize: 10,
+      filter: buildPostFilter(),
+    });
+
+    console.log("GET /posts response:", response.data);
+    posts.value = response.data?.items ?? [];
+  } catch (err) {
+    console.error("Ошибка загрузки постов:", err);
+  }
+}
+
+function handleViewModeChange(mode) {
+  viewMode.value = mode;
+  loadPosts();
+}
+
+function resetFilters() {
+  filters.value = {
+    search: "",
+    categoryId: null,
+    createdFrom: "",
+    sort: {
+      sortBy: POST_SORT_BY.CreatedAt,
+      direction: SORT_DIRECTION.Desc,
+    },
+  };
+
+  viewMode.value = "feed";
+  loadPosts();
+}
+
 onMounted(async () => {
   loading.value = true;
 
   try {
     const requests = [
       tagService.getTags({ page: 1, pageSize: 50 }),
-      postService.getPosts({ page: 1, pageSize: 10 }),
     ];
 
     if (authStore.isAuthenticated) {
@@ -106,15 +210,16 @@ onMounted(async () => {
       Array.isArray(data) ? data : (data?.items ?? []);
 
     if (authStore.isAuthenticated) {
-      const [userResp, tagsResp, postsResp] = responses;
+      const [userResp, tagsResp] = responses;
       userProfile.value = userResp.data;
       tags.value = unwrapItems(tagsResp.data);
-      posts.value = unwrapItems(postsResp.data);
     } else {
-      const [tagsResp, postsResp] = responses;
+      const [tagsResp] = responses;
       tags.value = unwrapItems(tagsResp.data);
-      posts.value = unwrapItems(postsResp.data);
     }
+
+    categories.value = [];
+    await loadPosts();
   } catch (err) {
     console.error("Ошибка загрузки данных:", err);
   } finally {
@@ -125,12 +230,47 @@ onMounted(async () => {
 
 <style scoped>
 .home {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.home-top {
   text-align: center;
-  padding: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .welcome-block,
 .guest-block {
-  margin-bottom: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.home-loading {
+  text-align: center;
+  padding: 2rem;
+}
+
+.home-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 760px);
+  justify-content: center;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.home-sidebar {
+  min-width: 0;
+}
+
+.home-content {
+  min-width: 0;
+  display: block;
+}
+
+@media (max-width: 1100px) {
+  .home-layout {
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
 }
 </style>

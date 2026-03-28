@@ -170,7 +170,7 @@ async function loadDrafts() {
 
   loadingDrafts.value = true;
   try {
-    const response = await postService.getMyDrafts(authStore.user.id);
+    const response = await postService.getMyDrafts(authStore.user.userId);
     drafts.value = response.data?.items ?? [];
   } catch (err) {
     console.error("Ошибка загрузки черновиков", err);
@@ -184,7 +184,7 @@ async function loadPublishedPosts() {
 
   loadingPublished.value = true;
   try {
-    const response = await postService.getMyPublished(authStore.user.id);
+    const response = await postService.getMyPublished(authStore.user.userId);
     publishedPosts.value = response.data?.items ?? [];
   } catch (err) {
     console.error("Ошибка загрузки опубликованных постов", err);
