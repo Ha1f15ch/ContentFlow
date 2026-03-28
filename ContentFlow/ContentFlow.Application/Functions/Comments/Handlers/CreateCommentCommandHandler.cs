@@ -43,6 +43,11 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
                 request.PostId, request.AuthorId);
             throw new NotFoundException("Post not found");
         }
+        
+        if (string.IsNullOrWhiteSpace(request.Content))
+        {
+            throw new ArgumentException("Comment content cannot be empty.");
+        }
 
         var user = await _userService.GetByIdAsync(request.AuthorId, cancellationToken);
         if (user == null)
@@ -96,7 +101,7 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
         try
         {
             var newComment = new Comment(
-                content: request.Content,
+                content: request.Content.Trim(),
                 postId: request.PostId,
                 authorId: user.Id,
                 parentCommentId: request.ParentCommentId);

@@ -26,10 +26,9 @@ public class CommentsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = "CanEditContent")]
     public async Task<IActionResult> GetComments(int postId)
     {
-        var userIdByClaims = User.GetAuthenticatedUserId();
+        var userIdByClaims = User.GetUserId() ?? 0;
         _logger.LogInformation("Getting comments for post {PostId}", postId);
         
         var command = new GetCommentsByPostIdQuery(PostId: postId, UserId: userIdByClaims);

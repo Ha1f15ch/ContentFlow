@@ -6,8 +6,9 @@ public record CommentDto(
     int Id,
     int PostId,
     string Content,
-    string AuthorName,
+    string UserName,
     DateTime CreatedAt,
     List<CommentDto> Comments,
     int? ParentCommentId,
-    string CommentStatus);
+    string CommentStatus,
+    bool IsDeleted);

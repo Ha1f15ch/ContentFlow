@@ -17,7 +17,7 @@ public class CommentTests
         comment.Content.Should().Be("Great post!");
         comment.PostId.Should().Be(PostId);
         comment.AuthorId.Should().Be(AuthorId);
-        comment.Status.Should().Be(CommentStatus.Pending);
+        comment.Status.Should().Be(CommentStatus.Approved);
         comment.IsDeleted.Should().BeFalse();
         comment.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         comment.ParentCommentId.Should().BeNull();

@@ -104,7 +104,27 @@ public class CommentRepository : ICommentRepository
             .Where(c => c.PostId == postId &&
                         c.Status == CommentStatus.Approved &&
                         !c.IsDeleted)
-            .OrderBy(c => c.CreatedAt)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync(ct);
+    }
+    
+    public async Task<List<Comment>> GetVisibleByPostIdAsync(int postId, bool includeDeleted, CancellationToken ct)
+    {
+        if (postId == 0)
+            return new List<Comment>();
+
+        var query = _context.Comments
+            .AsNoTracking()
+            .Where(c => c.PostId == postId &&
+                        c.Status == CommentStatus.Approved);
+
+        if (!includeDeleted)
+        {
+            query = query.Where(c => !c.IsDeleted);
+        }
+
+        return await query
+            .OrderByDescending(c => c.CreatedAt)
             .ToListAsync(ct);
     }
 

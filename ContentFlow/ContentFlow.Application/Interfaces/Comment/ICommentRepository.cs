@@ -11,6 +11,7 @@ public interface ICommentRepository
     Task<PaginatedResult<Domain.Entities.Comment>> GetApprovedAsync(int page, int pageSize, CancellationToken ct);
     Task<PaginatedResult<Domain.Entities.Comment>> GetPendingAsync(int page, int pageSize, CancellationToken ct);
     Task<List<Domain.Entities.Comment>> GetApprovedByPostIdAsync(int postId, CancellationToken ct);
+    Task<List<Domain.Entities.Comment>> GetVisibleByPostIdAsync(int postId, bool includeDeleted, CancellationToken ct);
     Task<int> GetCountAsync(int postId, CancellationToken ct);
     Task AddAsync(Domain.Entities.Comment comment, CancellationToken ct);
     Task UpdateAsync(Domain.Entities.Comment comment, CancellationToken ct);

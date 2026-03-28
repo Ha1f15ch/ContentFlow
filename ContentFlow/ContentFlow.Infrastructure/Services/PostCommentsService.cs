@@ -24,11 +24,12 @@ public class PostCommentsService : IPostCommentsService
             Id: c.Id,
             PostId: c.PostId,
             Content: c.Content,
-            AuthorName: userNames.GetValueOrDefault(c.AuthorId, "Unknown"),
+            UserName: userNames.GetValueOrDefault(c.AuthorId, "Unknown"),
             CreatedAt: c.CreatedAt,
             Comments: new List<CommentDto>(),
             ParentCommentId: c.ParentCommentId,
-            CommentStatus: c.Status.ToString()
+            CommentStatus: c.Status.ToString(),
+            IsDeleted: c.IsDeleted
             )).ToList();
 
         var commentDict = commentsDto.ToDictionary(c => c.Id);
