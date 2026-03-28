@@ -20,19 +20,32 @@ public class PostFilterSpecification : IQuerySpecification<Post>
         
         if (!string.IsNullOrWhiteSpace(_postFilter.Search))
         {
+            var search = _postFilter.Search.Trim();
+
             query = query.Where(p =>
-                p.Title.Contains(_postFilter.Search) ||
-                p.Content.Contains(_postFilter.Search));
+                p.Title.Contains(search) ||
+                p.Content.Contains(search));
         }
         
         if (_postFilter.CategoryId.HasValue)
         {
-            query = query.Where(p => p.CategoryId == _postFilter.CategoryId);
+            query = query.Where(p => p.CategoryId == _postFilter.CategoryId.Value);
         }
 
         if (_postFilter.Status.HasValue)
         {
-            query = query.Where(p => p.Status == _postFilter.Status);
+            query = query.Where(p => p.Status == _postFilter.Status.Value);
+        }
+
+        if (_postFilter.AuthorId.HasValue)
+        {
+            query = query.Where(p => p.AuthorId == _postFilter.AuthorId.Value);
+        }
+
+        if (_postFilter.CreatedFrom.HasValue)
+        {
+            var createdFrom = _postFilter.CreatedFrom.Value.Date;
+            query = query.Where(p => p.CreatedAt >= createdFrom);
         }
 
         return query;

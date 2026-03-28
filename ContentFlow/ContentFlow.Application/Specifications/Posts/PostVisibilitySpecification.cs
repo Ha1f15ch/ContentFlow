@@ -8,7 +8,7 @@ public class PostVisibilitySpecification : IQuerySpecification<Post>
 {
     private readonly int? _currentUserId;
     
-    public PostVisibilitySpecification(int ? currentUserId)
+    public PostVisibilitySpecification(int? currentUserId)
     {
         _currentUserId = currentUserId;
     }
@@ -21,11 +21,9 @@ public class PostVisibilitySpecification : IQuerySpecification<Post>
         }
         
         var userId = _currentUserId.Value;
-        
+
         return query.Where(p =>
             p.Status == PostStatus.Published ||
-            p.Status == PostStatus.Archived ||
-            (p.Status == PostStatus.Draft && p.AuthorId == userId) ||
-            (p.Status == PostStatus.PendingModeration && p.AuthorId == userId));
+            p.AuthorId == userId);
     }
 }

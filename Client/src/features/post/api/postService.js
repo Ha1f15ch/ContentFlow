@@ -24,43 +24,38 @@ function buildPostQueryParams({
   page = 1,
   pageSize = 10,
   filter = {},
-  currentUserId = null,
 } = {}) {
   const params = {
-    page,
-    pageSize,
+    Page: page,
+    PageSize: pageSize,
   };
 
-  if (currentUserId != null) {
-    params.currentUserId = currentUserId;
-  }
-
   if (filter.search) {
-    params["filter.search"] = filter.search;
+    params["Filter.Search"] = filter.search;
   }
 
   if (filter.categoryId != null) {
-    params["filter.categoryId"] = filter.categoryId;
+    params["Filter.CategoryId"] = filter.categoryId;
   }
 
   if (filter.status != null) {
-    params["filter.status"] = filter.status;
+    params["Filter.Status"] = filter.status;
   }
 
   if (filter.authorId != null) {
-    params["filter.authorId"] = filter.authorId;
+    params["Filter.AuthorId"] = filter.authorId;
   }
 
   if (filter.createdFrom) {
-    params["filter.createdFrom"] = filter.createdFrom;
+    params["Filter.CreatedFrom"] = filter.createdFrom;
   }
 
   if (filter.sort?.sortBy != null) {
-    params["filter.sort.sortBy"] = filter.sort.sortBy;
+    params["Filter.Sort.SortBy"] = filter.sort.sortBy;
   }
 
   if (filter.sort?.direction != null) {
-    params["filter.sort.direction"] = filter.sort.direction;
+    params["Filter.Sort.Direction"] = filter.sort.direction;
   }
 
   return params;
@@ -68,8 +63,10 @@ function buildPostQueryParams({
 
 export const postService = {
   getPosts(options = {}) {
+    const builtParams = buildPostQueryParams(options);
+    console.log("GET /posts params:", builtParams);
     return apiClient.get("/posts", {
-      params: buildPostQueryParams(options),
+      params: builtParams,
     });
   },
 
