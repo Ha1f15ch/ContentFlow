@@ -1,41 +1,27 @@
 <template>
   <div class="home">
-    <div class="home-top">
-      <h1>Добро пожаловать!</h1>
-
-      <div v-if="authStore.isAuthenticated" class="welcome-block">
-        <h2>Привет, {{ userProfile?.firstName || 'Пользователь' }}!</h2>
-      </div>
-
-      <div v-else class="guest-block">
-        <p>Вы вошли как гость. Посты и комментарии доступны для чтения.</p>
-      </div>
-    </div>
-
     <div v-if="loading" class="home-loading">
       <p>Загрузка...</p>
     </div>
 
     <div v-else class="home-layout">
-      <div class="home-sidebar">
-        <PostFilters
-          v-model="filters"
-          :categories="categories"
-          :view-mode="viewMode"
-          :is-authenticated="authStore.isAuthenticated"
-          @update:viewMode="handleViewModeChange"
-          @apply="loadPosts"
-          @reset="resetFilters"
-        />
-      </div>
-
       <div class="home-content">
-        <PostList :posts="posts" @open="openPost" />
+        <PostSectionsTabs
+          v-model="viewMode"
+          :is-authenticated="authStore.isAuthenticated"
+          @update:modelValue="handleViewModeChange"
+        />
+      
+        <div class="posts-area">
+          <PostList :posts="posts" @open="openPost" />
+        </div>
       </div>
     </div>
 
-    <CategoryListSmart />
-    <TagList :tags="tags" />
+    <div class="home-extra">
+      <CategoryListSmart />
+      <TagList :tags="tags" />
+    </div>
 
     <PostDetailsModal
       v-model="isPostModalOpen"
@@ -49,10 +35,12 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/features/auth/stores/authStore";
+import { watch } from "vue";
+import { usePostFeedUiStore } from "@/features/post/stores/postFeedUiStore";
 
 import PostList from "@/shared/components/PostList.vue";
 import PostDetailsModal from "@/features/post/components/PostDetailsModal.vue";
-import PostFilters from "@/features/post/components/PostFilters.vue";
+import PostSectionsTabs from "@/features/post/components/PostSectionsTabs.vue";
 import TagList from "@/shared/components/TagList.vue";
 import CategoryListSmart from "@/features/category/components/CategoryListSmart.vue";
 
@@ -69,6 +57,7 @@ const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 
+const postFeedUiStore = usePostFeedUiStore();
 const userProfile = ref(null);
 const tags = ref([]);
 const posts = ref([]);
@@ -77,15 +66,7 @@ const loading = ref(true);
 
 const viewMode = ref("feed");
 
-const filters = ref({
-  search: "",
-  categoryId: null,
-  createdFrom: "",
-  sort: {
-    sortBy: POST_SORT_BY.CreatedAt,
-    direction: SORT_DIRECTION.Desc,
-  },
-});
+const filters = computed(() => postFeedUiStore.filters);
 
 const selectedPostId = computed(() => {
   const raw = route.query.postId;
@@ -124,14 +105,16 @@ const currentAuthorId = computed(() => {
   return authStore.user?.userId ?? null;
 });
 
+const filtersOpen = ref(false);
+
 function buildPostFilter() {
   const filter = {
-    search: filters.value.search || null,
-    categoryId: filters.value.categoryId,
-    createdFrom: filters.value.createdFrom || null,
+    search: postFeedUiStore.filters.search || null,
+    categoryId: postFeedUiStore.filters.categoryId,
+    createdFrom: postFeedUiStore.filters.createdFrom || null,
     sort: {
-      sortBy: filters.value.sort.sortBy,
-      direction: filters.value.sort.direction,
+      sortBy: postFeedUiStore.filters.sort.sortBy,
+      direction: postFeedUiStore.filters.sort.direction,
     },
   };
 
@@ -188,9 +171,15 @@ function resetFilters() {
     },
   };
 
-  viewMode.value = "feed";
   loadPosts();
 }
+
+watch(
+  () => postFeedUiStore.applyVersion,
+  () => {
+    loadPosts();
+  }
+);
 
 onMounted(async () => {
   loading.value = true;
@@ -233,16 +222,7 @@ onMounted(async () => {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
-}
-
-.home-top {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.welcome-block,
-.guest-block {
-  margin-top: 0.5rem;
+  box-sizing: border-box;
 }
 
 .home-loading {
@@ -251,26 +231,37 @@ onMounted(async () => {
 }
 
 .home-layout {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 760px);
+  display: flex;
   justify-content: center;
-  gap: 1.5rem;
-  align-items: start;
-}
-
-.home-sidebar {
-  min-width: 0;
+  width: 100%;
 }
 
 .home-content {
-  min-width: 0;
-  display: block;
+  width: 760px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-sizing: border-box;
 }
 
-@media (max-width: 1100px) {
-  .home-layout {
-    grid-template-columns: 1fr;
-    justify-content: stretch;
+.home-content > * {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.posts-area {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 820px) {
+  .home {
+    padding: 1rem;
+  }
+
+  .home-content {
+    width: 100%;
   }
 }
 </style>
