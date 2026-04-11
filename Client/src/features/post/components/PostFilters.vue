@@ -1,114 +1,74 @@
 <template>
   <aside class="post-filters">
     <div class="filters-card">
-      <h3 class="filters-title">Фильтры</h3>
+      <button class="filters-toggle" @click="isOpen = !isOpen">
+        <span>Фильтры</span>
+        <span class="filters-toggle-icon">{{ isOpen ? "−" : "+" }}</span>
+      </button>
 
-      <div class="mode-tabs">
-        <button
-          class="mode-btn"
-          :class="{ active: viewMode === 'feed' }"
-          @click="$emit('update:viewMode', 'feed')"
-        >
-          Лента
-        </button>
+      <div v-show="isOpen" class="filters-body">
 
-        <button
-          v-if="isAuthenticated"
-          class="mode-btn"
-          :class="{ active: viewMode === 'myPublished' }"
-          @click="$emit('update:viewMode', 'myPublished')"
-        >
-          Мои опубликованные
-        </button>
-
-        <button
-          v-if="isAuthenticated"
-          class="mode-btn"
-          :class="{ active: viewMode === 'myDrafts' }"
-          @click="$emit('update:viewMode', 'myDrafts')"
-        >
-          Мои черновики
-        </button>
-
-        <button
-          v-if="isAuthenticated"
-          class="mode-btn"
-          :class="{ active: viewMode === 'myArchived' }"
-          @click="$emit('update:viewMode', 'myArchived')"
-        >
-          Мои архивные
-        </button>
-      </div>
-
-      <div class="filter-group">
-        <label>Поиск</label>
-        <input
-          :value="modelValue.search"
-          type="text"
-          placeholder="Искать по постам"
-          @input="updateField('search', $event.target.value)"
-        />
-      </div>
-
-      <div class="filter-group">
-        <label>Категория</label>
-        <select
-          :value="modelValue.categoryId ?? ''"
-          @change="updateField('categoryId', parseNullableNumber($event.target.value))"
-        >
-          <option value="">Все категории</option>
-          <option
-            v-for="category in categories"
-            :key="category.id"
-            :value="category.id"
+        <div class="filter-group">
+          <label>Категория</label>
+          <select
+            :value="modelValue.categoryId ?? ''"
+            @change="updateField('categoryId', parseNullableNumber($event.target.value))"
           >
-            {{ category.name }}
-          </option>
-        </select>
-      </div>
+            <option value="">Все категории</option>
+            <option
+              v-for="category in categories"
+              :key="category.id"
+              :value="category.id"
+            >
+              {{ category.name }}
+            </option>
+          </select>
+        </div>
 
-      <div class="filter-group">
-        <label>Создано после</label>
-        <input
-          :value="modelValue.createdFrom"
-          type="date"
-          @input="updateField('createdFrom', $event.target.value)"
-        />
-      </div>
+        <div class="filter-group">
+          <label>Создано после</label>
+          <input
+            :value="modelValue.createdFrom"
+            type="date"
+            @input="updateField('createdFrom', $event.target.value)"
+          />
+        </div>
 
-      <div class="filter-group">
-        <label>Сортировать по</label>
-        <select
-          :value="modelValue.sort.sortBy"
-          @change="updateSort('sortBy', Number($event.target.value))"
-        >
-          <option :value="POST_SORT_BY.CreatedAt">CreatedAt</option>
-          <option :value="POST_SORT_BY.PublishedAt">PublishedAt</option>
-          <option :value="POST_SORT_BY.Title">Title</option>
-          <option :value="POST_SORT_BY.CommentCount">CommentCount</option>
-        </select>
-      </div>
+        <div class="filter-group">
+          <label>Сортировать по</label>
+          <select
+            :value="modelValue.sort.sortBy"
+            @change="updateSort('sortBy', Number($event.target.value))"
+          >
+            <option :value="POST_SORT_BY.CreatedAt">CreatedAt</option>
+            <option :value="POST_SORT_BY.PublishedAt">PublishedAt</option>
+            <option :value="POST_SORT_BY.Title">Title</option>
+            <option :value="POST_SORT_BY.CommentCount">CommentCount</option>
+          </select>
+        </div>
 
-      <div class="filter-group">
-        <label>Направление</label>
-        <select
-          :value="modelValue.sort.direction"
-          @change="updateSort('direction', Number($event.target.value))"
-        >
-          <option :value="SORT_DIRECTION.Desc">Desc</option>
-          <option :value="SORT_DIRECTION.Asc">Asc</option>
-        </select>
-      </div>
+        <div class="filter-group">
+          <label>Направление</label>
+          <select
+            :value="modelValue.sort.direction"
+            @change="updateSort('direction', Number($event.target.value))"
+          >
+            <option :value="SORT_DIRECTION.Desc">Desc</option>
+            <option :value="SORT_DIRECTION.Asc">Asc</option>
+          </select>
+        </div>
 
-      <div class="filters-actions">
-        <button class="primary-btn" @click="$emit('apply')">Применить</button>
-        <button class="ghost-btn" @click="$emit('reset')">Сбросить</button>
+        <div class="filters-actions">
+          <button class="primary-btn" @click="$emit('apply')">Применить</button>
+          <button class="ghost-btn" @click="$emit('reset')">Сбросить</button>
+        </div>
       </div>
     </div>
   </aside>
 </template>
 
 <script setup>
+import { ref } from "vue";
 import {
   POST_SORT_BY,
   SORT_DIRECTION,
@@ -123,22 +83,15 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  viewMode: {
-    type: String,
-    default: "feed",
-  },
-  isAuthenticated: {
-    type: Boolean,
-    default: false,
-  },
 });
 
 const emit = defineEmits([
   "update:modelValue",
-  "update:viewMode",
   "apply",
   "reset",
 ]);
+
+const isOpen = ref(false);
 
 function updateField(field, value) {
   emit("update:modelValue", {
@@ -165,43 +118,43 @@ function parseNullableNumber(value) {
 <style scoped>
 .post-filters {
   width: 100%;
+  box-sizing: border-box;
 }
 
 .filters-card {
+  width: 100%;
+  box-sizing: border-box;
+
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  padding: 1rem;
-  position: sticky;
-  top: 1rem;
+  padding: 0.9rem 1rem;
 }
 
-.filters-title {
-  margin: 0 0 1rem;
-  color: var(--text-primary);
-}
-
-.mode-tabs {
+.filters-toggle {
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.mode-btn {
-  border: 1px solid var(--border-color);
+  align-items: center;
+  justify-content: space-between;
+  border: none;
   background: transparent;
   color: var(--text-primary);
-  border-radius: 10px;
-  padding: 0.7rem 0.8rem;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
   cursor: pointer;
-  text-align: left;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  padding: 0;
 }
 
-.mode-btn.active {
-  border-color: var(--btn-primary-bg);
-  box-shadow: 0 0 0 1px var(--btn-primary-bg);
+.filters-toggle-icon {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+}
+
+.filters-body {
+  width: 100%;
+  margin-top: 1rem;
+  box-sizing: border-box;
 }
 
 .filter-group {
@@ -220,6 +173,7 @@ function parseNullableNumber(value) {
 .filter-group input,
 .filter-group select {
   width: 100%;
+  box-sizing: border-box;
   border: 1px solid var(--border-color);
   background: var(--bg-primary);
   color: var(--text-primary);

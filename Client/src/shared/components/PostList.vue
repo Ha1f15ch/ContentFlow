@@ -20,6 +20,10 @@
         <p class="post-excerpt">
           {{ post.excerpt ?? "" }}
         </p>
+
+        <div class="post-more">
+          <span class="post-more-link">Читать далее</span>
+        </div>
       </article>
 
       <div v-if="posts.length === 0" class="empty-state">
@@ -50,11 +54,12 @@ const formatDate = (isoDate) => {
 <style scoped>
 .post-list-wrap {
   width: 100%;
+  box-sizing: border-box;
 }
 
 .post-list {
   width: 100%;
-  max-width: 720px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -62,10 +67,11 @@ const formatDate = (isoDate) => {
 
 .post-row {
   width: 100%;
+  box-sizing: border-box;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  padding: 1.15rem 1.15rem 1rem;
   cursor: pointer;
   transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
 }
@@ -73,14 +79,14 @@ const formatDate = (isoDate) => {
 .post-row:hover {
   border-color: var(--btn-primary-bg);
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
 }
 
 .post-title {
-  margin: 0 0 0.45rem;
+  margin: 0 0 0.55rem;
   color: var(--text-primary);
-  font-size: 1.18rem;
-  line-height: 1.3;
+  font-size: 1.15rem;
+  line-height: 1.35;
 }
 
 .post-meta {
@@ -89,7 +95,7 @@ const formatDate = (isoDate) => {
   gap: 0.4rem;
   color: var(--text-secondary);
   font-size: 0.88rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
 }
 
 .post-dot {
@@ -99,16 +105,31 @@ const formatDate = (isoDate) => {
 .post-excerpt {
   margin: 0;
   color: var(--text-secondary);
-  line-height: 1.55;
+  line-height: 1.6;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
+.post-more {
+  margin-top: 0.85rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.post-more-link {
+  color: var(--btn-primary-bg);
+  font-size: 0.92rem;
+  font-weight: 600;
+  opacity: 0.95;
+}
+
 .empty-state {
+  width: 100%;
+  box-sizing: border-box;
   text-align: center;
-  padding: 2rem;
+  padding: 3rem 1rem;
   color: var(--text-secondary);
 }
 </style>
