@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Domain.Entities;
 using ContentFlow.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -7,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ContentFlow.Infrastructure.DatabaseEngine;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>, IUnitOfWork
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
