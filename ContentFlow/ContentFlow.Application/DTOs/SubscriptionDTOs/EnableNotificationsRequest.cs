@@ -1,3 +1,3 @@
 ﻿namespace ContentFlow.Application.DTOs.SubscriptionDTOs;
 
-public record EnableNotificationsRequest(int FollowingUserId);
+public record EnableNotificationsRequest(int FollowingProfileId);

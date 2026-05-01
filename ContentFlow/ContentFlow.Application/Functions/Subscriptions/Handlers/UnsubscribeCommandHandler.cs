@@ -1,7 +1,7 @@
-﻿using ContentFlow.Application.Exceptions;
-using ContentFlow.Application.Functions.Subscriptions.Commands;
+﻿using ContentFlow.Application.Functions.Subscriptions.Commands;
 using ContentFlow.Application.Interfaces.Subscription;
 using ContentFlow.Application.Interfaces.UserProfile;
+using ContentFlow.Domain.Exceptions;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -31,22 +31,22 @@ public class UnsubscribeCommandHandler : IRequestHandler<UnsubscribeCommand, Uni
         if (requesterUserProfile == null)
         {
             _logger.LogInformation("UserProfile (requester) not found. ID: {RequesterUserId}", request.FollowerUserId);
-            return Unit.Value;
+            throw new NotFoundException($"Requester UserProfile by user ID {request.FollowerUserId} not found.");
         }
         
-        var targetUserProfile = await _userProfileRepository.GetByIdAsync(request.FollowingUserId, cancellationToken);
+        var targetUserProfile = await _userProfileRepository.GetByIdAsync(request.FollowingProfileId, cancellationToken);
         if (targetUserProfile == null)
         {
-            _logger.LogError("UserProfile (target) not found. ID: {TargetUserId}", request.FollowingUserId);
-            throw new NotFoundException($"UserProfile (target) not found. ID: {request.FollowingUserId}");
+            _logger.LogError("UserProfile (target) not found. ID: {FollowingProfileId}", request.FollowingProfileId);
+            throw new NotFoundException($"Target UserProfile by ID {request.FollowingProfileId} not found.");
         }
         
         var subscription = await _subscriptionRepository.GetByFollowerAndFollowingAsync(requesterUserProfile.Id, targetUserProfile.Id, cancellationToken);
 
         if (subscription == null)
         {
-            _logger.LogError("Subscription (from {Follower} to {Following}) not found", request.FollowerUserId, request.FollowingUserId);
-            throw new NotFoundException($"Subscription from {request.FollowerUserId} to {request.FollowingUserId} not found");
+            _logger.LogError("Subscription (from {FollowerProfileId} to {FollowingProfileId}) not found", requesterUserProfile.Id, targetUserProfile.Id);
+            throw new NotFoundException($"Subscription from profile {requesterUserProfile.Id} to profile {targetUserProfile.Id} not found.");
         }
         
         subscription.Deactivate();

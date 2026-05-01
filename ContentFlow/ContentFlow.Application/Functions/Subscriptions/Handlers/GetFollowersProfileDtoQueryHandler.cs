@@ -39,7 +39,7 @@ public class GetFollowersProfileDtoQueryHandler : IRequestHandler<GetFollowersPr
         _logger.LogInformation("Fetching user profiles - on who's follower user id - {UserId}", request.UserId);
 
         var listUserProfiles = await 
-            _subscriptionRepository.GetListSubscriptionFollowersByFollowerAsync(request.UserId, cancellationToken);
+            _subscriptionRepository.GetListSubscriptionFollowersByFollowerAsync(userProfile.Id, cancellationToken);
         _logger.LogInformation("Get {CountSubscriptions} subscriptions.", listUserProfiles.Count());
 
         return listUserProfiles;

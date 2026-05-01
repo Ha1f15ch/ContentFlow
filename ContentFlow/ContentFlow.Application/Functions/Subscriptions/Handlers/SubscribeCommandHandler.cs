@@ -31,15 +31,21 @@ public class SubscribeCommandHandler : IRequestHandler<SubscribeCommand, Unit>
         var requesterUserProfile = await _userProfileRepository.GetByUserIdAsync(request.FollowerUserId, cancellationToken);
         if (requesterUserProfile == null)
         {
-            _logger.LogWarning("Requester user profile not founded by userId = {RequesterId}. Subscribe to user profile ID = {UserProfile} not complete", request.FollowerUserId, request.FollowingUserId);
-            return Unit.Value;
+            _logger.LogWarning("Requester user profile not found by userId = {RequesterId}. Subscribe to profile ID = {FollowingProfileId} not complete", request.FollowerUserId, request.FollowingProfileId);
+            throw new NotFoundException($"Requester UserProfile by user ID {request.FollowerUserId} not found.");
         }
 
-        var targetUserProfile = await _userProfileRepository.GetByIdAsync(request.FollowingUserId, cancellationToken);
+        var targetUserProfile = await _userProfileRepository.GetByIdAsync(request.FollowingProfileId, cancellationToken);
         if (targetUserProfile == null)
         {
-            _logger.LogError("Target user profile ID = {TargetUserProfileId} not found. Subscribe failed}", request.FollowingUserId);
-            throw new NotFoundException($"Target User profile by ID {request.FollowingUserId} for subscribe to him not founded");
+            _logger.LogError("Target user profile ID = {TargetUserProfileId} not found. Subscribe failed", request.FollowingProfileId);
+            throw new NotFoundException($"Target UserProfile by ID {request.FollowingProfileId} not found.");
+        }
+
+        if (requesterUserProfile.Id == targetUserProfile.Id)
+        {
+            _logger.LogWarning("User profile {UserProfileId} tried to subscribe to itself", requesterUserProfile.Id);
+            throw new InvalidOperationException("Cannot subscribe to yourself.");
         }
         
         // проверяем, был ли пользователь подписан ранее

@@ -1,6 +1,7 @@
 ﻿using ContentFlow.Application.DTOs.SubscriptionDTOs;
 using ContentFlow.Application.Functions.Subscriptions.Commands;
 using ContentFlow.Application.Security;
+using ContentFlow.Domain.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,27 +34,33 @@ public class SubscriptionController : ControllerBase
 
         try
         {
-            var command = new SubscribeCommand(userId, request.FollowingUserId);
+            var command = new SubscribeCommand(userId, request.FollowingProfileId);
             await _mediator.Send(command);
             
-            _logger.LogInformation("User {FollowerId} successfully subscribed to user {FollowingId}", userId, request.FollowingUserId);
+            _logger.LogInformation("User {FollowerId} successfully subscribed to profile {FollowingProfileId}", userId, request.FollowingProfileId);
             return Ok();
+        }
+        catch (NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Subscription target not found for user {FollowerId} and profile {FollowingProfileId}: {Message}", 
+                userId, request.FollowingProfileId, ex.Message);
+            return NotFound(new { message = ex.Message });
         }
         catch (ArgumentException ex)
         {
-            _logger.LogWarning(ex, "Invalid subscription request from user {FollowerId} to {FollowingId}: {Message}", 
-                userId, request.FollowingUserId, ex.Message);
+            _logger.LogWarning(ex, "Invalid subscription request from user {FollowerId} to profile {FollowingProfileId}: {Message}", 
+                userId, request.FollowingProfileId, ex.Message);
             return BadRequest(new { message = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Business rule violation: user {FollowerId} cannot subscribe to {FollowingId}: {Message}", 
-                userId, request.FollowingUserId, ex.Message);
+            _logger.LogWarning(ex, "Business rule violation: user {FollowerId} cannot subscribe to profile {FollowingProfileId}: {Message}", 
+                userId, request.FollowingProfileId, ex.Message);
             return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error while user {FollowerId} subscribing to {FollowingId}", userId, request.FollowingUserId);
+            _logger.LogError(ex, "Unexpected error while user {FollowerId} subscribing to profile {FollowingProfileId}", userId, request.FollowingProfileId);
             return StatusCode(500, new { message = "Failed to process subscription." });
         }
     }
@@ -65,7 +72,7 @@ public class SubscriptionController : ControllerBase
     public async Task<IActionResult> Unsubscribe([FromBody] UnsubscribeRequest request)
     {
         var followerId = User.GetAuthenticatedUserId();
-        var followingId = request.FollowingId;
+        var followingId = request.FollowingProfileId;
 
         _logger.LogInformation("User {FollowerId} initiated unsubscription from user {FollowingId}", followerId, followingId);
 
@@ -76,6 +83,12 @@ public class SubscriptionController : ControllerBase
             
             _logger.LogInformation("User {FollowerId} successfully unsubscribed from user {FollowingId}", followerId, followingId);
             return Ok();
+        }
+        catch (NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Subscription not found for user {FollowerId} and profile {FollowingId}: {Message}", 
+                followerId, followingId, ex.Message);
+            return NotFound(new { message = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
@@ -97,7 +110,7 @@ public class SubscriptionController : ControllerBase
     public async Task<IActionResult> PauseSubscription([FromBody] PauseSubscriptionRequest request)
     {
         var followerId = User.GetAuthenticatedUserId();
-        var followingId = request.FollowingUserId;
+        var followingId = request.FollowingProfileId;
 
         _logger.LogInformation("User {FollowerId} initiated pause of subscription to user {FollowingId}", followerId, followingId);
 
@@ -108,6 +121,12 @@ public class SubscriptionController : ControllerBase
             
             _logger.LogInformation("User {FollowerId} successfully paused subscription to user {FollowingId}", followerId, followingId);
             return Ok();
+        }
+        catch (NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Subscription not found for pause from user {FollowerId} to profile {FollowingId}: {Message}", 
+                followerId, followingId, ex.Message);
+            return NotFound(new { message = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
@@ -129,7 +148,7 @@ public class SubscriptionController : ControllerBase
     public async Task<IActionResult> ResumeSubscription([FromBody] ResumeSubscriptionRequest request)
     {
         var followerId = User.GetAuthenticatedUserId();
-        var followingId = request.FollowingUserId;
+        var followingId = request.FollowingProfileId;
 
         _logger.LogInformation("User {FollowerId} initiated resume of subscription to user {FollowingId}", followerId, followingId);
 
@@ -140,6 +159,12 @@ public class SubscriptionController : ControllerBase
             
             _logger.LogInformation("User {FollowerId} successfully resumed subscription to user {FollowingId}", followerId, followingId);
             return Ok();
+        }
+        catch (NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Subscription not found for resume from user {FollowerId} to profile {FollowingId}: {Message}", 
+                followerId, followingId, ex.Message);
+            return NotFound(new { message = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
@@ -161,7 +186,7 @@ public class SubscriptionController : ControllerBase
     public async Task<IActionResult> EnableNotifications([FromBody] EnableNotificationsRequest request)
     {
         var followerId = User.GetAuthenticatedUserId();
-        var followingId = request.FollowingUserId;
+        var followingId = request.FollowingProfileId;
 
         _logger.LogInformation("User {FollowerId} initiated enabling notifications for subscription to user {FollowingId}", followerId, followingId);
 
@@ -172,6 +197,12 @@ public class SubscriptionController : ControllerBase
             
             _logger.LogInformation("User {FollowerId} successfully enabled notifications for subscription to user {FollowingId}", followerId, followingId);
             return Ok();
+        }
+        catch (NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Subscription not found for enable notifications from user {FollowerId} to profile {FollowingId}: {Message}", 
+                followerId, followingId, ex.Message);
+            return NotFound(new { message = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
@@ -193,7 +224,7 @@ public class SubscriptionController : ControllerBase
     public async Task<IActionResult> DisableNotifications([FromBody] DisableNotificationsRequest request)
     {
         var followerId = User.GetAuthenticatedUserId();
-        var followingId = request.FollowingUserId;
+        var followingId = request.FollowingProfileId;
 
         _logger.LogInformation("User {FollowerId} initiated disabling notifications for subscription to user {FollowingId}", followerId, followingId);
 
@@ -204,6 +235,12 @@ public class SubscriptionController : ControllerBase
             
             _logger.LogInformation("User {FollowerId} successfully disabled notifications for subscription to user {FollowingId}", followerId, followingId);
             return Ok();
+        }
+        catch (NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Subscription not found for disable notifications from user {FollowerId} to profile {FollowingId}: {Message}", 
+                followerId, followingId, ex.Message);
+            return NotFound(new { message = ex.Message });
         }
         catch (Exception ex)
         {

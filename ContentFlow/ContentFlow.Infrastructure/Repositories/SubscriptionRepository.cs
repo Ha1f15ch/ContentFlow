@@ -39,9 +39,8 @@ public class SubscriptionRepository : ISubscriptionRepository
         _logger.LogInformation($"Adding subscription record {newSubscriptionRecord}");
         
         await _context.Subscriptions.AddAsync(newSubscriptionRecord, ct);
-        await _context.SaveChangesAsync(ct);
         
-        _logger.LogInformation($"Subscription record {newSubscriptionRecord} added");
+        _logger.LogInformation($"Subscription record {newSubscriptionRecord} added to context");
     }
 
     public async Task<Subscription?> GetByIdAsync(int id, CancellationToken ct = default)

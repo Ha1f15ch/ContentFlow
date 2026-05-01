@@ -1,3 +1,3 @@
 ﻿namespace ContentFlow.Application.DTOs.SubscriptionDTOs;
 
-public record PauseSubscriptionRequest(int FollowingUserId);
+public record PauseSubscriptionRequest(int FollowingProfileId);
