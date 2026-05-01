@@ -1,20 +1,70 @@
 # ContentFlow
-CMS многоуровневая, модульная, с поддержкой ролей, аудита, кэширования, очередей, безопасного хранения данных и API.
 
-Перед запуском: 
+ContentFlow - модульная CMS с ASP.NET Core backend и Vue/Vite frontend.
 
-1. Перейти по пути - .\ContentFlow\ContentFlow.Web\
-2. Найти файл - appsettings.json
-3. В нем указать актуальные данные для подключения к БД:
-	- Server - Имя сервера
-	- Database - имя БД (можно оставить уже имеющееся значение)
-	- User Id - login для входа 
-	- Password - пароль
-	- Остальные пункты оставляем по умолчанию.
-4. В папке (в терминале) .\ContentFlow\ContentFlow.Web\ выполнить - "dotnet run"
+## Backend
 
-Swagger - http://localhost:8080/swagger/index.html
-Hangfire dashboards - http://localhost:8080/hangfire
+Перед локальным запуском создайте файл:
 
-Запускается на порту, который указан при запуске.
-А именно  Now listening on: http://localhost:5006, как пример содержания порта на котором запустился.
+```powershell
+copy ContentFlow\ContentFlow.Web\appsettings.Development.json.example ContentFlow\ContentFlow.Web\appsettings.Development.json
+```
+
+Заполните в `ContentFlow/ContentFlow.Web/appsettings.Development.json` актуальные значения:
+
+- `ConnectionStrings:DefaultConnection` - подключение к SQL Server.
+- `EmailSettings` - SMTP-настройки.
+- `JwtSettings:Secret` - секрет JWT длиной минимум 32 байта.
+
+`ContentFlow/ContentFlow.Web/appsettings.json` не нужно заполнять реальными данными. Это общий шаблон, а локальные значения берутся из `appsettings.Development.json`.
+
+Запуск backend:
+
+```powershell
+dotnet run --project ContentFlow\ContentFlow.Web
+```
+
+Полезные URL для локального запуска:
+
+- Swagger: `http://127.0.0.1:8080/swagger/index.html`
+- Hangfire Dashboard: `http://127.0.0.1:8080/hangfire`
+
+Hangfire Dashboard доступен только для авторизованных пользователей с ролью `Admin` или `Moderator`.
+
+## Frontend
+
+Перед локальным запуском клиента создайте env-файл:
+
+```powershell
+copy Client\.env.example Client\.env
+```
+
+По умолчанию API URL:
+
+```env
+VITE_API_BASE_URL=http://127.0.0.1:8080/api
+```
+
+Запуск frontend:
+
+```powershell
+cd Client
+npm install
+npm run dev
+```
+
+## Проверки
+
+Backend:
+
+```powershell
+dotnet build ContentFlow\ContentFlow.sln
+dotnet test ContentFlow\Tests\ContentFlow.Domain.Tests\ContentFlow.Domain.Tests.csproj
+```
+
+Frontend:
+
+```powershell
+cd Client
+npm run build
+```

@@ -12,7 +12,7 @@
   },
   "EmailSettings": {
     "Host": "hostName",
-    "Port": port,
+    "Port": 587,
     "Username": "username",
     "Password": "password",
     "From": "email"

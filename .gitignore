@@ -67,3 +67,11 @@ ContentFlow/ContentFlow.Web/appsettings.*.local.json
 # keep templates tracked
 !ContentFlow/ContentFlow.Web/appsettings.Development.json.example
 ContentFlow/ContentFlow.Web/wwwroot/uploads/avatars/
+
+# --- Client local config (do not commit)
+Client/.env
+Client/.env.local
+Client/.env.*.local
+
+# keep templates tracked
+!Client/.env.example

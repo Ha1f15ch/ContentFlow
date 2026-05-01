@@ -75,8 +75,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddAuthentication();
-
 // controllers
 builder.Services.AddControllers();
 
@@ -123,6 +121,20 @@ builder.Services.AddApplication();
 // Add Infrastructure (DbContext, Identity, Repositories, Email, Mappings)
 builder.Services.AddInfrastructure(builder.Configuration);
 
+var jwtSecret = builder.Configuration["JwtSettings:Secret"];
+
+if (string.IsNullOrWhiteSpace(jwtSecret) || jwtSecret == "CHANGE_ME")
+{
+    throw new InvalidOperationException(
+        "JwtSettings:Secret is not configured. Set it in appsettings.Development.json, user-secrets, or environment variables.");
+}
+
+if (Encoding.UTF8.GetByteCount(jwtSecret) < 32)
+{
+    throw new InvalidOperationException(
+        "JwtSettings:Secret must be at least 32 bytes long.");
+}
+
 builder.Services
     .AddAuthentication(options =>
     {
@@ -135,7 +147,7 @@ builder.Services
         {
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]!)
+                Encoding.UTF8.GetBytes(jwtSecret)
             ),
 
             ValidateIssuer = true,
@@ -192,7 +204,7 @@ await AutoInitializeRole(app.Services);
 // Turn on hangfire dashboard
 app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
-    //Authorization = new[] { new HangfireAuthorizationFilter() }
+    Authorization = new[] { new HangfireAuthorizationFilter() }
 });
 
 // Configure the HTTP request pipeline.

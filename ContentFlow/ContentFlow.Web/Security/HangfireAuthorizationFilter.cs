@@ -1,4 +1,5 @@
-﻿using Hangfire.Dashboard;
+﻿using ContentFlow.Application.Common;
+using Hangfire.Dashboard;
 
 namespace ContentFlow.Web.Security;
 
@@ -8,12 +9,12 @@ public class HangfireAuthorizationFilter : IDashboardAuthorizationFilter
     {
         var httpContext = context.GetHttpContext();
 
-        // Проверяем: пользователь залогинен?
-        if (!httpContext.User.Identity?.IsAuthenticated == true)
+        var identity = httpContext.User.Identity;
+        
+        if (identity is not { IsAuthenticated: true })
             return false;
 
-        // Проверяем: роль Admin или Moderator?
-        return httpContext.User.IsInRole("Admin") || 
-               httpContext.User.IsInRole("Moderator");
+        return httpContext.User.IsInRole(RoleConstants.Admin) || 
+               httpContext.User.IsInRole(RoleConstants.Moderator);
     }
 }
