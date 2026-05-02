@@ -3,6 +3,7 @@ using ContentFlow.Application.Functions.Posts.Commands;
 using ContentFlow.Application.Functions.Posts.Events;
 using ContentFlow.Application.Interfaces.Notification;
 using ContentFlow.Application.Interfaces.Posts;
+using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Application.Interfaces.Users;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -12,18 +13,21 @@ namespace ContentFlow.Application.Functions.Posts.Handlers;
 public class PublishPostCommandHandler : IRequestHandler<PublishPostCommand, bool>
 {
     private readonly IPostRepository _postRepository;
+    private readonly IUserProfileRepository _userProfileRepository;
     private readonly IUserService _userService;
     private readonly IMediator _mediator;
     private readonly ILogger<PublishPostCommandHandler> _logger;
     
     public PublishPostCommandHandler(
         IPostRepository postRepository,
+        IUserProfileRepository userProfileRepository,
         IUserService userService,
         INotificationService notificationService,
         IMediator mediator,
         ILogger<PublishPostCommandHandler> logger)
     {
         _postRepository = postRepository;
+        _userProfileRepository = userProfileRepository;
         _userService = userService;
         _mediator = mediator;
         _logger = logger;
@@ -55,7 +59,9 @@ public class PublishPostCommandHandler : IRequestHandler<PublishPostCommand, boo
                 request.UserId, request.PostId);
             return false;
         }
-
+        
+        var authorProfile = await _userProfileRepository.GetByUserIdAsync(post.AuthorId, cancellationToken);
+        
         try
         {
             post.Publish();
@@ -66,9 +72,13 @@ public class PublishPostCommandHandler : IRequestHandler<PublishPostCommand, boo
                 post.Id, post.Title, request.UserId);
             
             // При публикации поста создаем событие, рассылаем его подписчикам
-            await _mediator.Publish(new PostPublishedNotification(post.Id, post.AuthorId, new DateTime()), cancellationToken);
+            if (authorProfile != null)
+            {
+                await _mediator.Publish(new PostPublishedNotification(post.Id, authorProfile.Id, DateTime.UtcNow), cancellationToken);
+                return true;
+            }
             
-            return true;
+            return false;
         }
         catch (Exception ex)
         {

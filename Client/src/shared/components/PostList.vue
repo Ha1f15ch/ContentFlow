@@ -12,7 +12,15 @@
         </h3>
 
         <div class="post-meta">
-          <span>{{ post.authorName ?? "-" }}</span>
+          <RouterLink
+            v-if="post.authorProfileId"
+            class="author-link"
+            :to="{ name: 'userProfile', params: { profileId: post.authorProfileId } }"
+            @click.stop
+          >
+            {{ post.authorName ?? "-" }}
+          </RouterLink>
+          <span v-else>{{ post.authorName ?? "-" }}</span>
           <span class="post-dot">•</span>
           <span>{{ formatDate(post.createdAt ?? post.createdAtUtc) }}</span>
         </div>
@@ -100,6 +108,17 @@ const formatDate = (isoDate) => {
 
 .post-dot {
   opacity: 0.65;
+}
+
+.author-link {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.author-link:hover {
+  color: var(--btn-primary-bg);
+  text-decoration: underline;
 }
 
 .post-excerpt {

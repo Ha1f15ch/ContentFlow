@@ -4,6 +4,6 @@ namespace ContentFlow.Application.Functions.Posts.Events;
 
 public record PostPublishedNotification(
     int PostId,
-    int AuthorUserProfileId,
+    int AuthorProfileId,
     DateTime PublishedAt
 ) : INotification;

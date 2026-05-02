@@ -1,4 +1,5 @@
 ﻿using ContentFlow.Application.Functions.Subscriptions.Commands;
+using ContentFlow.Application.Interfaces.Notification;
 using ContentFlow.Application.Interfaces.Subscription;
 using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Domain.Entities;
@@ -13,15 +14,18 @@ public class SubscribeCommandHandler : IRequestHandler<SubscribeCommand, Unit>
     private readonly ILogger<SubscribeCommandHandler> _logger;
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly INotificationService  _notificationService;
     
     public SubscribeCommandHandler(
         ILogger<SubscribeCommandHandler> logger,
         IUserProfileRepository userProfileRepository,
-        ISubscriptionRepository subscriptionRepository)
+        ISubscriptionRepository subscriptionRepository,
+        INotificationService notificationService)
     {
         _logger = logger;
         _userProfileRepository = userProfileRepository;
         _subscriptionRepository = subscriptionRepository;
+        _notificationService = notificationService;
     }
 
     public async Task<Unit> Handle(SubscribeCommand request, CancellationToken cancellationToken)
@@ -63,8 +67,6 @@ public class SubscribeCommandHandler : IRequestHandler<SubscribeCommand, Unit>
             
             subscription.Reactivate();
             await _subscriptionRepository.SaveChangesAsync(cancellationToken);
-            
-            return Unit.Value;
         }
         else
         {
@@ -72,7 +74,13 @@ public class SubscribeCommandHandler : IRequestHandler<SubscribeCommand, Unit>
 
             await _subscriptionRepository.AddAsync(requesterUserProfile.Id, targetUserProfile.Id, cancellationToken);
             await _subscriptionRepository.SaveChangesAsync(cancellationToken);
-            return Unit.Value;
         }
+        
+        await _notificationService.NotifyUserSubscribedAsync(
+            requesterUserProfile.Id,
+            targetUserProfile.Id,
+            cancellationToken);
+        
+        return Unit.Value;
     }
 }

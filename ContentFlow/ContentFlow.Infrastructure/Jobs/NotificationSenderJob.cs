@@ -17,10 +17,10 @@ public class NotificationSenderJob : INotificationSenderJob
         _logger = logger;
     }
     
-    public async Task SendBatchAsync(List<int> userIds, int postId, int authorId, CancellationToken ct)
+    public async Task SendBatchAsync(List<int> userIds, int postId, int authorProfileId, CancellationToken ct)
     {
         var tasks = userIds.Select(userId => 
-            _realtimeNotificationSender.SendAsync(userId, "PostPublished", new {postId, authorId}, ct));
+            _realtimeNotificationSender.SendAsync(userId, "PostPublished", new { postId, authorProfileId }, ct));
         
         await Task.WhenAll(tasks);
         

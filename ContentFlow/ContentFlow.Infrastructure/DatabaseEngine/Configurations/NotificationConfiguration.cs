@@ -1,4 +1,5 @@
 ﻿using ContentFlow.Domain.Entities;
+using ContentFlow.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -12,7 +13,7 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
         
         builder.HasKey(x => x.Id);
         
-        builder.HasOne<UserProfile>()
+        builder.HasOne<ApplicationUser>()
             .WithMany()
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);

@@ -122,6 +122,8 @@
           Новый пост
         </button>
 
+        <NotificationBell />
+
         <UserMenu
           :userName="authStore.user?.userName || 'Пользователь'"
           :avatarUrl="authStore.user?.avatarUrl"
@@ -143,6 +145,7 @@ import {
 } from "@/features/post/api/postService";
 
 import UserMenu from "@/shared/components/UserMenu.vue";
+import NotificationBell from "@/features/notifications/components/NotificationBell.vue";
 
 const router = useRouter();
 const route = useRoute();

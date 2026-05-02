@@ -3,8 +3,9 @@
 public enum NotificationType
 {
     NewPost = 1,
-    CommentOnPost = 2,
-    ReplyToComment = 3,
-    Mention = 4,
+    NewSubscriber = 2,
+    CommentOnPost = 3,
+    ReplyToComment = 4,
+    Mention = 5,
     System = 100
 }

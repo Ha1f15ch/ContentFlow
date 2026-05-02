@@ -1,6 +1,4 @@
-﻿using ContentFlow.Domain.Entities;
-
-namespace ContentFlow.Application.Interfaces.Notification;
+﻿namespace ContentFlow.Application.Interfaces.Notification;
 
 public interface INotificationService
 {
@@ -8,8 +6,10 @@ public interface INotificationService
     /// Сохраняет запись уведомления в БД
     /// </summary>
     /// <param name="postId"></param>
-    /// <param name="authorId"></param>
+    /// <param name="authorProfileId"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
-    Task NotifyPostPublishedAsync(int postId, int authorId, CancellationToken ct);
+    Task NotifyPostPublishedAsync(int postId, int authorProfileId, CancellationToken ct);
+    
+    Task NotifyUserSubscribedAsync(int followerProfileId, int followingProfileId, CancellationToken ct);
 }

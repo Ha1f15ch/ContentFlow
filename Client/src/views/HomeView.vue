@@ -18,11 +18,6 @@
       </div>
     </div>
 
-    <div class="home-extra">
-      <CategoryListSmart />
-      <TagList :tags="tags" />
-    </div>
-
     <PostDetailsModal
       v-model="isPostModalOpen"
       :post-id="selectedPostId"

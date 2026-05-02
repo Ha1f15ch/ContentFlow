@@ -4,6 +4,7 @@ using ContentFlow.Application.Exceptions;
 using ContentFlow.Application.Functions.Posts.Queries;
 using ContentFlow.Application.Interfaces.Comment;
 using ContentFlow.Application.Interfaces.Posts;
+using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Application.Interfaces.Users;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,7 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, PostDto
     private readonly IMapper _mapper;
     private readonly IMediator _mediator;
     private readonly IUserService  _userService;
+    private readonly IUserProfileRepository _userProfileRepository;
     private readonly ICommentRepository _commentRepository;
     private readonly ILogger<GetPostByIdQueryHandler> _logger;
     
@@ -24,6 +26,7 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, PostDto
         IMapper mapper, 
         IMediator mediator, 
         IUserService userService, 
+        IUserProfileRepository userProfileRepository,
         ICommentRepository commentRepository,
         ILogger<GetPostByIdQueryHandler> logger)
     {
@@ -31,6 +34,7 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, PostDto
         _mapper = mapper;
         _mediator = mediator;
         _userService = userService;
+        _userProfileRepository = userProfileRepository;
         _commentRepository = commentRepository;
         _logger = logger;
     }
@@ -59,6 +63,8 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, PostDto
 
         var commentCount = await _commentRepository.GetCountAsync(post.Id, cancellationToken);
         _logger.LogDebug("Post {PostId} has {CommentCount} approved comments", post.Id, commentCount);
+        
+        var authorProfile = await _userProfileRepository.GetByUserIdAsync(post.AuthorId, cancellationToken);
 
         var tagDtos = post.PostTags?.Select(pt => new TagDto(
             pt.Tag.Id,
@@ -74,6 +80,7 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, PostDto
             post.Excerpt,
             post.Content,
             post.AuthorId,
+            authorProfile?.Id,
             $"{author.UserName}".Trim(),
             author.AvatarUrl,
             post.Status,
