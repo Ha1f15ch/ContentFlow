@@ -19,8 +19,8 @@ public class PostPublishedDomainEventHandler : INotificationHandler<PostPublishe
     {
         try
         {
-            await _notificationService.NotifyPostPublishedAsync(notification.PostId, notification.AuthorUserProfileId, cancellationToken);
-            _logger.LogInformation($"Published {notification.PostId} to {notification.AuthorUserProfileId}");
+            await _notificationService.NotifyPostPublishedAsync(notification.PostId, notification.AuthorProfileId, cancellationToken);
+            _logger.LogInformation("Published post notification for post {PostId} by author profile {AuthorProfileId}", notification.PostId, notification.AuthorProfileId);
         }
         catch (Exception e)
         {

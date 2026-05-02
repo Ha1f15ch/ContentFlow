@@ -5,6 +5,10 @@ export const userProfileService = {
     return apiClient.get("/userprofile/me");
   },
 
+  getById(profileId) {
+    return apiClient.get(`/userprofile/${profileId}`);
+  },
+
   updateMe(profileData) {
     return apiClient.put("/userprofile", profileData);
   },

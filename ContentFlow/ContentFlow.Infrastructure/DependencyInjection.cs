@@ -36,6 +36,8 @@ public static class DependencyInjection
         // DbContext
         services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
         
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
+        
         // Hangfire
         services.AddHangfire(config =>
         {

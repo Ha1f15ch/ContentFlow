@@ -73,7 +73,9 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
         }
         
         var user = await _userService.GetByIdAsync(profile.UserId, cancellationToken);
-        var subscriptionInfo = await _subscriptionRepository.GetByFollowerAndFollowingAsync(request.RequesterUserId, request.UserProfileId, cancellationToken);
+        var subscriptionInfo = requesterUserProfile.Id == profile.Id
+            ? null
+            : await _subscriptionRepository.GetByFollowerAndFollowingAsync(requesterUserProfile.Id, profile.Id, cancellationToken);
 
         var dto = new UserProfileDto(
             Id: profile.Id,

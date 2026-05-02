@@ -9,6 +9,7 @@ public record PostDto(
     string Excerpt,
     string? Content,
     int AuthorId,
+    int? AuthorProfileId,
     string AuthorName,
     string? AuthorAvatar,
     PostStatus Status,

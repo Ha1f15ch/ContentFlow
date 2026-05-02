@@ -9,25 +9,15 @@
         </div>
 
         <div v-else-if="profile" class="profile-card">
-            <div class="profile-header">
-                <div class="avatar-section">
-                    <div class="avatar-wrap">
-                        <img
-                            v-if="resolvedAvatarUrl"
-                            :src="resolvedAvatarUrl"
-                            alt="Аватар пользователя"
-                            class="avatar"
-                            @click="openAvatarPreview"
-                        />
-                        <div
-                            v-else
-                            class="avatar avatar-fallback"
-                            @click="triggerAvatarUpload"
-                        >
-                            {{ initials }}
-                        </div>
-                    </div>
-            
+            <ProfileHeader
+                :profile="profile"
+                :avatar-url="resolvedAvatarUrl"
+                avatar-clickable
+                fallback-clickable
+                @avatar-click="openAvatarPreview"
+                @fallback-click="triggerAvatarUpload"
+            >
+                <template #avatar-actions>
                     <div class="avatar-actions">
                         <button
                             class="action-btn primary"
@@ -59,14 +49,8 @@
                     <div v-if="avatarError" class="avatar-error">
                         {{ avatarError }}
                     </div>
-                </div>
-        
-                <div class="profile-main">
-                    <h1>{{ fullName }}</h1>
-                    <p class="username">@{{ profile.userName }}</p>
-                    <p v-if="profile.bio" class="bio">{{ profile.bio }}</p>
-                </div>
-            </div>
+                </template>
+            </ProfileHeader>
         
             <div class="tabs">
                 <button
@@ -118,6 +102,7 @@
     import { computed, onMounted, ref } from "vue";
     import { useRouter } from "vue-router";
     import { userProfileService } from "@/features/userProfile/api/userProfileService";
+    import ProfileHeader from "@/features/userProfile/components/ProfileHeader.vue";
     import ProfilePersonalInfo from "@/features/userProfile/components/ProfilePersonalInfo.vue";
     import ProfileSubscriptions from "@/features/userProfile/components/ProfileSubscriptions.vue";
     import { useAuthStore } from "@/features/auth/stores/authStore";
@@ -140,30 +125,6 @@
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
     const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
-
-    const fullName = computed(() => {
-        if(!profile.value) return "";
-
-        const parts = [
-            profile.value.lastName,
-            profile.value.firstName,
-            profile.value.middleName
-        ].filter(Boolean);
-
-        return parts.length ? parts.join(" ") : profile.value.userName;
-    });
-
-    const initials = computed(() => {
-        if(!profile.value) return "U";
-
-        const source = fullName.value?.trim() || profile.value.userName?.trim() || "U";
-
-        const parts = source.split(/\s+/);
-        const first = parts[0]?.[0] ?? "U";
-        const second = parts.length > 1 ? parts[1]?.[0] ?? "" : "";
-
-        return (first + second).toUpperCase();
-    });
 
     const resolvedAvatarUrl = computed(() => {
         const raw = profile.value?.avatarUrl?.trim();
@@ -290,40 +251,9 @@
   padding: 24px;
 }
 
-.profile-header {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-  margin-bottom: 24px;
-}
-
-.avatar-wrap {
-  flex-shrink: 0;
-}
-
 .avatar-error {
   color: #d93025;
   font-size: 14px;
-}
-
-.avatar {
-  width: 112px;
-  height: 112px;
-  border-radius: 999px;
-  object-fit: cover;
-  display: block;
-  cursor: pointer;
-}
-
-.avatar-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #666;
-  color: white;
-  font-size: 32px;
-  font-weight: 700;
-  cursor: pointer;
 }
 
 .avatar-modal {
@@ -363,33 +293,6 @@
   gap: 10px;
 }
 
-.avatar-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-width: 160px;
-}
-
-.profile-main {
-  flex: 1;
-}
-
-.profile-main h1 {
-  margin: 0 0 8px;
-  color: var(--text-primary);
-}
-
-.username {
-  margin: 0 0 10px;
-  color: var(--text-secondary);
-}
-
-.bio {
-  margin: 0;
-  line-height: 1.5;
-  color: var(--text-primary);
-}
-
 .tabs {
   display: flex;
   gap: 10px;
@@ -415,16 +318,6 @@
 
 .tab-content {
   margin-top: 16px;
-}
-
-@media (max-width: 768px) {
-  .profile-header {
-    flex-direction: column;
-  }
-
-  .avatar-section {
-    min-width: auto;
-  }
 }
 
 .hidden-file-input {

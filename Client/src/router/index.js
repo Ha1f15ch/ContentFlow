@@ -8,6 +8,7 @@ import RegisterView from '@/views/Register.vue';
 import ConfirmEmailView from '@/views/ConfirmEmail.vue';
 import CreatePostView from '@/features/post/views/CreatePostView.vue';
 import MyProfileView from '@/features/userProfile/views/MyProfileView.vue';
+import UserProfileView from '@/features/userProfile/views/UserProfileView.vue';
 
 const routes = [
   {
@@ -41,6 +42,12 @@ const routes = [
     path: '/me',
     name: 'myProfile',
     component: MyProfileView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/profiles/:profileId',
+    name: 'userProfile',
+    component: UserProfileView,
     meta: { requiresAuth: true }
   },
 ];

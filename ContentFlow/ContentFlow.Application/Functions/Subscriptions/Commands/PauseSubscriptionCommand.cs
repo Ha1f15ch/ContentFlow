@@ -2,4 +2,4 @@
 
 namespace ContentFlow.Application.Functions.Subscriptions.Commands;
 
-public record PauseSubscriptionCommand(int FollowerUserId, int FollowingUserId) : IRequest<Unit>;
+public record PauseSubscriptionCommand(int FollowerUserId, int FollowingProfileId) : IRequest<Unit>;

@@ -3,6 +3,7 @@ using ContentFlow.Application.Common;
 using ContentFlow.Application.DTOs;
 using ContentFlow.Application.Functions.Posts.Queries;
 using ContentFlow.Application.Interfaces.Posts;
+using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Application.Interfaces.Users;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -14,17 +15,20 @@ public class GetPostsQueryHandler : IRequestHandler<GetPostsQuery, PaginatedResu
     private readonly IPostRepository _postRepository;
     private readonly IMapper _mapper;
     private readonly IUserService  _userService;
+    private readonly IUserProfileRepository _userProfileRepository;
     private readonly ILogger<GetPostsQueryHandler> _logger;
     
     public GetPostsQueryHandler(
         IPostRepository postRepository,
         IMapper mapper, 
         IUserService userService,
+        IUserProfileRepository userProfileRepository,
         ILogger<GetPostsQueryHandler> logger)
     {
         _postRepository = postRepository;
         _mapper = mapper;
         _userService = userService;
+        _userProfileRepository = userProfileRepository;
         _logger = logger;
     }
 
@@ -61,10 +65,22 @@ public class GetPostsQueryHandler : IRequestHandler<GetPostsQuery, PaginatedResu
             {
                 var authors = await _userService.GetByIdsAsync(authorIds, cancellationToken);
                 var authorDict = authors.ToDictionary(x => x.Id, x => x);
+                var authorProfileIds = new Dictionary<int, int>();
+
+                foreach (var authorId in authorIds)
+                {
+                    var profile = await _userProfileRepository.GetByUserIdAsync(authorId, cancellationToken);
+                    if (profile != null)
+                    {
+                        authorProfileIds[authorId] = profile.Id;
+                    }
+                }
 
                 var dtos = posts.Items.Select(post =>
                 {
                     var author = authorDict.GetValueOrDefault(post.AuthorId);
+                    authorProfileIds.TryGetValue(post.AuthorId, out var authorProfileId);
+
                     return new PostDto(
                         post.Id,
                         post.Title,
@@ -72,6 +88,7 @@ public class GetPostsQueryHandler : IRequestHandler<GetPostsQuery, PaginatedResu
                         post.Excerpt,
                         post.Content,
                         post.AuthorId,
+                        authorProfileId == 0 ? null : authorProfileId,
                         author != null ? $"{author.UserName}".Trim() : "Unknown Author",
                         author?.AvatarUrl,
                         post.Status,

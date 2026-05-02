@@ -743,7 +743,7 @@ namespace ContentFlow.Infrastructure.Migrations
 
             modelBuilder.Entity("ContentFlow.Domain.Entities.Notification", b =>
                 {
-                    b.HasOne("ContentFlow.Domain.Entities.UserProfile", null)
+                    b.HasOne("ContentFlow.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

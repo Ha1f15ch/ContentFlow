@@ -2,5 +2,5 @@
 
 public interface IRealtimeNotificationSender
 {
-    Task SendAsync(int userProfileId, string eventName, object payload, CancellationToken ct);
+    Task SendAsync(int userId, string eventName, object payload, CancellationToken ct);
 }

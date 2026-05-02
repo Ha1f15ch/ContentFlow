@@ -6,9 +6,14 @@ namespace ContentFlow.Infrastructure.Notifications.SignalR;
 public class SignalRNotificationSender : IRealtimeNotificationSender
 {
     private readonly IHubContext<NotificationsHub> _hubContext;
-    
-    public async Task SendAsync(int userProfileId, string eventName, object payload, CancellationToken ct)
+
+    public SignalRNotificationSender(IHubContext<NotificationsHub> hubContext)
     {
-        await _hubContext.Clients.User(userProfileId.ToString()).SendAsync(eventName, payload, ct);
+        _hubContext = hubContext;
+    }
+    
+    public async Task SendAsync(int userId, string eventName, object payload, CancellationToken ct)
+    {
+        await _hubContext.Clients.User(userId.ToString()).SendAsync(eventName, payload, ct);
     }
 }

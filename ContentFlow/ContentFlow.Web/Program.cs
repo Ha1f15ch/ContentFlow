@@ -75,8 +75,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddAuthentication();
-
 // controllers
 builder.Services.AddControllers();
 
@@ -123,6 +121,20 @@ builder.Services.AddApplication();
 // Add Infrastructure (DbContext, Identity, Repositories, Email, Mappings)
 builder.Services.AddInfrastructure(builder.Configuration);
 
+var jwtSecret = builder.Configuration["JwtSettings:Secret"];
+
+if (string.IsNullOrWhiteSpace(jwtSecret) || jwtSecret == "CHANGE_ME")
+{
+    throw new InvalidOperationException(
+        "JwtSettings:Secret is not configured. Set it in appsettings.Development.json, user-secrets, or environment variables.");
+}
+
+if (Encoding.UTF8.GetByteCount(jwtSecret) < 32)
+{
+    throw new InvalidOperationException(
+        "JwtSettings:Secret must be at least 32 bytes long.");
+}
+
 builder.Services
     .AddAuthentication(options =>
     {
@@ -131,11 +143,28 @@ builder.Services
     })
     .AddJwtBearer(options =>
     {
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    path.StartsWithSegments("/hubs/notifications"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
+        };
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]!)
+                Encoding.UTF8.GetBytes(jwtSecret)
             ),
 
             ValidateIssuer = true,
@@ -189,12 +218,6 @@ await app.InitializeDatabaseAsync();
 // Initialize role
 await AutoInitializeRole(app.Services);
 
-// Turn on hangfire dashboard
-app.UseHangfireDashboard("/hangfire", new DashboardOptions
-{
-    //Authorization = new[] { new HangfireAuthorizationFilter() }
-});
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -216,6 +239,12 @@ app.UseResponseCaching();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Turn on hangfire dashboard
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthorizationFilter() }
+});
 
 app.MapControllers();
 

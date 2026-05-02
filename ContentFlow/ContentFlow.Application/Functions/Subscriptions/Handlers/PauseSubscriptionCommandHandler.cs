@@ -30,14 +30,14 @@ public class PauseSubscriptionCommandHandler : IRequestHandler<PauseSubscription
         var requesterUserProfile = await _userProfileRepository.GetByUserIdAsync(request.FollowerUserId, cancellationToken);
         if (requesterUserProfile == null)
         {
-            return Unit.Value;
+            throw new NotFoundException($"Requester UserProfile by user ID {request.FollowerUserId} not found.");
         }
         
-        var targetUserProfile = await _userProfileRepository.GetByIdAsync(request.FollowingUserId, cancellationToken);
+        var targetUserProfile = await _userProfileRepository.GetByIdAsync(request.FollowingProfileId, cancellationToken);
         if (targetUserProfile == null)
         {
-            _logger.LogError("Target user profile ID = {TargetUserProfileId} not found. Subscribe failed}", request.FollowingUserId);
-            throw new NotFoundException($"Target User profile by ID {request.FollowingUserId} for subscribe to him not founded");
+            _logger.LogError("Target user profile ID = {TargetUserProfileId} not found. Pause failed", request.FollowingProfileId);
+            throw new NotFoundException($"Target UserProfile by ID {request.FollowingProfileId} not found.");
         }
         
         var subscription = await _subscriptionRepository.GetByFollowerAndFollowingAsync(requesterUserProfile.Id, targetUserProfile.Id, cancellationToken);

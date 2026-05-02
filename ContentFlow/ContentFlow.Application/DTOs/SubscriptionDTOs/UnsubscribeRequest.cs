@@ -3,4 +3,4 @@
 /// <summary>
 /// От кого отписываемся
 /// </summary>
-public record UnsubscribeRequest(int FollowingId);
+public record UnsubscribeRequest(int FollowingProfileId);
