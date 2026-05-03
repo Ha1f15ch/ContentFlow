@@ -14,6 +14,13 @@
       
         <div class="posts-area">
           <PostList :posts="posts" @open="openPost" />
+          <div ref="postsSentinel" class="posts-sentinel" aria-hidden="true"></div>
+          <p v-if="isLoadingPosts && posts.length > 0" class="posts-status">
+            Загрузка ещё...
+          </p>
+          <p v-else-if="!hasMorePosts && posts.length > 0" class="posts-status">
+            Все посты загружены.
+          </p>
         </div>
       </div>
     </div>
@@ -27,26 +34,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/features/auth/stores/authStore";
-import { watch } from "vue";
 import { usePostFeedUiStore } from "@/features/post/stores/postFeedUiStore";
+import { useInfiniteScroll } from "@/shared/composables/useInfiniteScroll";
 
 import PostList from "@/shared/components/PostList.vue";
 import PostDetailsModal from "@/features/post/components/PostDetailsModal.vue";
 import PostSectionsTabs from "@/features/post/components/PostSectionsTabs.vue";
-import TagList from "@/shared/components/TagList.vue";
-import CategoryListSmart from "@/features/category/components/CategoryListSmart.vue";
 
 import { userProfileService } from "@/features/userProfile/api/userProfileService";
 import { tagService } from "@/features/tag/api/tagService";
 import {
   postService,
-  POST_SORT_BY,
-  SORT_DIRECTION,
   POST_STATUS,
 } from "@/features/post/api/postService";
+
+const POSTS_PAGE_SIZE = 5;
 
 const router = useRouter();
 const route = useRoute();
@@ -56,12 +61,15 @@ const postFeedUiStore = usePostFeedUiStore();
 const userProfile = ref(null);
 const tags = ref([]);
 const posts = ref([]);
-const categories = ref([]);
 const loading = ref(true);
+const isLoadingPosts = ref(false);
+const postsPage = ref(0);
+const postsTotalPages = ref(0);
+const postsSentinel = ref(null);
 
 const viewMode = ref("feed");
 
-const filters = computed(() => postFeedUiStore.filters);
+const hasMorePosts = computed(() => postsPage.value < postsTotalPages.value);
 
 const selectedPostId = computed(() => {
   const raw = route.query.postId;
@@ -100,8 +108,6 @@ const currentAuthorId = computed(() => {
   return authStore.user?.userId ?? null;
 });
 
-const filtersOpen = ref(false);
-
 function buildPostFilter() {
   const filter = {
     search: postFeedUiStore.filters.search || null,
@@ -135,46 +141,60 @@ function buildPostFilter() {
   return filter;
 }
 
-async function loadPosts() {
+async function loadPosts({ reset = false } = {}) {
+  if (isLoadingPosts.value) return;
+  if (!reset && !hasMorePosts.value) return;
+
+  const nextPage = reset ? 1 : postsPage.value + 1;
+
+  isLoadingPosts.value = true;
+
   try {
     const response = await postService.getPosts({
-      page: 1,
-      pageSize: 10,
+      page: nextPage,
+      pageSize: POSTS_PAGE_SIZE,
       filter: buildPostFilter(),
     });
 
     console.log("GET /posts response:", response.data);
-    posts.value = response.data?.items ?? [];
+
+    const result = response.data ?? {};
+    const items = result.items ?? [];
+
+    posts.value = reset ? items : [...posts.value, ...items];
+    postsPage.value = result.page ?? nextPage;
+    postsTotalPages.value = result.totalPages ?? postsTotalPages.value;
   } catch (err) {
     console.error("Ошибка загрузки постов:", err);
+  } finally {
+    isLoadingPosts.value = false;
   }
+}
+
+async function resetAndLoadPosts() {
+  posts.value = [];
+  postsPage.value = 0;
+  postsTotalPages.value = 0;
+  await loadPosts({ reset: true });
 }
 
 function handleViewModeChange(mode) {
   viewMode.value = mode;
-  loadPosts();
-}
-
-function resetFilters() {
-  filters.value = {
-    search: "",
-    categoryId: null,
-    createdFrom: "",
-    sort: {
-      sortBy: POST_SORT_BY.CreatedAt,
-      direction: SORT_DIRECTION.Desc,
-    },
-  };
-
-  loadPosts();
+  resetAndLoadPosts();
 }
 
 watch(
   () => postFeedUiStore.applyVersion,
   () => {
-    loadPosts();
+    resetAndLoadPosts();
   }
 );
+
+useInfiniteScroll({
+  sentinelRef: postsSentinel,
+  canLoadMore: () => !loading.value && !isLoadingPosts.value && hasMorePosts.value,
+  loadMore: () => loadPosts(),
+});
 
 onMounted(async () => {
   loading.value = true;
@@ -202,8 +222,7 @@ onMounted(async () => {
       tags.value = unwrapItems(tagsResp.data);
     }
 
-    categories.value = [];
-    await loadPosts();
+    await resetAndLoadPosts();
   } catch (err) {
     console.error("Ошибка загрузки данных:", err);
   } finally {
@@ -248,6 +267,18 @@ onMounted(async () => {
 .posts-area {
   width: 100%;
   box-sizing: border-box;
+}
+
+.posts-sentinel {
+  width: 100%;
+  height: 1px;
+}
+
+.posts-status {
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-secondary);
 }
 
 @media (max-width: 820px) {
