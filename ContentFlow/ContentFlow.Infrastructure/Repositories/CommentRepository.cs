@@ -131,18 +131,17 @@ public class CommentRepository : ICommentRepository
     public async Task AddAsync(Comment comment, CancellationToken ct)
     {
         await _context.Comments.AddAsync(comment, ct);
-        await _context.SaveChangesAsync(ct);
     }
 
-    public async Task UpdateAsync(Comment comment, CancellationToken ct)
+    public Task UpdateAsync(Comment comment, CancellationToken ct)
     {
         _context.Comments.Update(comment);
-        await _context.SaveChangesAsync(ct);
+        return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(Comment comment, CancellationToken ct)
+    public Task DeleteAsync(Comment comment, CancellationToken ct)
     {
         _context.Comments.Update(comment);
-        await _context.SaveChangesAsync(ct);
+        return Task.CompletedTask;
     }
 }

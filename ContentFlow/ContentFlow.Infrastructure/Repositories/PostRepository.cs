@@ -99,19 +99,18 @@ public class PostRepository : IPostRepository
     public async Task AddAsync(Post post, CancellationToken ct)
     {
         await _context.Posts.AddAsync(post, ct);
-        await _context.SaveChangesAsync(ct);
     }
 
-    public async Task UpdateAsync(Post post, CancellationToken ct)
+    public Task UpdateAsync(Post post, CancellationToken ct)
     {
         _context.Posts.Update(post);
-        await _context.SaveChangesAsync(ct); 
+        return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(Post post, CancellationToken ct)
+    public Task DeleteAsync(Post post, CancellationToken ct)
     {
         post.MarkAsDeleted();
         _context.Posts.Update(post);
-        await _context.SaveChangesAsync(ct);
+        return Task.CompletedTask;
     }
 }

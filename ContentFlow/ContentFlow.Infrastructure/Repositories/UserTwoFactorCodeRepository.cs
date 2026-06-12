@@ -34,7 +34,6 @@ public class UserTwoFactorCodeRepository : IUserTwoFactorCodeRepository
         };
 
         await _context.UserTwoFactorCodes.AddAsync(code, ct);
-        await _context.SaveChangesAsync(ct);
     }
 
     public async Task<TwoFactorCodeDto?> GetValidByUserIdAndPurposeAsync(int userId, string purpose, CancellationToken ct)
@@ -96,7 +95,7 @@ public class UserTwoFactorCodeRepository : IUserTwoFactorCodeRepository
 
         code.AttemptCount++;
         _context.UserTwoFactorCodes.Update(code);
-        return await _context.SaveChangesAsync(ct) > 0;
+        return true;
     }
 
     public async Task MarkAsUsedAsync(int codeId, CancellationToken ct)
@@ -106,7 +105,6 @@ public class UserTwoFactorCodeRepository : IUserTwoFactorCodeRepository
 
         code.IsUsed = true;
         _context.UserTwoFactorCodes.Update(code);
-        await _context.SaveChangesAsync(ct);
     }
 
     private TwoFactorCodeDto MapToDto(UserTwoFactorCode code)

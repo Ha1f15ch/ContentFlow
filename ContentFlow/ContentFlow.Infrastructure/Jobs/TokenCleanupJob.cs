@@ -1,4 +1,5 @@
-﻿using ContentFlow.Application.Interfaces.RefreshToken;
+﻿using ContentFlow.Application.Interfaces.Common;
+using ContentFlow.Application.Interfaces.RefreshToken;
 using Microsoft.Extensions.Logging;
 
 namespace ContentFlow.Infrastructure.Jobs;
@@ -6,13 +7,16 @@ namespace ContentFlow.Infrastructure.Jobs;
 public class TokenCleanupJob
 {
     private readonly IRefreshTokenRepository  _refreshTokenRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<TokenCleanupJob> _logger;
 
     public TokenCleanupJob(
         IRefreshTokenRepository refreshTokenRepository,
+        IUnitOfWork unitOfWork,
         ILogger<TokenCleanupJob> logger)
     {
         _refreshTokenRepository = refreshTokenRepository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -30,6 +34,7 @@ public class TokenCleanupJob
         try
         {
             var count = await _refreshTokenRepository.DeleteExpiredTokenAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Successfully deleted {Count} expired refresh tokens", count);
         }
         catch (Exception e)

@@ -1,4 +1,5 @@
 ﻿using ContentFlow.Application.Functions.Tags.Commands;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Tag;
 using ContentFlow.Domain.Entities;
 using MediatR;
@@ -10,12 +11,15 @@ public class UpdateTagCommandHandler : IRequestHandler<UpdateTagCommand, Unit>
 {
     private readonly ILogger<UpdateTagCommandHandler> _logger;
     private readonly ITagRepository _tagRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public UpdateTagCommandHandler(
         ITagRepository tagRepository,
+        IUnitOfWork unitOfWork,
         ILogger<UpdateTagCommandHandler> logger)
     {
         _tagRepository = tagRepository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -63,6 +67,7 @@ public class UpdateTagCommandHandler : IRequestHandler<UpdateTagCommand, Unit>
         try
         {
             await _tagRepository.UpdateAsync(existingTag, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             
             _logger.LogInformation(
                 "Tag updated successfully. Id: {TagId}, NewName: '{Name}', NewSlug: '{Slug}'", 

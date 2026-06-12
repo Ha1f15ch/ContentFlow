@@ -1,5 +1,6 @@
 using System.Text.Json;
 using ContentFlow.Application.DTOs.NotificationDTOs;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Notification;
 using ContentFlow.Application.Security;
 using ContentFlow.Domain.Entities;
@@ -14,10 +15,14 @@ namespace ContentFlow.Web.Controllers;
 public class NotificationsController : ControllerBase
 {
     private readonly INotificationRepository _notificationRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public NotificationsController(INotificationRepository notificationRepository)
+    public NotificationsController(
+        INotificationRepository notificationRepository,
+        IUnitOfWork unitOfWork)
     {
         _notificationRepository = notificationRepository;
+        _unitOfWork = unitOfWork;
     }
 
     [HttpGet]
@@ -49,7 +54,7 @@ public class NotificationsController : ControllerBase
             return NotFound();
 
         notification.MarkRead();
-        await _notificationRepository.SaveChangesAsync(ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return NoContent();
     }

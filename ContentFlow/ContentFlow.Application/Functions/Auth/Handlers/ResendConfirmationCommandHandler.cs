@@ -13,17 +13,20 @@ public class ResendConfirmationCommandHandler : IRequestHandler<ResendConfirmati
     private readonly IUserTwoFactorCodeRepository _userTwoFactorCodeRepository;
     private readonly IUserService _userService;
     private readonly IEmailSender _emailSender;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ResendConfirmationCommandHandler> _logger;
 
     public ResendConfirmationCommandHandler(
         IUserTwoFactorCodeRepository userTwoFactorCodeRepository, 
         IUserService userService,
         IEmailSender emailSender,
+        IUnitOfWork unitOfWork,
         ILogger<ResendConfirmationCommandHandler> logger)
     {
         _userTwoFactorCodeRepository = userTwoFactorCodeRepository;
         _userService = userService;
         _emailSender = emailSender;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -62,6 +65,7 @@ public class ResendConfirmationCommandHandler : IRequestHandler<ResendConfirmati
                 codeSalt: codeSalt,
                 purpose: "EmailVerification",
                 ct: cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("New verification code generated and saved for user: {UserId}", user.Id);
         }
         catch (Exception ex)

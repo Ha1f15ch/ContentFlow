@@ -1,9 +1,11 @@
 ﻿using ContentFlow.Application.Interfaces.Category;
 using ContentFlow.Application.Interfaces.Comment;
+using ContentFlow.Application.Interfaces.CommentReaction;
 using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Common.Jobs;
 using ContentFlow.Application.Interfaces.FileStorage;
 using ContentFlow.Application.Interfaces.Notification;
+using ContentFlow.Application.Interfaces.PostReaction;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.RefreshToken;
 using ContentFlow.Application.Interfaces.Subscription;
@@ -68,6 +70,8 @@ public static class DependencyInjection
         services.AddScoped<IUserTwoFactorCodeRepository, UserTwoFactorCodeRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+        services.AddScoped<IPostReactionRepository, PostReactionRepository>();
+        services.AddScoped<ICommentReactionRepository, CommentReactionRepository>();
         services.AddTransient<ISubscriptionRepository, SubscriptionRepository>();
         services.AddTransient<INotificationRepository, NotificationRepository>();
         

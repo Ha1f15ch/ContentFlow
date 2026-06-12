@@ -1,5 +1,6 @@
 ﻿using ContentFlow.Application.Common;
 using ContentFlow.Application.Functions.Posts.Commands;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Application.Exceptions;
@@ -12,15 +13,18 @@ public class UpdatePostCommandHandler : IRequestHandler<UpdatePostCommand>
 {
     private readonly IPostRepository _postRepository;
     private readonly IUserService  _userService;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UpdatePostCommandHandler> _logger;
     
     public UpdatePostCommandHandler(
         IPostRepository  postRepository,
         IUserService userService,
+        IUnitOfWork unitOfWork,
         ILogger<UpdatePostCommandHandler> logger)
     {
         _postRepository = postRepository;
         _userService = userService;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -59,6 +63,7 @@ public class UpdatePostCommandHandler : IRequestHandler<UpdatePostCommand>
             post.SetSlug(request.Title);
             
             await _postRepository.UpdateAsync(post, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             
             _logger.LogInformation(
                 "Post {PostId} updated successfully. Title: '{Title}', UpdatedBy: {UserId}", 

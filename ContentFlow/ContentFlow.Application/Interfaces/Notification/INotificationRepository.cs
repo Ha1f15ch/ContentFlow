@@ -7,5 +7,4 @@ public interface INotificationRepository
     Task<Domain.Entities.Notification?> GetByIdForUserAsync(int notificationId, int userId, CancellationToken ct);
     Task<IReadOnlyList<Domain.Entities.Notification>> GetUnreadByUserAsync(int userId, CancellationToken ct);
     public Task AddRangeAsync(IEnumerable<Domain.Entities.Notification> notifications, CancellationToken ct);
-    public Task SaveChangesAsync(CancellationToken ct);
 }

@@ -59,17 +59,17 @@ public class TagRepository : ITagRepository
     public async Task AddAsync(Tag tag, CancellationToken ct)
     {
         await _context.Tags.AddAsync(tag, ct);
-        await _context.SaveChangesAsync(ct);
     }
 
-    public async Task UpdateAsync(Tag tag, CancellationToken ct)
+    public Task UpdateAsync(Tag tag, CancellationToken ct)
     {
-        await _context.SaveChangesAsync(ct);
+        _context.Tags.Update(tag);
+        return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(Tag tag, CancellationToken ct)
+    public Task DeleteAsync(Tag tag, CancellationToken ct)
     {
         _context.Tags.Remove(tag);
-        await _context.SaveChangesAsync(ct);
+        return Task.CompletedTask;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using ContentFlow.Application.DTOs.UserProfileDTOs;
 using ContentFlow.Application.Functions.UserProfile.Commands;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Domain.Enums;
@@ -13,15 +14,18 @@ public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfile
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly ILogger<UpdateUserProfileCommandHandler> _logger;
     private readonly IUserService _userService;
+    private readonly IUnitOfWork _unitOfWork;
     
     public UpdateUserProfileCommandHandler(
         IUserProfileRepository userProfileRepository,
         ILogger<UpdateUserProfileCommandHandler> logger,
-        IUserService userService)
+        IUserService userService,
+        IUnitOfWork unitOfWork)
     {
         _userProfileRepository = userProfileRepository;
         _logger = logger;
         _userService = userService;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<UserProfileDto> Handle(UpdateUserProfileCommand request, CancellationToken cancellationToken)
@@ -55,6 +59,7 @@ public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfile
         }
         
         profile = await _userProfileRepository.UpdateAsync(profile, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         var user = await _userService.GetByIdAsync(profile.UserId, cancellationToken);
         
         var dto = new UserProfileDto(

@@ -39,7 +39,6 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         };
 
         await _context.RefreshTokens.AddAsync(newToken, ct);
-        await _context.SaveChangesAsync(ct);
     }
 
     public async Task<RefreshTokenDto?> GetActiveByLookupHashAsync(string lookupHash, CancellationToken ct)
@@ -79,7 +78,7 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         token.RevokedByIp = revokedByIp;
         token.ReplacedByTokenHash = replacedByTokenHash;
 
-        return await _context.SaveChangesAsync(ct) > 0;
+        return true;
     }
 
     public async Task RevokeAllActiveByUserIdAsync(int userId, string reason, CancellationToken ct)
@@ -97,7 +96,6 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         }
 
         _context.RefreshTokens.UpdateRange(tokens);
-        await _context.SaveChangesAsync(ct);
     }
 
     public async Task<bool> ExistsByUserIdAndDeviceAsync(int userId, string? deviceId, CancellationToken ct)
@@ -118,7 +116,6 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         if (!expiredTokens.Any()) return 0;
 
         _context.RefreshTokens.RemoveRange(expiredTokens);
-        await _context.SaveChangesAsync(ct);
         return expiredTokens.Count;
     }
 

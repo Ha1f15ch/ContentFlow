@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Common.Jobs;
 using ContentFlow.Application.Interfaces.Notification;
 using ContentFlow.Application.Interfaces.Subscription;
@@ -17,6 +18,7 @@ public class NotificationService : INotificationService
     private readonly IRealtimeNotificationSender _realtimeNotificationSender;
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly IUserService _userService;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<NotificationService> _logger;
     
     public NotificationService(
@@ -25,13 +27,15 @@ public class NotificationService : INotificationService
         ILogger<NotificationService> logger, 
         IRealtimeNotificationSender realtimeNotificationSender,
         IUserProfileRepository userProfileRepository,
-        IUserService userService)
+        IUserService userService,
+        IUnitOfWork unitOfWork)
     {
         _notificationRepository = notificationRepository;
         _subscriptionRepository = subscriptionRepository;
         _realtimeNotificationSender = realtimeNotificationSender;
         _userProfileRepository = userProfileRepository;
         _userService = userService;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
     
@@ -60,7 +64,7 @@ public class NotificationService : INotificationService
             .ToList();
         
         await _notificationRepository.AddRangeAsync(notifications, ct);
-        await _notificationRepository.SaveChangesAsync(ct);
+        await _unitOfWork.SaveChangesAsync(ct);
         
         int batchSize = 1000; // число пакетов
         for (int i = 0; i < subscriberUserIds.Count; i += batchSize)
@@ -104,6 +108,7 @@ public class NotificationService : INotificationService
             payload: JsonSerializer.Serialize(payload));
         
         await _notificationRepository.AddAsync(notification, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
         await _realtimeNotificationSender.SendAsync(
             targetUserProfile.UserId,
             "NewSubscriber",

@@ -1,5 +1,6 @@
 ﻿using ContentFlow.Application.Common;
 using ContentFlow.Application.Functions.Posts.Commands;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Domain.Exceptions;
@@ -12,15 +13,18 @@ public class DeletePostCommandHandler : IRequestHandler<DeletePostCommand>
 {
     private readonly IPostRepository _postRepository;
     private readonly IUserService  _userService;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DeletePostCommandHandler> _logger;
     
     public DeletePostCommandHandler(
         IPostRepository postRepository, 
         IUserService userService,
+        IUnitOfWork unitOfWork,
         ILogger<DeletePostCommandHandler> logger)
     {
         _postRepository = postRepository;
         _userService = userService;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -57,6 +61,7 @@ public class DeletePostCommandHandler : IRequestHandler<DeletePostCommand>
             post.MarkAsDeleted();
             
             await _postRepository.UpdateAsync(post, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             
             _logger.LogInformation(
                 "Post {PostId} successfully marked as deleted. Title: '{Title}', DeletedBy: {UserId}", 

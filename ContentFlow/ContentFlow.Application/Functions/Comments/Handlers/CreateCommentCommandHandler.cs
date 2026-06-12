@@ -2,6 +2,7 @@
 using ContentFlow.Application.Exceptions;
 using ContentFlow.Application.Functions.Comments.Commands;
 using ContentFlow.Application.Interfaces.Comment;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Domain.Entities;
@@ -16,17 +17,20 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
     private readonly ICommentRepository _commentRepository;
     private readonly IPostRepository _postRepository;
     private readonly IUserService _userService;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CreateCommentCommandHandler> _logger;
     
     public CreateCommentCommandHandler(
         IPostRepository postRepository, 
         ICommentRepository commentRepository, 
         IUserService userService,
+        IUnitOfWork unitOfWork,
         ILogger<CreateCommentCommandHandler> logger)
     {
         _postRepository = postRepository;
         _commentRepository = commentRepository;
         _userService = userService;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -110,6 +114,7 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
                 newComment.Id, newComment.AuthorId);
 
             await _commentRepository.AddAsync(newComment, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
                 "Comment {CommentId} created successfully on post {PostId}. ReplyTo: {ParentId}", 

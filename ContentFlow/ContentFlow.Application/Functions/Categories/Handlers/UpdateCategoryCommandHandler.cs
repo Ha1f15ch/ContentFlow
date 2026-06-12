@@ -1,5 +1,6 @@
 ﻿using ContentFlow.Application.Functions.Categories.Commands;
 using ContentFlow.Application.Interfaces.Category;
+using ContentFlow.Application.Interfaces.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -8,14 +9,17 @@ namespace ContentFlow.Application.Functions.Categories.Handlers;
 public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand, Unit>
 {
     private readonly ICategoryRepository _categoryRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UpdateCategoryCommandHandler> _logger;
 
     public UpdateCategoryCommandHandler(
         ILogger<UpdateCategoryCommandHandler> logger,
-        ICategoryRepository categoryRepository)
+        ICategoryRepository categoryRepository,
+        IUnitOfWork unitOfWork)
     {
         _logger = logger;
         _categoryRepository = categoryRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Unit> Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
@@ -33,6 +37,7 @@ public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryComman
         try
         {
             await _categoryRepository.UpdateAsync(category, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Category updated successfully. Id: {CategoryId}", category.Id);
             return Unit.Value;
         }

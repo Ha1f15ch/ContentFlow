@@ -24,10 +24,10 @@ public class CategoryRepository : ICategoryRepository
             ?? throw new NotFoundException($"Category with id {id} not found");
     }
 
-    public async Task DeleteAsync(Category category, CancellationToken ct)
+    public Task DeleteAsync(Category category, CancellationToken ct)
     {
         _context.Categories.Remove(category);
-        await  _context.SaveChangesAsync(ct);
+        return Task.CompletedTask;
     }
 
     public async Task<PaginatedResult<Category>> GetPaginatedAsync(int page, int pageSize, CancellationToken ct)
@@ -43,16 +43,15 @@ public class CategoryRepository : ICategoryRepository
         return new PaginatedResult<Category>(categories, page, pageSize, totalCount);
     }
 
-    public async Task UpdateAsync(Category category, CancellationToken ct)
+    public Task UpdateAsync(Category category, CancellationToken ct)
     {
         _context.Categories.Update(category);
-        await _context.SaveChangesAsync(ct);
+        return Task.CompletedTask;
     }
 
     public async Task AddAsync(Category category, CancellationToken ct)
     {
         await _context.Categories.AddAsync(category, ct);
-        await _context.SaveChangesAsync(ct);
     }
 
     public async Task<Category?> GetCategoryByNameAsync(string name, CancellationToken ct)

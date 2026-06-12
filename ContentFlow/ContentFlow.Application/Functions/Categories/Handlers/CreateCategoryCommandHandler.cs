@@ -1,5 +1,6 @@
 ﻿using ContentFlow.Application.Functions.Categories.Commands;
 using ContentFlow.Application.Interfaces.Category;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -10,13 +11,16 @@ public class CreateCategoryCommandHandler :  IRequestHandler<CreateCategoryComma
 {
     private readonly ILogger<CreateCategoryCommandHandler> _logger;
     private readonly ICategoryRepository _categoryRepository;
+    private readonly IUnitOfWork _unitOfWork;
     
     public CreateCategoryCommandHandler(
         ILogger<CreateCategoryCommandHandler> logger,
-        ICategoryRepository categoryRepository)
+        ICategoryRepository categoryRepository,
+        IUnitOfWork unitOfWork)
     {
         _logger = logger;
         _categoryRepository = categoryRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<int> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
@@ -35,6 +39,7 @@ public class CreateCategoryCommandHandler :  IRequestHandler<CreateCategoryComma
         try
         {
             await _categoryRepository.AddAsync(category, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Category created successfully. Id: {CategoryId}, Name: '{Name}'", category.Id, category.Name);
             return category.Id;
         }

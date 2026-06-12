@@ -18,6 +18,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
     private readonly IEmailSender  _emailSender;
     private readonly IUserTwoFactorCodeRepository _userTwoFactorCodeRepository;
     private readonly IUserProfileRepository _userProfileRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RegisterCommandHandler> _logger;
     
     public RegisterCommandHandler(
@@ -25,12 +26,14 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
         IEmailSender emailSender, 
         IUserTwoFactorCodeRepository userTwoFactorCodeRepository,
         IUserProfileRepository userProfileRepository,
+        IUnitOfWork unitOfWork,
         ILogger<RegisterCommandHandler> logger)
     {
             _emailSender  = emailSender;
             _userService = userService;
             _userTwoFactorCodeRepository = userTwoFactorCodeRepository;
             _userProfileRepository = userProfileRepository;
+            _unitOfWork = unitOfWork;
             _logger = logger;
     }
 
@@ -69,9 +72,6 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
 
             var profile = new Domain.Entities.UserProfile(userId: userDto.Id);
             await _userProfileRepository.CreateAsync(profile, cancellationToken);
-
-            _logger.LogInformation("UserProfile created successfully with ID: {UserProfileId} for user ID: {UserId}", 
-                profile.Id, userDto.Id);
             
             // Creating 2FA code
             var code = TokenGenerator.GenerateSixValueCode();
@@ -85,6 +85,10 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
                     codeSalt: codeSalt,
                     purpose: "EmailVerification",
                     ct: cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                
+                _logger.LogInformation("UserProfile created successfully with ID: {UserProfileId} for user ID: {UserId}", 
+                    profile.Id, userDto.Id);
                 _logger.LogInformation("Verification code generated and saved for user: {UserId}", userDto.Id);
             }
             catch (InvalidOperationException ex)

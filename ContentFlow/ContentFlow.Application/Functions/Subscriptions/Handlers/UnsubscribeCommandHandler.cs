@@ -1,4 +1,5 @@
 ﻿using ContentFlow.Application.Functions.Subscriptions.Commands;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Subscription;
 using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Domain.Exceptions;
@@ -12,15 +13,18 @@ public class UnsubscribeCommandHandler : IRequestHandler<UnsubscribeCommand, Uni
     private readonly ILogger<UnsubscribeCommandHandler> _logger;
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly IUnitOfWork _unitOfWork;
     
     public UnsubscribeCommandHandler(
         ILogger<UnsubscribeCommandHandler> logger,
         IUserProfileRepository userProfileRepository,
-        ISubscriptionRepository subscriptionRepository)
+        ISubscriptionRepository subscriptionRepository,
+        IUnitOfWork unitOfWork)
     {
         _logger = logger;
         _userProfileRepository = userProfileRepository;
         _subscriptionRepository = subscriptionRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Unit> Handle(UnsubscribeCommand request, CancellationToken cancellationToken)
@@ -50,7 +54,7 @@ public class UnsubscribeCommandHandler : IRequestHandler<UnsubscribeCommand, Uni
         }
         
         subscription.Deactivate();
-        await _subscriptionRepository.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         
         _logger.LogInformation("Subscription {SubscriptionId} has been deleted", subscription.Id);
         

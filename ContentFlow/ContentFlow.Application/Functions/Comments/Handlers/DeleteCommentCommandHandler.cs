@@ -2,6 +2,7 @@
 using ContentFlow.Application.Exceptions;
 using ContentFlow.Application.Functions.Comments.Commands;
 using ContentFlow.Application.Interfaces.Comment;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.Users;
 using MediatR;
@@ -14,17 +15,20 @@ public class DeleteCommentCommandHandler : IRequestHandler<DeleteCommentCommand,
     private readonly ICommentRepository _commentRepository;
     private readonly IPostRepository  _postRepository;
     private readonly IUserService _userService;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DeleteCommentCommandHandler> _logger;
     
     public DeleteCommentCommandHandler(
         ICommentRepository commentRepository,
         IPostRepository postRepository,
         IUserService userService,
+        IUnitOfWork unitOfWork,
         ILogger<DeleteCommentCommandHandler> logger)
     {
         _commentRepository = commentRepository;
         _postRepository = postRepository;
         _userService = userService;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -81,6 +85,7 @@ public class DeleteCommentCommandHandler : IRequestHandler<DeleteCommentCommand,
             comment.Delete();
 
             await _commentRepository.DeleteAsync(comment, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
                 "Comment {CommentId} successfully marked as deleted. DeletedBy: {UserId}, PostId: {PostId}", 

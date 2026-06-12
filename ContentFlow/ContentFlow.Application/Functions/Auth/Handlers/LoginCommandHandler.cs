@@ -2,6 +2,7 @@
 using ContentFlow.Application.Common;
 using ContentFlow.Application.DTOs;
 using ContentFlow.Application.Functions.Auth.Commands;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.RefreshToken;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Application.Security;
@@ -15,17 +16,20 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResult>
     private readonly IRefreshTokenRepository  _refreshTokenRepository;
     private readonly IUserService _userService;
     private readonly ITokenService _tokenService;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<LoginCommandHandler> _logger;
     
     public LoginCommandHandler(
         IRefreshTokenRepository refreshTokenRepository,
         IUserService userService,
         ITokenService tokenService,
+        IUnitOfWork unitOfWork,
         ILogger<LoginCommandHandler> logger)
     {
         _refreshTokenRepository = refreshTokenRepository;
         _userService = userService;
         _tokenService = tokenService;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
     
@@ -81,6 +85,8 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResult>
             deviceId: request.Metadata.DeviceId,
             expiresAt: DateTime.UtcNow.AddDays(7),
             ct: cancellationToken);
+        
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new AuthResult(true, Token: accessToken, RefreshToken: refreshPlain);
     }

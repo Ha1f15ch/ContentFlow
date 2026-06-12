@@ -1,4 +1,5 @@
 ﻿using ContentFlow.Application.Functions.Tags.Commands;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Tag;
 using ContentFlow.Domain.Entities;
 using MediatR;
@@ -9,13 +10,16 @@ namespace ContentFlow.Application.Functions.Tags.Handlers;
 public class CreateTagCommandHandler : IRequestHandler<CreateTagCommand, int>
 {
     private readonly ITagRepository _tagRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CreateTagCommandHandler> _logger;
 
     public CreateTagCommandHandler(
         ITagRepository tagRepository,
+        IUnitOfWork unitOfWork,
         ILogger<CreateTagCommandHandler> logger)
     {
         _tagRepository = tagRepository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -48,6 +52,7 @@ public class CreateTagCommandHandler : IRequestHandler<CreateTagCommand, int>
         try
         {
             await _tagRepository.AddAsync(tag, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             
             _logger.LogInformation(
                 "Tag created successfully. TagId: {TagId}, Name: '{Name}', Slug: '{Slug}'", 

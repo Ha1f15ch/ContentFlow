@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using ContentFlow.Application.Common;
 using ContentFlow.Application.Functions.UserProfile.Commands;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Domain.Exceptions;
@@ -15,18 +16,21 @@ public class DeleteUserProfileCommandHandler : IRequestHandler<DeleteUserProfile
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly IUserService _userService;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DeleteUserProfileCommandHandler> _logger;
     
     public DeleteUserProfileCommandHandler(
         IUserProfileRepository userProfileRepository,
         IMapper mapper,
         ILogger<DeleteUserProfileCommandHandler> logger,
-        IUserService userService)
+        IUserService userService,
+        IUnitOfWork unitOfWork)
     {
         _userProfileRepository = userProfileRepository;
         _mapper = mapper;
         _logger = logger;
         _userService = userService;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<CommonResult> Handle(DeleteUserProfileCommand request, CancellationToken cancellationToken)
@@ -43,6 +47,7 @@ public class DeleteUserProfileCommandHandler : IRequestHandler<DeleteUserProfile
             userProfile.MarkDeleted();
             
             await _userProfileRepository.UpdateAsync(userProfile, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             
             _logger.LogInformation("UserProfile marked as deleted for user ID: {UserId}", request.UserId);
             

@@ -55,11 +55,4 @@ public interface ISubscriptionRepository
     /// <returns>List of UserProfile Ids</returns>
     public Task<List<int>> GetUserIdsWithActiveNotification(int followingId, CancellationToken ct = default);
     
-    /// <summary>
-    /// Сохранить 
-    /// </summary>
-    /// <param name="subscriptionModel">Доменная сущность</param>
-    /// <param name="ct">Оборвать запрос</param>
-    /// <returns>void</returns>
-    Task SaveChangesAsync(CancellationToken ct = default);
 }

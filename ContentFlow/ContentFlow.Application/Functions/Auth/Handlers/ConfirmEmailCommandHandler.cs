@@ -13,17 +13,20 @@ public class ConfirmEmailCommandHandler :  IRequestHandler<ConfirmEmailCommand, 
     private readonly IEmailSender _emailSender;
     private readonly IUserService _userService;
     private readonly IUserTwoFactorCodeRepository _userTwoFactorCodeRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ConfirmEmailCommandHandler> _logger;
     
     public ConfirmEmailCommandHandler(
         IEmailSender emailSender,
         IUserService userService,
         IUserTwoFactorCodeRepository userTwoFactorCodeRepository,
+        IUnitOfWork unitOfWork,
         ILogger<ConfirmEmailCommandHandler> logger)
     {
         _emailSender = emailSender;
         _userService = userService;
         _userTwoFactorCodeRepository = userTwoFactorCodeRepository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -54,6 +57,7 @@ public class ConfirmEmailCommandHandler :  IRequestHandler<ConfirmEmailCommand, 
         if (!isCodeValid)
         {
             await _userTwoFactorCodeRepository.IncrementAttemptAsync(activeCodeDto.Id, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             _logger.LogWarning("Invalid verification code provided by user: {Email}", request.Email);
             return new AuthResult(false, Errors: "Invalid verification code");
         }
@@ -67,6 +71,7 @@ public class ConfirmEmailCommandHandler :  IRequestHandler<ConfirmEmailCommand, 
         }
         
         await _userTwoFactorCodeRepository.MarkAsUsedAsync(activeCodeDto.Id, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         _logger.LogInformation("Verification code marked as used for user: {UserId}", user.Id);
         
         await _userService.RemoveFromRoleAsync(user.Email, RoleConstants.Guest.ToString(), cancellationToken);

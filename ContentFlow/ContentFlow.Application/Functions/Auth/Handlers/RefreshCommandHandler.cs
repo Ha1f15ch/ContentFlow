@@ -1,5 +1,6 @@
 ﻿using ContentFlow.Application.Common;
 using ContentFlow.Application.Functions.Auth.Commands;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.RefreshToken;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Application.Security;
@@ -13,17 +14,20 @@ public class RefreshCommandHandler : IRequestHandler<RefreshCommand, AuthResult>
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUserService _userService;
     private readonly ITokenService _tokenService;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RefreshCommandHandler> _logger;
 
     public RefreshCommandHandler(
         IRefreshTokenRepository refreshTokenRepository,
         IUserService userService,
         ITokenService tokenService,
+        IUnitOfWork unitOfWork,
         ILogger<RefreshCommandHandler> logger)
     {
         _refreshTokenRepository = refreshTokenRepository;
         _userService = userService;
         _tokenService = tokenService;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -76,6 +80,8 @@ public class RefreshCommandHandler : IRequestHandler<RefreshCommand, AuthResult>
             deviceId: stored.DeviceId ?? request.Metadata.DeviceId,
             expiresAt: DateTime.UtcNow.AddDays(7),
             ct: ct);
+        
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return new AuthResult(true, Token: newAccess, RefreshToken: newRefreshPlain);
     }

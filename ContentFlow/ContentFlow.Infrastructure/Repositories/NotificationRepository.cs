@@ -20,7 +20,6 @@ public class NotificationRepository : INotificationRepository
     public async Task AddAsync(Notification notification, CancellationToken ct)
     {
         await _dbContext.Notifications.AddAsync(notification, ct);
-        await _dbContext.SaveChangesAsync(ct);
     }
 
     public async Task<IReadOnlyList<Notification>> GetByUserAsync(int userId, int take, CancellationToken ct)
@@ -46,10 +45,5 @@ public class NotificationRepository : INotificationRepository
     public async Task AddRangeAsync(IEnumerable<Notification> notifications, CancellationToken ct)
     {
         await _dbContext.Notifications.AddRangeAsync(notifications, ct);
-    }
-    
-    public async Task SaveChangesAsync(CancellationToken ct)
-    {
-        await _dbContext.SaveChangesAsync(ct);
     }
 }

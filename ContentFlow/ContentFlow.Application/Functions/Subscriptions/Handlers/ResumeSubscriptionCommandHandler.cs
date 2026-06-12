@@ -1,4 +1,5 @@
 ﻿using ContentFlow.Application.Functions.Subscriptions.Commands;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Subscription;
 using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Domain.Exceptions;
@@ -11,15 +12,18 @@ public class ResumeSubscriptionCommandHandler : IRequestHandler<ResumeSubscripti
 {
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ResumeSubscriptionCommandHandler> _logger;
     
     public ResumeSubscriptionCommandHandler(
         IUserProfileRepository userProfileRepository,
         ISubscriptionRepository subscriptionRepository,
+        IUnitOfWork unitOfWork,
         ILogger<ResumeSubscriptionCommandHandler> logger)
     {
         _userProfileRepository = userProfileRepository;
         _subscriptionRepository = subscriptionRepository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -53,7 +57,7 @@ public class ResumeSubscriptionCommandHandler : IRequestHandler<ResumeSubscripti
             _logger.LogInformation("Subscription exist. Resume subscription (from {Follower} to {Following})", requesterUserProfile.Id, targetUserProfile.Id);
             
             subscription.Resume();
-            await _subscriptionRepository.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             
             return Unit.Value;
         }

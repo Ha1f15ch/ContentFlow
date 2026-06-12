@@ -1,5 +1,6 @@
 ﻿using ContentFlow.Application.DTOs.UserProfileDTOs;
 using ContentFlow.Application.Functions.UserProfile.Commands;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.FileStorage;
 using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Application.Interfaces.Users;
@@ -15,17 +16,20 @@ public class UpdateUserAvatarCommandHandler : IRequestHandler<UpdateUserAvatarCo
     private readonly ILogger<UpdateUserAvatarCommandHandler> _logger;
     private readonly IFileStorageService _fileStorageService;
     private readonly IUserService _userService;
+    private readonly IUnitOfWork _unitOfWork;
 
     public UpdateUserAvatarCommandHandler(
         IUserProfileRepository userProfileRepository,
         ILogger<UpdateUserAvatarCommandHandler> logger,
         IFileStorageService fileStorageService,
-        IUserService userService)
+        IUserService userService,
+        IUnitOfWork unitOfWork)
     {
         _userProfileRepository = userProfileRepository;
         _logger = logger;
         _fileStorageService = fileStorageService;
         _userService = userService;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<UserProfileDto> Handle(UpdateUserAvatarCommand command, CancellationToken cancellationToken)
@@ -53,6 +57,7 @@ public class UpdateUserAvatarCommandHandler : IRequestHandler<UpdateUserAvatarCo
         
         profile.UpdateUserAvatarUri(newAvatarUri);
         var result = await _userProfileRepository.UpdateAsync(profile, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         var user = await _userService.GetByIdAsync(profile.UserId, cancellationToken);
         
         return new UserProfileDto(

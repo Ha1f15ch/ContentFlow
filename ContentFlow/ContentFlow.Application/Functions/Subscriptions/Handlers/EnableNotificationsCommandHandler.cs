@@ -1,4 +1,5 @@
 ﻿using ContentFlow.Application.Functions.Subscriptions.Commands;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Subscription;
 using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Domain.Exceptions;
@@ -12,15 +13,18 @@ public class EnableNotificationsCommandHandler : IRequestHandler<EnableNotificat
     private readonly ILogger<EnableNotificationsCommandHandler> _logger;
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public EnableNotificationsCommandHandler(
         ILogger<EnableNotificationsCommandHandler> logger,
         IUserProfileRepository userProfileRepository,
-        ISubscriptionRepository subscriptionRepository)
+        ISubscriptionRepository subscriptionRepository,
+        IUnitOfWork unitOfWork)
     {
         _logger = logger;
         _userProfileRepository = userProfileRepository;
         _subscriptionRepository = subscriptionRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Unit> Handle(EnableNotificationsCommand request, CancellationToken cancellationToken)
@@ -54,7 +58,7 @@ public class EnableNotificationsCommandHandler : IRequestHandler<EnableNotificat
             _logger.LogInformation("Subscription exist. Notify is not active (from {Follower} to {Following})", requesterUserProfile.Id, targetUserProfile.Id);
             
             subscription.EnableNotifications();
-            await _subscriptionRepository.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             
             return Unit.Value;
         }

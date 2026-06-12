@@ -1,6 +1,7 @@
 ﻿using ContentFlow.Application.Common;
 using ContentFlow.Application.Functions.Posts.Commands;
 using ContentFlow.Application.Functions.Posts.Events;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Notification;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.UserProfile;
@@ -15,6 +16,7 @@ public class PublishPostCommandHandler : IRequestHandler<PublishPostCommand, boo
     private readonly IPostRepository _postRepository;
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly IUserService _userService;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMediator _mediator;
     private readonly ILogger<PublishPostCommandHandler> _logger;
     
@@ -23,12 +25,14 @@ public class PublishPostCommandHandler : IRequestHandler<PublishPostCommand, boo
         IUserProfileRepository userProfileRepository,
         IUserService userService,
         INotificationService notificationService,
+        IUnitOfWork unitOfWork,
         IMediator mediator,
         ILogger<PublishPostCommandHandler> logger)
     {
         _postRepository = postRepository;
         _userProfileRepository = userProfileRepository;
         _userService = userService;
+        _unitOfWork = unitOfWork;
         _mediator = mediator;
         _logger = logger;
     }
@@ -66,6 +70,7 @@ public class PublishPostCommandHandler : IRequestHandler<PublishPostCommand, boo
         {
             post.Publish();
             await _postRepository.UpdateAsync(post, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             
             _logger.LogInformation(
                 "Post {PostId} published successfully. Title: '{Title}', PublishedBy: {UserId}", 

@@ -33,16 +33,14 @@ public class UserProfileRepository : IUserProfileRepository
 
     public async Task<UserProfile> CreateAsync(UserProfile profile, CancellationToken ct = default)
     {
-        _context.UserProfiles.Add(profile);
-        await _context.SaveChangesAsync(ct);
+        await _context.UserProfiles.AddAsync(profile, ct);
         return profile;
     }
 
-    public async Task<UserProfile> UpdateAsync(UserProfile profile, CancellationToken ct = default)
+    public Task<UserProfile> UpdateAsync(UserProfile profile, CancellationToken ct = default)
     {
         _context.UserProfiles.Update(profile);
-        await _context.SaveChangesAsync(ct);
-        return profile;
+        return Task.FromResult(profile);
     }
 
     public async Task DeleteAsync(int userId, CancellationToken ct = default)
@@ -51,7 +49,6 @@ public class UserProfileRepository : IUserProfileRepository
         if (profile != null)
         {
             profile.MarkDeleted();
-            await _context.SaveChangesAsync(ct);
         }
     }
 

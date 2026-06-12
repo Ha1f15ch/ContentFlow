@@ -1,5 +1,6 @@
 ﻿using ContentFlow.Application.Exceptions;
 using ContentFlow.Application.Functions.Posts.Commands;
+using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Domain.Entities;
@@ -12,15 +13,18 @@ public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, int>
 {
     private readonly IPostRepository _postRepository;
     private readonly IUserService  _userService;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CreatePostCommandHandler> _logger;
     
     public CreatePostCommandHandler(
         IPostRepository postRepository, 
         IUserService userService,
+        IUnitOfWork unitOfWork,
         ILogger<CreatePostCommandHandler> logger)
     {
         _postRepository = postRepository;
         _userService = userService;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -53,6 +57,7 @@ public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, int>
         try
         {
             await _postRepository.AddAsync(post, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Post successfully created and saved. PostId: {PostId}, Title: '{Title}'", 
                 post.Id, post.Title);
         }
