@@ -38,7 +38,18 @@
           
             <div class="post-body">{{ post.content }}</div>
 
-            <div class="post-comments-toggle-row">
+            <div class="post-actions-row">
+              <ReactionBar
+                :likes-count="post.likesCount ?? 0"
+                :dislikes-count="post.dislikesCount ?? 0"
+                :current-user-reaction="post.currentUserReaction"
+                :is-authenticated="isAuthenticated"
+                :pending="reactionPending"
+                @set="setPostReaction"
+                @remove="removePostReaction"
+                @request-auth="openLoginModal"
+              />
+
               <button
                 type="button"
                 class="post-comments-toggle"
@@ -71,7 +82,10 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { postService } from "@/features/post/api/postService";
+import { reactionService } from "@/features/reactions/api/reactionService";
+import { useModalStore } from "@/shared/stores/modalStore";
 import PostCommentsSection from "@/features/comments/components/PostCommentsSection.vue";
+import ReactionBar from "@/shared/components/ReactionBar.vue";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -79,12 +93,14 @@ const props = defineProps({
   isAuthenticated: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "reaction-updated"]);
+const modalStore = useModalStore();
 
 const loading = ref(false);
 const error = ref("");
 const post = ref(null);
 const commentsExpanded = ref(false);
+const reactionPending = ref(false);
 
 const close = () => {
   post.value = null;
@@ -92,6 +108,47 @@ const close = () => {
   loading.value = false;
   emit("update:modelValue", false);
 };
+
+function openLoginModal() {
+  modalStore.openLoginModal();
+}
+
+function applyReactionResult(result) {
+  if (!post.value) return;
+
+  post.value = {
+    ...post.value,
+    likesCount: result.likesCount,
+    dislikesCount: result.dislikesCount,
+    currentUserReaction: result.currentUserReaction,
+  };
+
+  emit("reaction-updated", result);
+}
+
+async function setPostReaction(reactionType) {
+  if (!post.value || reactionPending.value) return;
+
+  reactionPending.value = true;
+  try {
+    const response = await reactionService.setPostReaction(post.value.id, reactionType);
+    applyReactionResult(response.data);
+  } finally {
+    reactionPending.value = false;
+  }
+}
+
+async function removePostReaction() {
+  if (!post.value || reactionPending.value) return;
+
+  reactionPending.value = true;
+  try {
+    const response = await reactionService.removePostReaction(post.value.id);
+    applyReactionResult(response.data);
+  } finally {
+    reactionPending.value = false;
+  }
+}
 
 const loadPost = async () => {
   if (!props.modelValue || !props.postId) return;
@@ -284,10 +341,13 @@ const formatDate = (isoDate) => {
   overflow-wrap: anywhere;
 }
 
-.post-comments-toggle-row {
+.post-actions-row {
   margin-top: 1rem;
   display: flex;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .post-comments-toggle {

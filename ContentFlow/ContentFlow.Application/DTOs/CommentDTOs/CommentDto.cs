@@ -11,4 +11,7 @@ public record CommentDto(
     List<CommentDto> Comments,
     int? ParentCommentId,
     string CommentStatus,
-    bool IsDeleted);
+    bool IsDeleted,
+    int LikesCount,
+    int DislikesCount,
+    ReactionType? CurrentUserReaction);

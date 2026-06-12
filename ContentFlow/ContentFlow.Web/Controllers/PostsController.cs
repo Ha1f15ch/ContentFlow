@@ -62,7 +62,8 @@ public class PostsController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetPostById(int id)
     {
-        var post = await _mediator.Send(new GetPostByIdQuery(id));
+        var currentUserId = User.GetUserId();
+        var post = await _mediator.Send(new GetPostByIdQuery(id, currentUserId));
         _logger.LogInformation("Get Post by id = {PostId}.", post.Id);
         
         return Ok(post);

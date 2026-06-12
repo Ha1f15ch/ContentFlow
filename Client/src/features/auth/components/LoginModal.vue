@@ -217,21 +217,24 @@ const closeModal = () => {
 
 .tabs button {
   padding: 0.75rem 1.5rem;
-  background-color: #eee;
-  border: none;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
   cursor: pointer;
   border-radius: 6px;
   font-size: 1rem;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .tabs button.active {
-  background-color: #007bff;
+  background-color: var(--btn-primary-bg);
+  border-color: var(--btn-primary-bg);
   color: white;
 }
 
 .tabs button:hover {
-  background-color: #ddd;
+  background-color: var(--menu-hover);
+  color: var(--text-primary);
 }
 
 .btn-group {
@@ -251,17 +254,19 @@ const closeModal = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 2000;
 }
 
 .modal-content {
-  background-color: white;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   padding: 2rem;
-  border-radius: 8px;
+  border-radius: 12px;
   width: 90%;
   max-width: 400px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -269,14 +274,21 @@ const closeModal = () => {
 
 .modal-content h2 {
   margin-bottom: 1rem;
+  color: var(--text-primary);
 }
 
 .modal-content input {
   width: 100%;
   padding: 0.75rem;
   margin-bottom: 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.modal-content input::placeholder {
+  color: var(--text-secondary);
 }
 
 .modal-content input.error {

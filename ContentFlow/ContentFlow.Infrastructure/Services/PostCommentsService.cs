@@ -1,6 +1,7 @@
 ﻿using ContentFlow.Application.DTOs;
 using ContentFlow.Application.Interfaces.Comment;
 using ContentFlow.Domain.Entities;
+using ContentFlow.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace ContentFlow.Infrastructure.Services;
@@ -14,7 +15,12 @@ public class PostCommentsService : IPostCommentsService
         _logger = logger;
     }
     
-    public List<CommentDto> BuildCommentsTree(List<Comment> comments, Dictionary<int, string> userNames)
+    public List<CommentDto> BuildCommentsTree(
+        List<Comment> comments,
+        Dictionary<int, string> userNames,
+        Dictionary<int, int> likesCounts,
+        Dictionary<int, int> dislikesCounts,
+        Dictionary<int, ReactionType?> currentUserReactions)
     {
         if (comments == null)
             throw new ArgumentNullException(nameof(comments));
@@ -29,7 +35,10 @@ public class PostCommentsService : IPostCommentsService
             Comments: new List<CommentDto>(),
             ParentCommentId: c.ParentCommentId,
             CommentStatus: c.Status.ToString(),
-            IsDeleted: c.IsDeleted
+            IsDeleted: c.IsDeleted,
+            LikesCount: likesCounts.GetValueOrDefault(c.Id, 0),
+            DislikesCount: dislikesCounts.GetValueOrDefault(c.Id, 0),
+            CurrentUserReaction: currentUserReactions.GetValueOrDefault(c.Id)
             )).ToList();
 
         var commentDict = commentsDto.ToDictionary(c => c.Id);

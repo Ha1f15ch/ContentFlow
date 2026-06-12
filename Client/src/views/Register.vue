@@ -93,9 +93,11 @@ const handleRegister = async () => {
 }
 
 .auth-form {
-  background-color: white;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   padding: 2rem;
-  border-radius: 8px;
+  border-radius: 12px;
   width: 100%;
   max-width: 400px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -104,20 +106,27 @@ const handleRegister = async () => {
 .auth-form h2 {
   margin-bottom: 1rem;
   text-align: center;
+  color: var(--text-primary);
 }
 
 .auth-form input {
   width: 100%;
   padding: 0.75rem;
   margin-bottom: 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.auth-form input::placeholder {
+  color: var(--text-secondary);
 }
 
 .auth-form .btn {
   width: 100%;
   padding: 0.75rem;
-  background-color: #007bff;
+  background-color: var(--btn-primary-bg);
   color: white;
   border: none;
   border-radius: 4px;
@@ -125,7 +134,7 @@ const handleRegister = async () => {
 }
 
 .auth-form .btn:hover {
-  background-color: #0056b3;
+  background-color: var(--btn-primary-hover);
 }
 
 .error-message {
@@ -136,10 +145,11 @@ const handleRegister = async () => {
 .auth-form p {
   margin-top: 1rem;
   text-align: center;
+  color: var(--text-secondary);
 }
 
 .auth-form a {
-  color: #007bff;
+  color: var(--btn-primary-bg);
   text-decoration: none;
 }
 

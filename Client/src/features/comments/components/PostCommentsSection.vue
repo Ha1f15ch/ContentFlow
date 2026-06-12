@@ -57,6 +57,11 @@
             :key="comment.id"
             :comment="comment"
             :depth="0"
+            :is-authenticated="isAuthenticated"
+            :pending-comment-id="pendingReactionCommentId"
+            @set-reaction="setCommentReaction"
+            @remove-reaction="removeCommentReaction"
+            @request-auth="openLoginModal"
           />
         </div>
       </template>
@@ -67,6 +72,8 @@
 <script setup>
 import { computed, ref, watch, onMounted } from "vue";
 import { commentService } from "@/features/comments/api/commentService";
+import { reactionService } from "@/features/reactions/api/reactionService";
+import { useModalStore } from "@/shared/stores/modalStore";
 import CommentThreadItemComponent from "@/features/comments/components/CommentThreadItem.vue";
 
 const props = defineProps({
@@ -81,6 +88,8 @@ const loading = ref(false);
 const submitting = ref(false);
 const error = ref("");
 const newCommentText = ref("");
+const pendingReactionCommentId = ref(null);
+const modalStore = useModalStore();
 
 const hasCommentText = computed(() => newCommentText.value.trim().length > 0);
 
@@ -139,6 +148,9 @@ async function submitComment() {
       userName: "Вы",
       comments: [],
       isDeleted: false,
+      likesCount: 0,
+      dislikesCount: 0,
+      currentUserReaction: null,
     };
 
     comments.value = [optimisticComment, ...comments.value];
@@ -151,6 +163,56 @@ async function submitComment() {
       e?.response?.data?.message || "Не удалось отправить комментарий.";
   } finally {
     submitting.value = false;
+  }
+}
+
+function openLoginModal() {
+  modalStore.openLoginModal();
+}
+
+function updateCommentReaction(items, result) {
+  return items.map((comment) => {
+    if (comment.id === result.entityId) {
+      return {
+        ...comment,
+        likesCount: result.likesCount,
+        dislikesCount: result.dislikesCount,
+        currentUserReaction: result.currentUserReaction,
+      };
+    }
+
+    if (comment.comments?.length) {
+      return {
+        ...comment,
+        comments: updateCommentReaction(comment.comments, result),
+      };
+    }
+
+    return comment;
+  });
+}
+
+async function setCommentReaction({ commentId, reactionType }) {
+  if (pendingReactionCommentId.value) return;
+
+  pendingReactionCommentId.value = commentId;
+  try {
+    const response = await reactionService.setCommentReaction(commentId, reactionType);
+    comments.value = updateCommentReaction(comments.value, response.data);
+  } finally {
+    pendingReactionCommentId.value = null;
+  }
+}
+
+async function removeCommentReaction(commentId) {
+  if (pendingReactionCommentId.value) return;
+
+  pendingReactionCommentId.value = commentId;
+  try {
+    const response = await reactionService.removeCommentReaction(commentId);
+    comments.value = updateCommentReaction(comments.value, response.data);
+  } finally {
+    pendingReactionCommentId.value = null;
   }
 }
 

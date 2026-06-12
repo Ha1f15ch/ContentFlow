@@ -21,6 +21,19 @@
       {{ comment.content }}
     </div>
 
+    <div class="comment-actions">
+      <ReactionBar
+        :likes-count="comment.likesCount ?? 0"
+        :dislikes-count="comment.dislikesCount ?? 0"
+        :current-user-reaction="comment.currentUserReaction"
+        :is-authenticated="isAuthenticated"
+        :pending="pendingCommentId === comment.id"
+        @set="(reactionType) => emit('set-reaction', { commentId: comment.id, reactionType })"
+        @remove="emit('remove-reaction', comment.id)"
+        @request-auth="emit('request-auth')"
+      />
+    </div>
+
     <div
       v-if="comment.comments && comment.comments.length"
       class="comment-children"
@@ -30,6 +43,11 @@
         :key="child.id"
         :comment="child"
         :depth="depth + 1"
+        :is-authenticated="isAuthenticated"
+        :pending-comment-id="pendingCommentId"
+        @set-reaction="emit('set-reaction', $event)"
+        @remove-reaction="emit('remove-reaction', $event)"
+        @request-auth="emit('request-auth')"
       />
     </div>
   </article>
@@ -37,11 +55,16 @@
 
 <script setup>
 import CommentThreadChild from "./CommentThreadItem.vue";
+import ReactionBar from "@/shared/components/ReactionBar.vue";
 
 defineProps({
   comment: { type: Object, required: true },
   depth: { type: Number, default: 0 },
+  isAuthenticated: { type: Boolean, default: false },
+  pendingCommentId: { type: [Number, String, null], default: null },
 });
+
+const emit = defineEmits(["set-reaction", "remove-reaction", "request-auth"]);
 
 function formatDate(isoDate) {
   if (!isoDate) return "";
@@ -114,6 +137,12 @@ function formatDate(isoDate) {
 .comment-content-deleted {
   text-decoration: line-through;
   color: var(--text-secondary);
+}
+
+.comment-actions {
+  margin-top: 0.7rem;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .comment-children {

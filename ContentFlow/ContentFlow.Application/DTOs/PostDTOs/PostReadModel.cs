@@ -14,4 +14,7 @@ public record PostReadModel(
     DateTime PublishedAt,
     int CommentCount,
     string AuthorName,
-    string? AuthorAvatar);
+    string? AuthorAvatar,
+    int LikesCount,
+    int DislikesCount,
+    ReactionType? CurrentUserReaction);

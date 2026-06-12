@@ -1,6 +1,7 @@
 ﻿using ContentFlow.Application.DTOs;
 using ContentFlow.Application.Functions.Comments.Queries;
 using ContentFlow.Application.Interfaces.Comment;
+using ContentFlow.Application.Interfaces.CommentReaction;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Domain.Exceptions;
@@ -15,6 +16,7 @@ public class GetCommentsByPostIdQueryHandler : IRequestHandler<GetCommentsByPost
     private readonly IPostRepository _postRepository;
     private readonly IUserService  _userService;
     private readonly IPostCommentsService _postCommentsService;
+    private readonly ICommentReactionRepository _commentReactionRepository;
     private readonly ILogger<GetCommentsByPostIdQueryHandler> _logger;
     
     public GetCommentsByPostIdQueryHandler(
@@ -22,12 +24,14 @@ public class GetCommentsByPostIdQueryHandler : IRequestHandler<GetCommentsByPost
         IPostRepository postRepository,
         IUserService userService,
         IPostCommentsService postCommentsService,
+        ICommentReactionRepository commentReactionRepository,
         ILogger<GetCommentsByPostIdQueryHandler> logger)
     {
         _commentRepository = commentRepository;
         _postRepository = postRepository;
         _userService = userService;
         _postCommentsService = postCommentsService;
+        _commentReactionRepository = commentReactionRepository;
         _logger = logger;
     }
 
@@ -61,10 +65,36 @@ public class GetCommentsByPostIdQueryHandler : IRequestHandler<GetCommentsByPost
 
         var users = await _userService.GetByIdsAsync(authorIds, cancellationToken);
         var userDict = users.ToDictionary(u => u.Id, u => $"{u.UserName}".Trim());
+        var likesCounts = new Dictionary<int, int>();
+        var dislikesCounts = new Dictionary<int, int>();
+        var currentUserReactions = new Dictionary<int, Domain.Enums.ReactionType?>();
+
+        foreach (var comment in postComments)
+        {
+            likesCounts[comment.Id] = await _commentReactionRepository.GetCountByReactionTypeAsync(
+                comment.Id,
+                Domain.Enums.ReactionType.Like,
+                cancellationToken);
+            dislikesCounts[comment.Id] = await _commentReactionRepository.GetCountByReactionTypeAsync(
+                comment.Id,
+                Domain.Enums.ReactionType.Dislike,
+                cancellationToken);
+            currentUserReactions[comment.Id] = request.UserId <= 0
+                ? null
+                : (await _commentReactionRepository.GetByCommentAndUserAsync(
+                    comment.Id,
+                    request.UserId,
+                    cancellationToken))?.ReactionType;
+        }
 
         _logger.LogDebug("Building comment tree structure for {CommentCount} comments", postComments.Count);
         
-        var commentTree = _postCommentsService.BuildCommentsTree(postComments, userDict);
+        var commentTree = _postCommentsService.BuildCommentsTree(
+            postComments,
+            userDict,
+            likesCounts,
+            dislikesCounts,
+            currentUserReactions);
         
         _logger.LogInformation("Successfully built comment tree with {RootCount} root comments for post {PostId}", 
             commentTree.Count, request.PostId);

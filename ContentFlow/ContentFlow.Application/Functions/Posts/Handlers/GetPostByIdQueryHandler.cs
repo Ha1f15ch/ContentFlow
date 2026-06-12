@@ -3,6 +3,7 @@ using ContentFlow.Application.DTOs;
 using ContentFlow.Application.Exceptions;
 using ContentFlow.Application.Functions.Posts.Queries;
 using ContentFlow.Application.Interfaces.Comment;
+using ContentFlow.Application.Interfaces.PostReaction;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Application.Interfaces.Users;
@@ -19,6 +20,7 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, PostDto
     private readonly IUserService  _userService;
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly ICommentRepository _commentRepository;
+    private readonly IPostReactionRepository _postReactionRepository;
     private readonly ILogger<GetPostByIdQueryHandler> _logger;
     
     public GetPostByIdQueryHandler(
@@ -28,6 +30,7 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, PostDto
         IUserService userService, 
         IUserProfileRepository userProfileRepository,
         ICommentRepository commentRepository,
+        IPostReactionRepository postReactionRepository,
         ILogger<GetPostByIdQueryHandler> logger)
     {
         _postRepository = postRepository;
@@ -36,6 +39,7 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, PostDto
         _userService = userService;
         _userProfileRepository = userProfileRepository;
         _commentRepository = commentRepository;
+        _postReactionRepository = postReactionRepository;
         _logger = logger;
     }
 
@@ -64,6 +68,23 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, PostDto
         var commentCount = await _commentRepository.GetCountAsync(post.Id, cancellationToken);
         _logger.LogDebug("Post {PostId} has {CommentCount} approved comments", post.Id, commentCount);
         
+        var likesCount = await _postReactionRepository.GetCountByReactionTypeAsync(
+            post.Id,
+            Domain.Enums.ReactionType.Like,
+            cancellationToken);
+        
+        var dislikesCount = await _postReactionRepository.GetCountByReactionTypeAsync(
+            post.Id,
+            Domain.Enums.ReactionType.Dislike,
+            cancellationToken);
+        
+        var currentUserReaction = request.CurrentUserId is null
+            ? null
+            : (await _postReactionRepository.GetByPostAndUserAsync(
+                post.Id,
+                request.CurrentUserId.Value,
+                cancellationToken))?.ReactionType;
+        
         var authorProfile = await _userProfileRepository.GetByUserIdAsync(post.AuthorId, cancellationToken);
 
         var tagDtos = post.PostTags?.Select(pt => new TagDto(
@@ -87,6 +108,9 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, PostDto
             post.CreatedAt,
             post.PublishedAt,
             tagDtos,
-            commentCount);
+            commentCount,
+            likesCount,
+            dislikesCount,
+            currentUserReaction);
     }
 }

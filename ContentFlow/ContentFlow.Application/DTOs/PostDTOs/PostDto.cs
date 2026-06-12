@@ -16,4 +16,7 @@ public record PostDto(
     DateTime CreatedAt,
     DateTime? PublishedAt,
     List<TagDto> Tags,
-    int CommentCount);
+    int CommentCount,
+    int LikesCount,
+    int DislikesCount,
+    ReactionType? CurrentUserReaction);

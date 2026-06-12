@@ -49,15 +49,51 @@ public class PostRepository : IPostRepository
 
         var totalCount = await baseQuery.CountAsync(ct);
         
-        var pagedPosts = baseQuery
+        var posts = await baseQuery
             .Skip((page - 1) * pageSize)
-            .Take(pageSize);
-        
-        var posts = await (
-            from post in pagedPosts
-            join author in _context.Users on post.AuthorId equals author.Id
-            join comment in _context.Comments on post.Id equals comment.PostId into comments
-            select new PostReadModel(
+            .Take(pageSize)
+            .ToListAsync(ct);
+
+        var postIds = posts.Select(p => p.Id).ToList();
+        var authorIds = posts.Select(p => p.AuthorId).Distinct().ToList();
+
+        var authors = await _context.Users
+            .AsNoTracking()
+            .Where(u => authorIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, ct);
+
+        var commentCounts = await _context.Comments
+            .AsNoTracking()
+            .Where(c => postIds.Contains(c.PostId))
+            .GroupBy(c => c.PostId)
+            .Select(g => new { PostId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.PostId, x => x.Count, ct);
+
+        var reactionCounts = await _context.PostReactions
+            .AsNoTracking()
+            .Where(r => postIds.Contains(r.PostId))
+            .GroupBy(r => new { r.PostId, r.ReactionType })
+            .Select(g => new { g.Key.PostId, g.Key.ReactionType, Count = g.Count() })
+            .ToListAsync(ct);
+
+        var currentUserReactions = currentUserId.HasValue
+            ? await _context.PostReactions
+                .AsNoTracking()
+                .Where(r => postIds.Contains(r.PostId) && r.UserId == currentUserId.Value)
+                .ToDictionaryAsync(r => r.PostId, r => (ReactionType?)r.ReactionType, ct)
+            : new Dictionary<int, ReactionType?>();
+
+        var postReadModels = posts.Select(post =>
+        {
+            authors.TryGetValue(post.AuthorId, out var author);
+            var likesCount = reactionCounts
+                .Where(r => r.PostId == post.Id && r.ReactionType == ReactionType.Like)
+                .Sum(r => r.Count);
+            var dislikesCount = reactionCounts
+                .Where(r => r.PostId == post.Id && r.ReactionType == ReactionType.Dislike)
+                .Sum(r => r.Count);
+
+            return new PostReadModel(
                 post.Id,
                 post.Title,
                 post.Slug,
@@ -67,14 +103,16 @@ public class PostRepository : IPostRepository
                 post.Status,
                 post.CreatedAt,
                 post.PublishedAt,
-                comments.Count(),
-                (author.FirstName + " " + author.LastName).Trim(),
-                author.AuthorAvatar
-            )
-        ).ToListAsync(ct);
+                commentCounts.GetValueOrDefault(post.Id, 0),
+                author == null ? "Unknown Author" : (author.UserName ?? "Unknown Author"),
+                author?.AuthorAvatar,
+                likesCount,
+                dislikesCount,
+                currentUserReactions.GetValueOrDefault(post.Id));
+        }).ToList();
 
         return new PaginatedResult<PostReadModel>(
-            posts,
+            postReadModels,
             totalCount,
             page,
             pageSize);

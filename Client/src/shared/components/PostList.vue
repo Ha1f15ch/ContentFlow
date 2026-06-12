@@ -29,7 +29,17 @@
           {{ post.excerpt ?? "" }}
         </p>
 
-        <div class="post-more">
+        <div class="post-footer">
+          <ReactionBar
+            :likes-count="post.likesCount ?? 0"
+            :dislikes-count="post.dislikesCount ?? 0"
+            :current-user-reaction="post.currentUserReaction"
+            :is-authenticated="isAuthenticated"
+            :pending="pendingPostId === post.id"
+            @set="(reactionType) => setReaction(post.id, reactionType)"
+            @remove="removeReaction(post.id)"
+            @request-auth="openLoginModal"
+          />
           <span class="post-more-link">Читать далее</span>
         </div>
       </article>
@@ -42,11 +52,47 @@
 </template>
 
 <script setup>
+import { ref } from "vue";
+import { reactionService } from "@/features/reactions/api/reactionService";
+import { useModalStore } from "@/shared/stores/modalStore";
+import ReactionBar from "@/shared/components/ReactionBar.vue";
+
 defineProps({
   posts: { type: Array, default: () => [] },
+  isAuthenticated: { type: Boolean, default: false },
 });
 
-defineEmits(["open"]);
+const emit = defineEmits(["open", "reaction-updated"]);
+const modalStore = useModalStore();
+const pendingPostId = ref(null);
+
+function openLoginModal() {
+  modalStore.openLoginModal();
+}
+
+async function setReaction(postId, reactionType) {
+  if (pendingPostId.value) return;
+
+  pendingPostId.value = postId;
+  try {
+    const response = await reactionService.setPostReaction(postId, reactionType);
+    emit("reaction-updated", response.data);
+  } finally {
+    pendingPostId.value = null;
+  }
+}
+
+async function removeReaction(postId) {
+  if (pendingPostId.value) return;
+
+  pendingPostId.value = postId;
+  try {
+    const response = await reactionService.removePostReaction(postId);
+    emit("reaction-updated", response.data);
+  } finally {
+    pendingPostId.value = null;
+  }
+}
 
 const formatDate = (isoDate) => {
   if (!isoDate) return "";
@@ -131,10 +177,13 @@ const formatDate = (isoDate) => {
   overflow: hidden;
 }
 
-.post-more {
+.post-footer {
   margin-top: 0.85rem;
   display: flex;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .post-more-link {

@@ -95,7 +95,10 @@ public class GetPostsQueryHandler : IRequestHandler<GetPostsQuery, PaginatedResu
                         post.CreatedAt,
                         post.PublishedAt,
                         new List<TagDto>(),
-                        post.CommentCount
+                        post.CommentCount,
+                        post.LikesCount,
+                        post.DislikesCount,
+                        post.CurrentUserReaction
                     );
                 }).ToList();
 

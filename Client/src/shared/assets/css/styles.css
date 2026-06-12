@@ -310,12 +310,13 @@ input:checked + .slider:before {
 
 .tabs button {
   padding: 0.75rem 1.5rem;
-  background-color: #eee;
-  border: none;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
   cursor: pointer;
   border-radius: 6px;
   font-size: 1rem;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .tabs button.active {
@@ -324,5 +325,6 @@ input:checked + .slider:before {
 }
 
 .tabs button:hover {
-  background-color: #ddd;
+  background-color: var(--menu-hover);
+  color: var(--text-primary);
 }

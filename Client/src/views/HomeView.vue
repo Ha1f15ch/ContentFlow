@@ -13,7 +13,12 @@
         />
       
         <div class="posts-area">
-          <PostList :posts="posts" @open="openPost" />
+          <PostList
+            :posts="posts"
+            :is-authenticated="authStore.isAuthenticated"
+            @open="openPost"
+            @reaction-updated="applyPostReaction"
+          />
           <div ref="postsSentinel" class="posts-sentinel" aria-hidden="true"></div>
           <p v-if="isLoadingPosts && posts.length > 0" class="posts-status">
             Загрузка ещё...
@@ -29,6 +34,7 @@
       v-model="isPostModalOpen"
       :post-id="selectedPostId"
       :is-authenticated="authStore.isAuthenticated"
+      @reaction-updated="applyPostReaction"
     />
   </div>
 </template>
@@ -176,6 +182,15 @@ async function resetAndLoadPosts() {
   postsPage.value = 0;
   postsTotalPages.value = 0;
   await loadPosts({ reset: true });
+}
+
+function applyPostReaction(result) {
+  const target = posts.value.find((post) => post.id === result.entityId);
+  if (!target) return;
+
+  target.likesCount = result.likesCount;
+  target.dislikesCount = result.dislikesCount;
+  target.currentUserReaction = result.currentUserReaction;
 }
 
 function handleViewModeChange(mode) {
