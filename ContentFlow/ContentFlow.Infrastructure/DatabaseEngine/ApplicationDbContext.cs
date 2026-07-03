@@ -29,6 +29,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<PostReaction> PostReactions { get; set; }
     public DbSet<CommentReaction> CommentReactions { get; set; }
+    public DbSet<Report> Reports { get; set; }
+    public DbSet<ModerationCase> ModerationCases { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

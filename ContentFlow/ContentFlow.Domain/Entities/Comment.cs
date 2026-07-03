@@ -77,5 +77,36 @@ public class Comment
         Status = CommentStatus.Approved;
         UpdatedAt = DateTime.UtcNow;
     }
+
+    public void HideForModerationReview()
+    {
+        if (Status == CommentStatus.HiddenPendingReview)
+            return;
+
+        if (Status != CommentStatus.Approved && Status != CommentStatus.Pending)
+            throw new InvalidOperationException("Only approved or pending comments can be hidden for moderation review.");
+
+        Status = CommentStatus.HiddenPendingReview;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void RestoreAfterModeration()
+    {
+        if (Status != CommentStatus.HiddenPendingReview)
+            throw new InvalidOperationException("Only comments hidden for moderation review can be restored.");
+
+        Status = CommentStatus.Approved;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void RemoveByModerator()
+    {
+        if (IsDeleted)
+            return;
+
+        IsDeleted = true;
+        Status = CommentStatus.Rejected;
+        UpdatedAt = DateTime.UtcNow;
+    }
     #endregion
 }

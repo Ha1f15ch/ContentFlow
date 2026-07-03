@@ -138,6 +138,36 @@ public class Post
         UpdatedAt = DateTime.UtcNow;
         DeletedAt = DateTime.UtcNow;
     }
+
+    public void HideForModerationReview()
+    {
+        if (Status == PostStatus.HiddenPendingReview)
+            return;
+
+        if (Status != PostStatus.Published && Status != PostStatus.PendingModeration)
+            throw new InvalidOperationException("Only published or pending posts can be hidden for moderation review.");
+
+        Status = PostStatus.HiddenPendingReview;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void RestoreAfterModeration()
+    {
+        if (Status != PostStatus.HiddenPendingReview)
+            throw new InvalidOperationException("Only posts hidden for moderation review can be restored.");
+
+        Status = PostStatus.Published;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void RemoveByModerator()
+    {
+        if (Status == PostStatus.Rejected)
+            return;
+
+        Status = PostStatus.Rejected;
+        UpdatedAt = DateTime.UtcNow;
+    }
     
     #endregion
 

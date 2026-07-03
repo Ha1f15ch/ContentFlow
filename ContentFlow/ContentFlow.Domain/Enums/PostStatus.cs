@@ -6,5 +6,6 @@ public enum PostStatus
     PendingModeration, // На модерации
     Published, // Опубликован
     Rejected, // Отклонён модератором
-    Archived // Снят с публикации
+    Archived, // Снят с публикации
+    HiddenPendingReview // Скрыт до решения модератора по жалобе
 }

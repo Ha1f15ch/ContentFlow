@@ -5,5 +5,6 @@ public enum CommentStatus
     Pending,
     Approved,
     Rejected,
-    Spam
+    Spam,
+    HiddenPendingReview // Скрыт до решения модератора по жалобе
 }
