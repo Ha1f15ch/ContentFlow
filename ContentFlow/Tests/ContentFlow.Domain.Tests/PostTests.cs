@@ -116,4 +116,91 @@ public class PostTests
         post.IsDeleted.Should().BeTrue();
         post.DeletedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
     }
+
+    [Fact]
+    public void HideForModerationReview_WhenPublished_ShouldSetHiddenPendingReview()
+    {
+        var post = new Post("Title", "Content", AuthorId);
+        post.Publish();
+
+        post.HideForModerationReview();
+
+        post.Status.Should().Be(PostStatus.HiddenPendingReview);
+        post.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void HideForModerationReview_WhenAlreadyHidden_ShouldNotChangeStatus()
+    {
+        var post = new Post("Title", "Content", AuthorId);
+        post.Publish();
+        post.HideForModerationReview();
+        var updatedAt = post.UpdatedAt;
+
+        post.HideForModerationReview();
+
+        post.Status.Should().Be(PostStatus.HiddenPendingReview);
+        post.UpdatedAt.Should().Be(updatedAt);
+    }
+
+    [Fact]
+    public void HideForModerationReview_WhenDraft_ShouldThrowInvalidOperationException()
+    {
+        var post = new Post("Title", "Content", AuthorId);
+
+        var act = () => post.HideForModerationReview();
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Only published or pending posts can be hidden for moderation review.");
+    }
+
+    [Fact]
+    public void RestoreAfterModeration_WhenHiddenPendingReview_ShouldSetPublished()
+    {
+        var post = new Post("Title", "Content", AuthorId);
+        post.Publish();
+        post.HideForModerationReview();
+
+        post.RestoreAfterModeration();
+
+        post.Status.Should().Be(PostStatus.Published);
+        post.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void RestoreAfterModeration_WhenNotHidden_ShouldThrowInvalidOperationException()
+    {
+        var post = new Post("Title", "Content", AuthorId);
+        post.Publish();
+
+        var act = () => post.RestoreAfterModeration();
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Only posts hidden for moderation review can be restored.");
+    }
+
+    [Fact]
+    public void RemoveByModerator_ShouldSetStatusToRejected()
+    {
+        var post = new Post("Title", "Content", AuthorId);
+        post.Publish();
+
+        post.RemoveByModerator();
+
+        post.Status.Should().Be(PostStatus.Rejected);
+        post.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void RemoveByModerator_WhenAlreadyRejected_ShouldNotThrow()
+    {
+        var post = new Post("Title", "Content", AuthorId);
+        post.Publish();
+        post.RemoveByModerator();
+
+        var act = () => post.RemoveByModerator();
+
+        act.Should().NotThrow();
+        post.Status.Should().Be(PostStatus.Rejected);
+    }
 }

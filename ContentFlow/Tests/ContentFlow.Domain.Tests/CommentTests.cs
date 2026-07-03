@@ -170,4 +170,88 @@ public class CommentTests
         comment.UpdatedAt.Should().NotBeNull();
         comment.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
     }
+
+    [Fact]
+    public void HideForModerationReview_WhenApproved_ShouldSetHiddenPendingReview()
+    {
+        var comment = new Comment("Content", PostId, AuthorId);
+
+        comment.HideForModerationReview();
+
+        comment.Status.Should().Be(CommentStatus.HiddenPendingReview);
+        comment.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void HideForModerationReview_WhenAlreadyHidden_ShouldNotChangeStatus()
+    {
+        var comment = new Comment("Content", PostId, AuthorId);
+        comment.HideForModerationReview();
+        var updatedAt = comment.UpdatedAt;
+
+        comment.HideForModerationReview();
+
+        comment.Status.Should().Be(CommentStatus.HiddenPendingReview);
+        comment.UpdatedAt.Should().Be(updatedAt);
+    }
+
+    [Fact]
+    public void HideForModerationReview_WhenSpam_ShouldThrowInvalidOperationException()
+    {
+        var comment = new Comment("Content", PostId, AuthorId);
+        comment.MarkAsSpam();
+
+        var act = () => comment.HideForModerationReview();
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Only approved or pending comments can be hidden for moderation review.");
+    }
+
+    [Fact]
+    public void RestoreAfterModeration_WhenHiddenPendingReview_ShouldSetApproved()
+    {
+        var comment = new Comment("Content", PostId, AuthorId);
+        comment.HideForModerationReview();
+
+        comment.RestoreAfterModeration();
+
+        comment.Status.Should().Be(CommentStatus.Approved);
+        comment.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void RestoreAfterModeration_WhenNotHidden_ShouldThrowInvalidOperationException()
+    {
+        var comment = new Comment("Content", PostId, AuthorId);
+
+        var act = () => comment.RestoreAfterModeration();
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Only comments hidden for moderation review can be restored.");
+    }
+
+    [Fact]
+    public void RemoveByModerator_ShouldMarkAsDeletedAndSetRejected()
+    {
+        var comment = new Comment("Content", PostId, AuthorId);
+
+        comment.RemoveByModerator();
+
+        comment.IsDeleted.Should().BeTrue();
+        comment.Status.Should().Be(CommentStatus.Rejected);
+        comment.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void RemoveByModerator_WhenAlreadyDeleted_ShouldNotThrow()
+    {
+        var comment = new Comment("Content", PostId, AuthorId);
+        comment.RemoveByModerator();
+
+        var act = () => comment.RemoveByModerator();
+
+        act.Should().NotThrow();
+        comment.IsDeleted.Should().BeTrue();
+        comment.Status.Should().Be(CommentStatus.Rejected);
+    }
 }
