@@ -7,6 +7,14 @@
         class="post-row"
         @click="$emit('open', post.id)"
       >
+        <div class="post-row-actions">
+          <ReportButton
+            target-type="post"
+            :target-id="post.id"
+            :is-authenticated="isAuthenticated"
+          />
+        </div>
+
         <h3 class="post-title">
           {{ post.title ?? "(без названия)" }}
         </h3>
@@ -56,6 +64,7 @@ import { ref } from "vue";
 import { reactionService } from "@/features/reactions/api/reactionService";
 import { useModalStore } from "@/shared/stores/modalStore";
 import ReactionBar from "@/shared/components/ReactionBar.vue";
+import ReportButton from "@/features/reports/components/ReportButton.vue";
 
 defineProps({
   posts: { type: Array, default: () => [] },
@@ -122,6 +131,7 @@ const formatDate = (isoDate) => {
 .post-row {
   width: 100%;
   box-sizing: border-box;
+  position: relative;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 18px;
@@ -134,6 +144,22 @@ const formatDate = (isoDate) => {
   border-color: var(--btn-primary-bg);
   transform: translateY(-1px);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+}
+
+.post-row-actions {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 2;
+}
+
+.post-row:hover .post-row-actions,
+.post-row:focus-within .post-row-actions {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .post-title {

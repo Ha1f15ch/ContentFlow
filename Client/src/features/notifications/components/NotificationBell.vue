@@ -73,6 +73,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "@/features/auth/stores/authStore";
 import { notificationService } from "@/features/notifications/api/notificationService";
 import {
   startNotificationConnection,
@@ -85,6 +86,7 @@ const NOTIFICATION_TYPE = {
 };
 
 const router = useRouter();
+const authStore = useAuthStore();
 const rootRef = ref(null);
 const unreadCount = ref(0);
 const notifications = ref([]);
@@ -224,8 +226,11 @@ function handleDocumentClick(event) {
 }
 
 onMounted(async () => {
-  await refreshNotifications();
   document.addEventListener("click", handleDocumentClick);
+
+  if (!authStore.isLoggedIn) return;
+
+  await refreshNotifications();
 
   try {
     await startNotificationConnection({

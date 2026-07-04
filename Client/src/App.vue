@@ -12,27 +12,18 @@
 <script setup>
 import { computed, onMounted } from "vue";
 import { useThemeStore } from "@/shared/stores/theme";
-import { useAuthStore } from "@/features/auth/stores/authStore";
 import { useModalStore } from "@/shared/stores/modalStore";
 
 import HeaderSection from "@/shared/components/HeaderSection.vue";
 import LoginModal from "@/features/auth/components/LoginModal.vue";
 
 const themeStore = useThemeStore();
-const authStore = useAuthStore();
 const modalStore = useModalStore();
 
 const isDarkTheme = computed(() => themeStore.isDark);
 
-onMounted(async () => {
+onMounted(() => {
   themeStore.loadTheme();
-
-  // если есть токен — подтягиваем пользователя
-  try {
-    await authStore.bootstrap();
-  } catch (e) {
-    console.warn("bootstrap failed", e);
-  }
 });
 </script>
 

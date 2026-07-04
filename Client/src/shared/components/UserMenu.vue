@@ -18,6 +18,15 @@
     <div v-if="showMenu" class="menu" role="menu">
       <button class="menu-item" role="menuitem" type="button" @click="goToProfile">Профиль</button>
       <button class="menu-item" role="menuitem" type="button" @click="goToSettings">Настройки</button>
+      <button
+        v-if="authStore.canModerate"
+        class="menu-item"
+        role="menuitem"
+        type="button"
+        @click="goToModeration"
+      >
+        Модерация
+      </button>
       <div class="menu-sep"></div>
       <button class="menu-item danger" role="menuitem" type="button" @click="logout">Выйти</button>
     </div>
@@ -100,6 +109,11 @@
   const goToSettings = () => {
     closeMenu();
     router.push('/settings');
+  };
+
+  const goToModeration = () => {
+    closeMenu();
+    router.push('/moderation');
   };
   
   const logout = () => {

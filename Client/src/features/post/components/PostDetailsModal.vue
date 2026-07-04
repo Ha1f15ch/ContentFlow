@@ -14,7 +14,14 @@
 
         <div v-else-if="post" class="details-layout">
           <article class="post-card">
-            <h2 class="post-title">{{ post.title }}</h2>
+            <div class="post-card-top">
+              <h2 class="post-title">{{ post.title }}</h2>
+              <ReportButton
+                target-type="post"
+                :target-id="post.id"
+                :is-authenticated="isAuthenticated"
+              />
+            </div>
           
             <div class="post-meta">
               <RouterLink
@@ -86,6 +93,7 @@ import { reactionService } from "@/features/reactions/api/reactionService";
 import { useModalStore } from "@/shared/stores/modalStore";
 import PostCommentsSection from "@/features/comments/components/PostCommentsSection.vue";
 import ReactionBar from "@/shared/components/ReactionBar.vue";
+import ReportButton from "@/features/reports/components/ReportButton.vue";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -286,6 +294,20 @@ const formatDate = (isoDate) => {
   box-sizing: border-box;
 }
 
+.post-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 12px;
+}
+
+.post-card-top .post-title {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
 .comments-section {
   width: 100%;
 }
@@ -296,6 +318,10 @@ const formatDate = (isoDate) => {
   font-size: 2.2rem;
   line-height: 1.2;
   word-break: break-word;
+}
+
+.post-card-top .post-title {
+  margin-bottom: 0;
 }
 
 .post-meta {

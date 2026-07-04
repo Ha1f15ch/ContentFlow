@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { getToken, setToken, clearToken } from "@/shared/api/TokenStorage.js";
+import { getRolesFromToken } from "@/shared/utils/jwtUtils.js";
 import { userProfileService } from "@/features/userProfile/api/userProfileService";
 import { authService } from "@/features/auth/api/authApi.js";
 
@@ -7,12 +8,20 @@ export const useAuthStore = defineStore("auth", {
   state: () => ({
     token: getToken(),
     user: null,
+    sessionReady: false,
 
     _mePromise: null,
+    _initPromise: null,
   }),
 
   getters: {
     isAuthenticated: (state) => !!state.token,
+    isLoggedIn: (state) => state.sessionReady && !!state.token,
+    roles: (state) => getRolesFromToken(state.token),
+    canModerate: (state) => {
+      const roles = getRolesFromToken(state.token);
+      return roles.includes("Moderator") || roles.includes("Admin");
+    },
   },
 
   actions: {
@@ -45,6 +54,23 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
+    async initSession() {
+      if (this._initPromise) return this._initPromise;
+
+      this._initPromise = (async () => {
+        try {
+          await this.bootstrap();
+        } catch (err) {
+          console.warn("session init failed", err);
+        } finally {
+          this.sessionReady = true;
+          this._initPromise = null;
+        }
+      })();
+
+      return this._initPromise;
+    },
+
     async bootstrap() {
       if (!this.token) {
         this.user = null;
@@ -57,7 +83,7 @@ export const useAuthStore = defineStore("auth", {
 
       this._mePromise = (async () => {
         try {
-          const resp = await userProfileService.getMe(); // interceptor сам разрулит refresh
+          const resp = await userProfileService.getMe();
           this.user = resp.data;
           return this.user;
         } catch (err) {
@@ -65,7 +91,7 @@ export const useAuthStore = defineStore("auth", {
           if (status === 401 || status === 403) {
             this.clearToken();
             return null;
-          } 
+          }
           throw err;
         } finally {
           this._mePromise = null;

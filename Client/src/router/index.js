@@ -9,6 +9,7 @@ import ConfirmEmailView from '@/views/ConfirmEmail.vue';
 import CreatePostView from '@/features/post/views/CreatePostView.vue';
 import MyProfileView from '@/features/userProfile/views/MyProfileView.vue';
 import UserProfileView from '@/features/userProfile/views/UserProfileView.vue';
+import ModerationView from '@/features/moderation/views/ModerationView.vue';
 
 const routes = [
   {
@@ -50,6 +51,12 @@ const routes = [
     component: UserProfileView,
     meta: { requiresAuth: true }
   },
+  {
+    path: '/moderation',
+    name: 'moderation',
+    component: ModerationView,
+    meta: { requiresAuth: true, requiresModerator: true }
+  },
 ];
 
 const router = createRouter({
@@ -57,11 +64,20 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
+
+  if (!authStore.sessionReady) {
+    await authStore.initSession();
+  }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login');
+    return;
+  }
+
+  if (to.meta.requiresModerator && !authStore.canModerate) {
+    next('/');
     return;
   }
 

@@ -1,7 +1,13 @@
 import axios from 'axios'
-import {clearToken, getToken, setToken} from "@/shared/api/TokenStorage.js";
+import { getToken } from "@/shared/api/TokenStorage.js";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8080/api'
+
+let authStoreRef = null;
+
+export function bindAuthStore(store) {
+  authStoreRef = store;
+}
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -90,7 +96,7 @@ apiClient.interceptors.response.use(
         throw new Error("Refresh did not return access token");
       }
 
-      setToken(newToken);
+      authStoreRef?.setToken(newToken);
       resolveWaiters(newToken);
 
       originalRequest.headers = originalRequest.headers ?? {};
@@ -98,7 +104,7 @@ apiClient.interceptors.response.use(
 
       return apiClient(originalRequest);
     } catch (refreshErr) {
-      clearToken();
+      authStoreRef?.clearToken();
       rejectWaiters(refreshErr);
       return Promise.reject(refreshErr);
     } finally {

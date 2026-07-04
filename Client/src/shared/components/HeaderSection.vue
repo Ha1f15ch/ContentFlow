@@ -113,7 +113,7 @@
     </div>
 
     <div class="auth-section">
-      <div id="guest-actions" v-if="!authStore.isAuthenticated">
+      <div id="guest-actions" v-if="!authStore.isLoggedIn">
         <button class="btn" @click="goToLogin">Войти</button>
       </div>
 
@@ -213,7 +213,7 @@ const goToLogin = () => {
 };
 
 const goToCreatePost = () => {
-  if (!authStore.isAuthenticated) {
+  if (!authStore.isLoggedIn) {
     router.push("/login");
     return;
   }

@@ -4,10 +4,13 @@ using ContentFlow.Application.Interfaces.CommentReaction;
 using ContentFlow.Application.Interfaces.Common;
 using ContentFlow.Application.Interfaces.Common.Jobs;
 using ContentFlow.Application.Interfaces.FileStorage;
+using ContentFlow.Application.Interfaces.Moderation;
+using ContentFlow.Application.Interfaces.ModerationCase;
 using ContentFlow.Application.Interfaces.Notification;
 using ContentFlow.Application.Interfaces.PostReaction;
 using ContentFlow.Application.Interfaces.Posts;
 using ContentFlow.Application.Interfaces.RefreshToken;
+using ContentFlow.Application.Interfaces.Report;
 using ContentFlow.Application.Interfaces.Subscription;
 using ContentFlow.Application.Interfaces.Tag;
 using ContentFlow.Application.Interfaces.UserProfile;
@@ -72,6 +75,8 @@ public static class DependencyInjection
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
         services.AddScoped<IPostReactionRepository, PostReactionRepository>();
         services.AddScoped<ICommentReactionRepository, CommentReactionRepository>();
+        services.AddScoped<IReportRepository, ReportRepository>();
+        services.AddScoped<IModerationCaseRepository, ModerationCaseRepository>();
         services.AddTransient<ISubscriptionRepository, SubscriptionRepository>();
         services.AddTransient<INotificationRepository, NotificationRepository>();
         
@@ -84,6 +89,8 @@ public static class DependencyInjection
         services.AddScoped<IFileStorageService, FileStorageService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IRealtimeNotificationSender, SignalRNotificationSender>();
+        services.AddScoped<IReportSubmissionService, ReportSubmissionService>();
+        services.AddScoped<IModerationService, ModerationService>();
         
         // Mappings
         services.AddAutoMapper(typeof(MappingProfile).Assembly);

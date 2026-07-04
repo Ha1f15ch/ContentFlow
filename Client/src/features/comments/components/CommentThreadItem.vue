@@ -9,8 +9,17 @@
         {{ comment.userName || "Пользователь" }}
       </div>
 
-      <div class="comment-date">
-        {{ formatDate(comment.createdAt) }}
+      <div class="comment-top-right">
+        <ReportButton
+          v-if="!comment.isDeleted"
+          target-type="comment"
+          :target-id="comment.id"
+          :is-authenticated="isAuthenticated"
+        />
+
+        <div class="comment-date">
+          {{ formatDate(comment.createdAt) }}
+        </div>
       </div>
     </div>
 
@@ -56,6 +65,7 @@
 <script setup>
 import CommentThreadChild from "./CommentThreadItem.vue";
 import ReactionBar from "@/shared/components/ReactionBar.vue";
+import ReportButton from "@/features/reports/components/ReportButton.vue";
 
 defineProps({
   comment: { type: Object, required: true },
@@ -114,6 +124,13 @@ function formatDate(isoDate) {
   gap: 1rem;
   flex-wrap: wrap;
   margin-bottom: 0.5rem;
+}
+
+.comment-top-right {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
 }
 
 .comment-author {

@@ -50,7 +50,6 @@ import PostList from "@/shared/components/PostList.vue";
 import PostDetailsModal from "@/features/post/components/PostDetailsModal.vue";
 import PostSectionsTabs from "@/features/post/components/PostSectionsTabs.vue";
 
-import { userProfileService } from "@/features/userProfile/api/userProfileService";
 import { tagService } from "@/features/tag/api/tagService";
 import {
   postService,
@@ -215,26 +214,14 @@ onMounted(async () => {
   loading.value = true;
 
   try {
-    const requests = [
-      tagService.getTags({ page: 1, pageSize: 50 }),
-    ];
-
-    if (authStore.isAuthenticated) {
-      requests.unshift(userProfileService.getMe());
-    }
-
-    const responses = await Promise.all(requests);
-
+    const tagsResp = await tagService.getTags({ page: 1, pageSize: 50 });
     const unwrapItems = (data) =>
       Array.isArray(data) ? data : (data?.items ?? []);
 
+    tags.value = unwrapItems(tagsResp.data);
+
     if (authStore.isAuthenticated) {
-      const [userResp, tagsResp] = responses;
-      userProfile.value = userResp.data;
-      tags.value = unwrapItems(tagsResp.data);
-    } else {
-      const [tagsResp] = responses;
-      tags.value = unwrapItems(tagsResp.data);
+      userProfile.value = authStore.user;
     }
 
     await resetAndLoadPosts();
