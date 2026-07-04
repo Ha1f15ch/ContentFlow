@@ -75,3 +75,7 @@ Client/.env.*.local
 
 # keep templates tracked
 !Client/.env.example
+
+# --- Docker local env (do not commit)
+.env
+docker-compose.override.yml

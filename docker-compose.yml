@@ -1,0 +1,81 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: ${MSSQL_PID:-Express}
+      MSSQL_SA_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    volumes:
+      - mssql_data:/var/opt/mssql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q \"SELECT 1\" || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./ContentFlow
+      dockerfile: ../deploy/api/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:${API_INTERNAL_PORT:-8080}
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      RunningInDocker: ${RUNNING_IN_DOCKER:-true}
+      BehindReverseProxy: ${BEHIND_REVERSE_PROXY:-true}
+
+      ConnectionStrings__DefaultConnection: >-
+        Server=${DB_HOST:-db},${DB_PORT:-1433};
+        Database=${DB_NAME:-ContentFlow};
+        User Id=${DB_USER:-sa};
+        Password=${DB_PASSWORD};
+        TrustServerCertificate=True;
+        Encrypt=True;
+
+      JwtSettings__Secret: ${JWT_SECRET:?JWT_SECRET is required}
+      JwtSettings__Issuer: ${JWT_ISSUER:-contentflow-api}
+      JwtSettings__Audience: ${JWT_AUDIENCE:-contentflow-client}
+      JwtSettings__ExpiresInMinutes: ${JWT_EXPIRES_MINUTES:-30}
+
+      EmailSettings__Host: ${SMTP_HOST:-}
+      EmailSettings__Port: ${SMTP_PORT:-587}
+      EmailSettings__Username: ${SMTP_USERNAME:-}
+      EmailSettings__Password: ${SMTP_PASSWORD:-}
+      EmailSettings__From: ${SMTP_FROM:-}
+
+      Cors__AllowedOrigins: ${CORS_ORIGINS:-http://localhost:8080}
+    volumes:
+      - api_uploads:/app/wwwroot/uploads
+      - api_logs:/app/Logs
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    expose:
+      - "${API_INTERNAL_PORT:-8080}"
+    ports:
+      - "127.0.0.1:${API_EXPOSE_PORT:-8081}:${API_INTERNAL_PORT:-8080}"
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/web/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+    environment:
+      API_UPSTREAM: http://api:${API_INTERNAL_PORT:-8080}
+    depends_on:
+      - api
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+
+volumes:
+  mssql_data:
+  api_uploads:
+  api_logs:

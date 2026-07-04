@@ -9,6 +9,7 @@ using ContentFlow.Web.Extensions;
 using ContentFlow.Web.Security;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -61,14 +62,40 @@ catch (Exception ex)
     throw;
 }
 
+var behindReverseProxy = builder.Configuration.GetValue<bool>("BehindReverseProxy");
+var runningInDocker = builder.Configuration.GetValue<bool>("RunningInDocker");
+
+if (behindReverseProxy)
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
+    });
+}
+
+var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+if (corsOrigins == null || corsOrigins.Length == 0)
+{
+    var corsOriginsRaw = builder.Configuration["Cors:AllowedOrigins"];
+    corsOrigins = string.IsNullOrWhiteSpace(corsOriginsRaw)
+        ? new[]
+        {
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:8080",
+            "http://127.0.0.1:8080",
+        }
+        : corsOriginsRaw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+}
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalFrontend", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:3000",
-                "http://localhost:5173",
-                "http://127.0.0.1:5173") // for react
+        policy.WithOrigins(corsOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -229,11 +256,15 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+if (behindReverseProxy)
+    app.UseForwardedHeaders();
+
+if (!runningInDocker && !behindReverseProxy)
+    app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-app.UseCors("AllowLocalFrontend");
+app.UseCors("AllowFrontend");
 
 app.UseResponseCaching();
 

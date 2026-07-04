@@ -1,0 +1,11 @@
+ContentFlow/**/bin/
+ContentFlow/**/obj/
+ContentFlow/**/.vs/
+ContentFlow/**/.idea/
+ContentFlow/**/Logs/
+ContentFlow/**/wwwroot/uploads/
+Client/node_modules/
+Client/dist/
+.env
+.git/
+**/*.user
