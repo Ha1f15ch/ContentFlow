@@ -1,7 +1,10 @@
 # Optional local overrides — copy to docker-compose.override.yml
-# Exposes SQL Server on localhost for SSMS / Azure Data Studio
+# Exposes SQL Server on localhost only (DBeaver, SSMS, Azure Data Studio)
+#
+#   copy docker-compose.override.example.yml docker-compose.override.yml
+#   docker compose up -d
 
 services:
   db:
     ports:
-      - "${DB_EXPOSE_PORT:-1433}:1433"
+      - "127.0.0.1:${DB_EXPOSE_PORT:-1433}:1433"
