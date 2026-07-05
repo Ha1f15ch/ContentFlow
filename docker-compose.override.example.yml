@@ -7,4 +7,4 @@
 services:
   db:
     ports:
-      - "127.0.0.1:${DB_EXPOSE_PORT:-1433}:1433"
+      - "127.0.0.1:${DB_EXPOSE_PORT:-14333}:1433"
