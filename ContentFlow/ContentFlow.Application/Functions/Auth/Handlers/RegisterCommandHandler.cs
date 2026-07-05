@@ -104,19 +104,16 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
             try
             {
                 var emailSend = await _emailSender.SendVerificationEmailAsync(userDto.Email, code, cancellationToken);
-                _logger.LogInformation("Verification email sent to: {Email}", userDto.Email);
-                
+
                 if (emailSend)
                 {
+                    _logger.LogInformation("Verification email sent to: {Email}", userDto.Email);
                     _logger.LogInformation("User registration completed successfully: {Email}", request.Email);
                     return new AuthResult(true);
                 }
-                else
-                {
-                    _logger.LogInformation("User registration failed: {Email}", request.Email);
-                    return new AuthResult(false, Errors: $"User registration failed: {request.Email}");
-                }
-            
+
+                _logger.LogWarning("User registration failed: verification email was not sent to {Email}", request.Email);
+                return new AuthResult(false, Errors: $"User registration failed: {request.Email}");
             }
             catch (Exception ex)
             {

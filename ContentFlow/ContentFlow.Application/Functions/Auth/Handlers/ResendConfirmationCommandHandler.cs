@@ -74,17 +74,14 @@ public class ResendConfirmationCommandHandler : IRequestHandler<ResendConfirmati
             return new AuthResult(false, Errors: "Failed to generate verification code");
         }
         
-        try
+        var emailSent = await _emailSender.SendVerificationEmailAsync(user.Email, newCode, cancellationToken);
+        if (!emailSent)
         {
-            await _emailSender.SendVerificationEmailAsync(user.Email, newCode, cancellationToken);
-            _logger.LogInformation("Confirmation email resent successfully to: {Email}", user.Email);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to send confirmation email to: {Email}", user.Email);
+            _logger.LogWarning("Failed to send confirmation email to: {Email}", user.Email);
             return new AuthResult(false, Errors: "Email sending failed");
         }
-        
+
+        _logger.LogInformation("Confirmation email resent successfully to: {Email}", user.Email);
         _logger.LogInformation("Resend confirmation flow completed for: {Email}", request.Email);
         return new AuthResult(true);
     }

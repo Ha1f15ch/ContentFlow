@@ -15,6 +15,10 @@ RUN dotnet publish ContentFlow.Web/ContentFlow.Web.csproj -c Release -o /app/pub
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgssapi-krb5-2 \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN mkdir -p /app/wwwroot/uploads/avatars /app/Logs
 
 COPY --from=build /app/publish .

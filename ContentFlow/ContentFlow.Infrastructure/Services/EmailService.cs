@@ -47,7 +47,10 @@ public class EmailService : IEmailService
 
         message.Body = bodyBuilder.ToMessageBody();
 
-        using var client = new SmtpClient();
+        using var client = new SmtpClient
+        {
+            Timeout = 30_000,
+        };
 
         _logger.LogDebug("Attempting to connect to SMTP server: {Host}:{Port}", _emailSettings.Host, _emailSettings.Port);
         
@@ -55,9 +58,12 @@ public class EmailService : IEmailService
         try
         {
             client.AuthenticationMechanisms.Remove("XOAUTH2");
-            client.LocalDomain = "localhost";
+            client.LocalDomain = GetLocalDomain();
 
-            await client.ConnectAsync(_emailSettings.Host, _emailSettings.Port, SecureSocketOptions.Auto, ct);
+            var secureSocketOptions = GetSecureSocketOptions(_emailSettings.Port);
+            _logger.LogDebug("Using SecureSocketOptions: {SecureSocketOptions}", secureSocketOptions);
+
+            await client.ConnectAsync(_emailSettings.Host, _emailSettings.Port, secureSocketOptions, ct);
             _logger.LogDebug("SMTP connection established");
 
             await client.AuthenticateAsync(_emailSettings.Username, _emailSettings.Password, ct);
@@ -82,4 +88,23 @@ public class EmailService : IEmailService
             throw new Exception($"Не удалось отправить письмо на {to}", ex);
         }
     }
+
+    private string GetLocalDomain()
+    {
+        if (!string.IsNullOrWhiteSpace(_emailSettings.From) &&
+            _emailSettings.From.Contains('@', StringComparison.Ordinal))
+        {
+            return _emailSettings.From.Split('@', 2)[1];
+        }
+
+        return "contentflow.local";
+    }
+
+    private static SecureSocketOptions GetSecureSocketOptions(int port) =>
+        port switch
+        {
+            465 => SecureSocketOptions.SslOnConnect,
+            587 => SecureSocketOptions.StartTls,
+            _ => SecureSocketOptions.Auto,
+        };
 }
