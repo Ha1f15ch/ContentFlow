@@ -40,6 +40,15 @@ public class ConfirmEmailCommandHandler :  IRequestHandler<ConfirmEmailCommand, 
             _logger.LogWarning("Email confirmation failed: user not found - {Email}", request.Email);
             return new AuthResult(false, Errors: "User not found");
         }
+
+        if (user.EmailConfirmed)
+        {
+            _logger.LogInformation("Email already confirmed for user: {Email}", request.Email);
+            return new AuthResult(
+                true,
+                Message: "Email is already confirmed.",
+                EmailAlreadyConfirmed: true);
+        }
         
         var activeCodeDto = await _userTwoFactorCodeRepository.GetVerificationCodeForValidationAsync(user.Id, "EmailVerification", cancellationToken);
 

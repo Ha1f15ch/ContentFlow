@@ -35,6 +35,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '@/features/auth/api/authApi';
+import { openEmailConfirmationAfterRegister } from '@/features/auth/utils/emailConfirmationNavigation.js';
 
 const router = useRouter();
 
@@ -45,14 +46,12 @@ const error = ref('');
 
 const handleRegister = async () => {
   try {
-    await authService.register({
+    const result = await authService.register({
       email: email.value,
       password: password.value,
       userName: userName.value,
     });
-    // Сохрани email в localStorage
-    localStorage.setItem('email', email.value);
-    router.push('/confirm-email'); // перенаправление на подтверждение
+    await openEmailConfirmationAfterRegister(router, email.value, result);
   } catch (err) {
     const status = err.response?.status;
     const data = err.response?.data;

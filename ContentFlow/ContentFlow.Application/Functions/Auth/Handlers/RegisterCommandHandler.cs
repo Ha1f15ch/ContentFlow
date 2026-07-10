@@ -109,16 +109,35 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
                 {
                     _logger.LogInformation("Verification email sent to: {Email}", userDto.Email);
                     _logger.LogInformation("User registration completed successfully: {Email}", request.Email);
-                    return new AuthResult(true);
+                    return new AuthResult(
+                        Success: true,
+                        RequiresEmailConfirmation: true,
+                        EmailSent: true,
+                        Message: "Verification email sent.");
                 }
 
-                _logger.LogWarning("User registration failed: verification email was not sent to {Email}", request.Email);
-                return new AuthResult(false, Errors: $"User registration failed: {request.Email}");
+                _logger.LogWarning(
+                    "User {Email} registered, but verification email was not sent",
+                    request.Email);
+
+                return new AuthResult(
+                    Success: true,
+                    RequiresEmailConfirmation: true,
+                    EmailSent: false,
+                    Message: "Account created, but the verification email could not be sent. Please resend the code.");
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to send verification email to: {Email}. User can retry later.", userDto.Email); //user can resend code again later
-                return new AuthResult(false, Errors: $"Internal server error: {ex.Message}");
+                _logger.LogWarning(
+                    ex,
+                    "User {Email} registered, but sending verification email failed. User can resend later.",
+                    userDto.Email);
+
+                return new AuthResult(
+                    Success: true,
+                    RequiresEmailConfirmation: true,
+                    EmailSent: false,
+                    Message: "Account created, but the verification email could not be sent. Please resend the code.");
             }
         }
     }

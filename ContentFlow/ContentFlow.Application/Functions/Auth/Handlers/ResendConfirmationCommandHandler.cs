@@ -40,12 +40,30 @@ public class ResendConfirmationCommandHandler : IRequestHandler<ResendConfirmati
             _logger.LogWarning("Resend failed: user not found - {Email}", request.Email);
             return new AuthResult(false, Errors: "User not found");
         }
+
+        if (user.EmailConfirmed)
+        {
+            _logger.LogInformation("Resend skipped: email already confirmed for {Email}", request.Email);
+            return new AuthResult(
+                false,
+                Errors: "Email is already confirmed.",
+                Message: "You can sign in with this email.",
+                EmailAlreadyConfirmed: true);
+        }
         
         var code = await _userTwoFactorCodeRepository.GetValidByUserIdAndPurposeAsync(user.Id, "EmailVerification", cancellationToken);
-        if(code != null && DateTime.UtcNow < code.NextResendAt)
+        if (code != null && code.NextResendAt.HasValue && DateTime.UtcNow < code.NextResendAt.Value)
         {
-            _logger.LogWarning("Resend blocked by cooldown for user: {Email}. Available after: {NextResendAt}", request.Email, code.NextResendAt);
-            return new AuthResult(false, Errors: $"Resend available after {code.NextResendAt}");
+            var retryAfterSeconds = Math.Max(1, (int)Math.Ceiling((code.NextResendAt.Value - DateTime.UtcNow).TotalSeconds));
+            _logger.LogInformation(
+                "Resend skipped: cooldown active for {Email}. Retry in {RetryAfterSeconds}s",
+                request.Email,
+                retryAfterSeconds);
+            return new AuthResult(
+                false,
+                Errors: "ResendCooldown",
+                Message: "Verification code was already sent recently.",
+                RetryAfterSeconds: retryAfterSeconds);
         }
 
         if (code != null)

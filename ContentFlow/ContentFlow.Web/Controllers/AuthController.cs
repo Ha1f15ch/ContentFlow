@@ -73,7 +73,12 @@ public class AuthController : ControllerBase
 
             if (!result.Success)
             {
-                return BadRequest(new { message = "Login failed", errors = result.Errors });
+                return BadRequest(new
+                {
+                    message = result.Errors ?? "Login failed",
+                    errors = result.Errors,
+                    requiresEmailConfirmation = result.RequiresEmailConfirmation,
+                });
             }
             
             Response.Cookies.Append("refresh_token", result.RefreshToken!, new CookieOptions
@@ -109,10 +114,21 @@ public class AuthController : ControllerBase
 
         if (!result.Success)
         {
-            return BadRequest(new { Success = false, Errors = result.Errors });
+            return BadRequest(new
+            {
+                Success = false,
+                Errors = result.Errors,
+                Message = result.Message,
+                emailAlreadyConfirmed = result.EmailAlreadyConfirmed,
+            });
         }
 
-        return Ok(new { Success = true });
+        return Ok(new
+        {
+            Success = true,
+            Message = result.Message,
+            emailAlreadyConfirmed = result.EmailAlreadyConfirmed,
+        });
     }
 
     [HttpPost("resend-confirmation")]
@@ -126,7 +142,14 @@ public class AuthController : ControllerBase
 
         if (!result.Success)
         {
-            return BadRequest(new { Success = false, Errors = result.Errors });
+            return BadRequest(new
+            {
+                Success = false,
+                Errors = result.Errors,
+                Message = result.Message,
+                emailAlreadyConfirmed = result.EmailAlreadyConfirmed,
+                retryAfterSeconds = result.RetryAfterSeconds,
+            });
         }
 
         return Ok(new { Success = true });

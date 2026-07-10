@@ -59,9 +59,11 @@
             :depth="0"
             :is-authenticated="isAuthenticated"
             :pending-comment-id="pendingReactionCommentId"
+            :submitting-reply-to-id="submittingReplyToId"
             @set-reaction="setCommentReaction"
             @remove-reaction="removeCommentReaction"
             @request-auth="openLoginModal"
+            @submit-reply="submitReply"
           />
         </div>
       </template>
@@ -89,6 +91,7 @@ const submitting = ref(false);
 const error = ref("");
 const newCommentText = ref("");
 const pendingReactionCommentId = ref(null);
+const submittingReplyToId = ref(null);
 const modalStore = useModalStore();
 
 const hasCommentText = computed(() => newCommentText.value.trim().length > 0);
@@ -192,6 +195,28 @@ function updateCommentReaction(items, result) {
   });
 }
 
+async function submitReply({ parentCommentId, content }) {
+  if (!content || submittingReplyToId.value) return;
+
+  submittingReplyToId.value = parentCommentId;
+  error.value = "";
+
+  try {
+    await commentService.createComment(props.postId, {
+      content,
+      parentCommentId,
+    });
+
+    await loadComments();
+  } catch (e) {
+    console.error("Ошибка отправки ответа", e);
+    error.value =
+      e?.response?.data?.message || "Не удалось отправить ответ на комментарий.";
+  } finally {
+    submittingReplyToId.value = null;
+  }
+}
+
 async function setCommentReaction({ commentId, reactionType }) {
   if (pendingReactionCommentId.value) return;
 
@@ -223,6 +248,7 @@ watch(
     loaded.value = false;
     loading.value = false;
     submitting.value = false;
+    submittingReplyToId.value = null;
     error.value = "";
     newCommentText.value = "";
     loadComments();

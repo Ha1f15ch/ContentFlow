@@ -34,6 +34,11 @@
           required
         />
         <div v-if="error" class="error-message">{{ error }}</div>
+        <p class="helper-link">
+          <button type="button" class="link-btn" @click="openConfirmationFromLogin">
+            Не пришёл код / подтвердить email
+          </button>
+        </p>
         <div class="btn-group">
           <button type="submit" class="btn">Войти</button>
           <button type="button" class="btn" @click="closeModal">Закрыть</button>
@@ -67,41 +72,50 @@
         </div>
       </form>
 
-      <!-- Форма ввода кода -->
-      <form v-else @submit.prevent="handleConfirmCode">
-        <p>Мы отправили код на вашу почту. Введите его ниже.</p>
-        <input
-          v-model="confirmCode"
-          type="text"
-          placeholder="Введите код"
-          required
+      <!-- Подтверждение email после регистрации -->
+      <div v-else class="confirmation-wrap">
+        <EmailConfirmationForm
+          :email="email"
+          :initial-warning="confirmationWarning"
+          :initial-info="confirmationInfo"
+          :skip-auto-send="skipConfirmationAutoSend"
+          @confirmed="handleEmailConfirmed"
+          @already-confirmed="handleEmailAlreadyConfirmed"
         />
-        <div v-if="error" class="error-message">{{ error }}</div>
         <div class="btn-group">
-          <button type="submit" class="btn">Подтвердить</button>
           <button type="button" class="btn" @click="closeModal">Закрыть</button>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useModalStore } from '@/shared/stores/modalStore';
 import { authService } from '@/features/auth/api/authApi';
+import EmailConfirmationForm from '@/features/auth/components/EmailConfirmationForm.vue';
+import {
+  requiresEmailConfirmationFromError,
+  savePendingConfirmationEmail,
+} from '@/features/auth/utils/pendingEmailStorage.js';
+import { showEmailConfirmationInModal } from '@/features/auth/utils/emailConfirmationNavigation.js';
 
 const authStore = useAuthStore();
-const modalStore = useModalStore(); // используем store. Все события заменены на прямой вызов modalStore
+const modalStore = useModalStore();
+const router = useRouter();
 
 const isLoginMode = ref(true);
 const isCodeInputMode = ref(false); // новое состояние
 const email = ref('');
 const password = ref('');
 const userName = ref('');
-const confirmCode = ref(''); // новое поле
 const error = ref('');
+const confirmationWarning = ref('');
+const confirmationInfo = ref('');
+const skipConfirmationAutoSend = ref(true);
 
 const handleLogin = async () => {
   try {
@@ -118,6 +132,17 @@ const handleLogin = async () => {
 
     closeModal();
   } catch (err) {
+    if (requiresEmailConfirmationFromError(err)) {
+      savePendingConfirmationEmail(email.value);
+      confirmationWarning.value =
+        err.response?.data?.message ||
+        "Подтвердите email, чтобы войти. Если код не пришёл, запросите его повторно.";
+      isCodeInputMode.value = true;
+      isLoginMode.value = false;
+      error.value = '';
+      return;
+    }
+
     error.value = err.response?.data?.message || "Ошибка входа";
   }
 };
@@ -126,25 +151,16 @@ const handleLogin = async () => {
 
 const handleRegister = async () => {
   try {
-    const response = await authService.register({
+    const result = await authService.register({
       email: email.value,
       password: password.value,
       userName: userName.value,
     });
 
-    // Проверяем, был ли успешный ответ
-    if (response.status === 204) {
-      error.value = 'Ошибка регистрации. Пожалуйста, попробуйте снова.';
-      return;
-    }
-
-    if (response.data && response.data.success === false) {
-      error.value = response.data.message || 'Ошибка регистрации.';
-      return;
-    }
-
-    // Если всё ок — показываем поле ввода кода
-    alert('Регистрация успешна! Проверьте email для подтверждения.');
+    const { warning, info, skipAutoSend } = showEmailConfirmationInModal(email.value, result);
+    confirmationWarning.value = warning;
+    confirmationInfo.value = info;
+    skipConfirmationAutoSend.value = skipAutoSend;
     isCodeInputMode.value = true;
     error.value = '';
   } catch (err) {
@@ -177,18 +193,32 @@ const handleRegister = async () => {
   }
 };
 
-const handleConfirmCode = async () => {
-  try {
-    await authService.confirmEmail({
-      email: email.value,
-      Code: confirmCode.value,
-    });
-    alert('Email успешно подтверждён!');
-    closeModal();
-  } catch (err) {
-    error.value = err.response?.data?.message || 'Ошибка подтверждения';
-  }
+const handleEmailConfirmed = () => {
+  isCodeInputMode.value = false;
+  isLoginMode.value = true;
+  password.value = '';
+  userName.value = '';
+  confirmationWarning.value = '';
+  confirmationInfo.value = '';
+  skipConfirmationAutoSend.value = true;
+  error.value = '';
 };
+
+const handleEmailAlreadyConfirmed = () => {
+  isCodeInputMode.value = false;
+  isLoginMode.value = true;
+  confirmationWarning.value = '';
+  error.value = 'Этот email уже подтверждён. Войдите в аккаунт.';
+};
+
+async function openConfirmationFromLogin() {
+  savePendingConfirmationEmail(email.value);
+  closeModal();
+  await router.push({
+    path: '/confirm-email',
+    query: email.value ? { email: email.value } : undefined,
+  });
+}
 
 const closeIfOutside = (e) => {
   if (e.target.classList.contains('modal')) {
@@ -199,10 +229,13 @@ const closeIfOutside = (e) => {
 // Закрываем через store — единообразно
 const closeModal = () => {
   isCodeInputMode.value = false;
+  isLoginMode.value = true;
   email.value = '';
   password.value = '';
   userName.value = '';
-  confirmCode.value = '';
+  confirmationWarning.value = '';
+  confirmationInfo.value = '';
+  skipConfirmationAutoSend.value = true;
   error.value = '';
   modalStore.closeModal();
 };
@@ -261,6 +294,12 @@ const closeModal = () => {
   z-index: 2000;
 }
 
+.confirmation-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 .modal-content {
   background-color: var(--card-bg);
   color: var(--text-primary);
@@ -298,6 +337,21 @@ const closeModal = () => {
 .error-message {
   color: #ff4d4d;
   margin-bottom: 1rem;
+}
+
+.helper-link {
+  margin: -0.35rem 0 0.75rem;
+  text-align: center;
+}
+
+.link-btn {
+  border: none;
+  background: transparent;
+  color: var(--btn-primary-bg);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+  padding: 0;
 }
 
 .input-group {

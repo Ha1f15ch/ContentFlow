@@ -49,7 +49,11 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResult>
         if (!user.EmailConfirmed)
         {
             _logger.LogWarning("Login blocked: email not confirmed for user: {Email}", request.Email);
-            return new AuthResult(false, Errors: "Email is not confirmed");
+            return new AuthResult(
+                false,
+                Errors: "Email is not confirmed",
+                RequiresEmailConfirmation: true,
+                Message: "Confirm your email to sign in.");
         }
         
         var roles = await _userService.GetRolesAsync(user.Email, cancellationToken);

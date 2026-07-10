@@ -18,6 +18,9 @@
         <div v-if="error" class="error-message">{{ error }}</div>
         <button type="submit" class="btn">Войти</button>
       </form>
+      <p class="helper-link">
+        <router-link :to="confirmEmailLink">Не пришёл код / подтвердить email</router-link>
+      </p>
       <p>
         Нет аккаунта? <router-link to="/register">Зарегистрироваться</router-link>
       </p>
@@ -26,10 +29,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { authService } from '@/features/auth/api/authApi';
+import {
+  requiresEmailConfirmationFromError,
+  savePendingConfirmationEmail,
+  saveConfirmationWarning,
+} from '@/features/auth/utils/pendingEmailStorage.js';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -37,6 +45,11 @@ const authStore = useAuthStore();
 const email = ref('');
 const password = ref('');
 const error = ref('');
+
+const confirmEmailLink = computed(() => ({
+  path: '/confirm-email',
+  query: email.value ? { email: email.value } : undefined,
+}));
 
 const handleLogin = async () => {
   error.value = "";
@@ -57,6 +70,16 @@ const handleLogin = async () => {
 
     router.push("/");
   } catch (err) {
+    if (requiresEmailConfirmationFromError(err)) {
+      savePendingConfirmationEmail(email.value);
+      saveConfirmationWarning(
+        err.response?.data?.message ||
+          "Подтвердите email, чтобы войти. Если код не пришёл, запросите его повторно."
+      );
+      await router.push(confirmEmailLink.value);
+      return;
+    }
+
     console.error("Ошибка входа:", err);
     error.value = err.response?.data?.message || err.message || "Ошибка входа";
   }
@@ -119,6 +142,11 @@ const handleLogin = async () => {
 .error-message {
   color: #ff4d4d;
   margin-bottom: 1rem;
+}
+
+.helper-link {
+  margin-top: 0.75rem;
+  text-align: center;
 }
 
 .auth-form p {
