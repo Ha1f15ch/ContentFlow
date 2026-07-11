@@ -46,6 +46,16 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResult>
             return new AuthResult(false, Errors: "User not found or password incorrect. Try again later");
         }
 
+        if (await _userService.IsSelfDeletedAccountAsync(user.Id, cancellationToken))
+        {
+            _logger.LogWarning("Login blocked: account deleted for email: {Email}", request.Email);
+            return new AuthResult(
+                false,
+                Errors: "Account was deleted.",
+                AccountDeleted: true,
+                Message: "Your account was deleted. Restore it to sign in again.");
+        }
+
         if (!user.EmailConfirmed)
         {
             _logger.LogWarning("Login blocked: email not confirmed for user: {Email}", request.Email);
@@ -65,13 +75,9 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResult>
             roles: roles,
             user.UserName);
         
-        // 1) (опционально) ревокаем старые refresh на этом девайсе
-        // можно сделать отдельным методом, но минимум — найти активный и revoke
         var active = await _refreshTokenRepository.GetActiveByUserAndDeviceAsync(user.Id, request.Metadata.DeviceId, cancellationToken);
         if (active != null)
         {
-            // в replacedByTokenHash запишем lookup нового (создадим ниже)
-            // пока просто revoke, replaced проставим после генерации нового
             await _refreshTokenRepository.RevokeAsync(active.Id, request.Metadata.IpAddress, replacedByTokenHash: null, cancellationToken);
         }
 

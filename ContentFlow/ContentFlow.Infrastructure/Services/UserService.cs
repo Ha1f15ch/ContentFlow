@@ -2,6 +2,7 @@
 using ContentFlow.Application.Common;
 using ContentFlow.Application.DTOs;
 using ContentFlow.Application.Interfaces.Users;
+using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Domain.Exceptions;
 using ContentFlow.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -14,15 +15,18 @@ namespace ContentFlow.Infrastructure.Services;
 public class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserProfileRepository _userProfileRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<UserService> _logger;
 
     public UserService(
-        UserManager<ApplicationUser> userManager, 
+        UserManager<ApplicationUser> userManager,
+        IUserProfileRepository userProfileRepository,
         IMapper mapper, 
         ILogger<UserService> logger)
     {
         _userManager = userManager;
+        _userProfileRepository = userProfileRepository;
         _mapper = mapper;
         _logger = logger;
     }
@@ -337,6 +341,7 @@ public class UserService : IUserService
             throw new NotFoundException($"User with ID {userId} was not found.");
         
         user.IsBlocked = true;
+        user.EmailConfirmed = false;
         
         var result = await _userManager.UpdateAsync(user);
         
@@ -344,5 +349,36 @@ public class UserService : IUserService
             throw new ValidationException($"Failed to delete user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
         
         _logger.LogInformation("User {UserId} was deleted", userId);
+    }
+
+    public async Task<bool> IsSelfDeletedAccountAsync(int userId, CancellationToken ct)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null || !user.IsBlocked)
+            return false;
+
+        var profile = await _userProfileRepository.GetByUserIdAsync(userId, ct);
+        return profile?.IsDeleted == true;
+    }
+
+    public async Task ReactivateUserAsync(int userId, CancellationToken ct)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString())
+                   ?? throw new NotFoundException($"User with ID {userId} was not found.");
+
+        if (!user.IsBlocked)
+            return;
+
+        user.IsBlocked = false;
+        user.EmailConfirmed = true;
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            throw new ValidationException(
+                $"Failed to reactivate user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        }
+
+        _logger.LogInformation("User {UserId} was reactivated", userId);
     }
 }

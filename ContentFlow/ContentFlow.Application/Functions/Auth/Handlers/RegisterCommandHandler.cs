@@ -45,100 +45,121 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResul
 
         if (existingUser != null)
         {
+            if (await _userService.IsSelfDeletedAccountAsync(existingUser.Id, cancellationToken))
+            {
+                _logger.LogInformation("Registration blocked: deleted account exists for email: {Email}", request.Email);
+                return new AuthResult(
+                    Success: false,
+                    Errors: "Account was deleted.",
+                    AccountDeleted: true,
+                    Message: "An account with this email was deleted. You can restore it with the same password.");
+            }
+
             _logger.LogWarning("Registration attempt with already registered email: {Email}", request.Email);
             return new AuthResult(Success: false, Errors: $"User with email {request.Email} already exists");
         }
-        else
+
+        var existingByUserName = await _userService.GetUserByUserNameAsync(request.UserName, cancellationToken);
+        if (existingByUserName != null)
         {
-            UserDto userDto;
-            try
+            if (await _userService.IsSelfDeletedAccountAsync(existingByUserName.Id, cancellationToken))
             {
-                userDto = await _userService.CreateAsync(request.Email, request.Password, request.UserName);
-                _logger.LogInformation("User created successfully with ID: {UserId}", userDto.Id);
+                _logger.LogInformation("Registration blocked: deleted account exists for username: {UserName}", request.UserName);
+                return new AuthResult(
+                    Success: false,
+                    Errors: "Account was deleted.",
+                    AccountDeleted: true,
+                    Message: "An account with this username was deleted. Restore it or choose another username.");
             }
-            catch (ValidationException validationException)
-            {
-                _logger.LogError(validationException, "Validation failed during registration for email: {Email}", request.Email);
-                return new AuthResult(Success: false, Errors: $"{validationException.Errors}");
-            }
-            catch (Exception exception)
-            {
-                _logger.LogCritical(exception, "Unexpected error creating user with email: {Email}", request.Email);
-                return new AuthResult(Success: false, Errors: $"{exception.Message}");
-            }
+
+            return new AuthResult(Success: false, Errors: "Username is already taken.");
+        }
+
+        UserDto userDto;
+        try
+        {
+            userDto = await _userService.CreateAsync(request.Email, request.Password, request.UserName);
+            _logger.LogInformation("User created successfully with ID: {UserId}", userDto.Id);
+        }
+        catch (ValidationException validationException)
+        {
+            _logger.LogError(validationException, "Validation failed during registration for email: {Email}", request.Email);
+            return new AuthResult(Success: false, Errors: $"{validationException.Errors}");
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "Unexpected error creating user with email: {Email}", request.Email);
+            return new AuthResult(Success: false, Errors: $"{exception.Message}");
+        }
+        
+        _logger.LogInformation("Creating user profile for user ID: {UserId}", userDto.Id);
+
+        var profile = new Domain.Entities.UserProfile(userId: userDto.Id);
+        await _userProfileRepository.CreateAsync(profile, cancellationToken);
+        
+        var code = TokenGenerator.GenerateSixValueCode();
+        var (codeHash, codeSalt) = PasswordHasher.Hash(code);
+
+        try
+        {
+            await _userTwoFactorCodeRepository.AddAsync(
+                userId: userDto.Id,
+                codeHash: codeHash,
+                codeSalt: codeSalt,
+                purpose: "EmailVerification",
+                ct: cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             
-            // Создаем профиль пользователя
-            _logger.LogInformation("Creating user profile for user ID: {UserId}", userDto.Id);
+            _logger.LogInformation("UserProfile created successfully with ID: {UserProfileId} for user ID: {UserId}", 
+                profile.Id, userDto.Id);
+            _logger.LogInformation("Verification code generated and saved for user: {UserId}", userDto.Id);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Failed to save verification code for user: {UserId}", userDto.Id);
+            return new AuthResult(false, Errors: "Failed to initiate email verification");
+        }
+        
+        await _userService.AddToRoleAsync(userDto.Email, RoleConstants.Guest.ToString(), cancellationToken);
+        _logger.LogInformation("User {UserId} assigned to role: {Role}", userDto.Id, RoleConstants.Guest);
+        
+        try
+        {
+            var emailSend = await _emailSender.SendVerificationEmailAsync(userDto.Email, code, cancellationToken);
 
-            var profile = new Domain.Entities.UserProfile(userId: userDto.Id);
-            await _userProfileRepository.CreateAsync(profile, cancellationToken);
-            
-            // Creating 2FA code
-            var code = TokenGenerator.GenerateSixValueCode();
-            var (codeHash, codeSalt) = PasswordHasher.Hash(code);
-
-            try
+            if (emailSend)
             {
-                await _userTwoFactorCodeRepository.AddAsync(
-                    userId: userDto.Id,
-                    codeHash: codeHash,
-                    codeSalt: codeSalt,
-                    purpose: "EmailVerification",
-                    ct: cancellationToken);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-                
-                _logger.LogInformation("UserProfile created successfully with ID: {UserProfileId} for user ID: {UserId}", 
-                    profile.Id, userDto.Id);
-                _logger.LogInformation("Verification code generated and saved for user: {UserId}", userDto.Id);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogError(ex, "Failed to save verification code for user: {UserId}", userDto.Id);
-                return new AuthResult(false, Errors: "Failed to initiate email verification");
-            }
-            
-            await _userService.AddToRoleAsync(userDto.Email, RoleConstants.Guest.ToString(), cancellationToken);
-            _logger.LogInformation("User {UserId} assigned to role: {Role}", userDto.Id, RoleConstants.Guest);
-            
-            // try to send code to email
-            try
-            {
-                var emailSend = await _emailSender.SendVerificationEmailAsync(userDto.Email, code, cancellationToken);
-
-                if (emailSend)
-                {
-                    _logger.LogInformation("Verification email sent to: {Email}", userDto.Email);
-                    _logger.LogInformation("User registration completed successfully: {Email}", request.Email);
-                    return new AuthResult(
-                        Success: true,
-                        RequiresEmailConfirmation: true,
-                        EmailSent: true,
-                        Message: "Verification email sent.");
-                }
-
-                _logger.LogWarning(
-                    "User {Email} registered, but verification email was not sent",
-                    request.Email);
-
+                _logger.LogInformation("Verification email sent to: {Email}", userDto.Email);
+                _logger.LogInformation("User registration completed successfully: {Email}", request.Email);
                 return new AuthResult(
                     Success: true,
                     RequiresEmailConfirmation: true,
-                    EmailSent: false,
-                    Message: "Account created, but the verification email could not be sent. Please resend the code.");
+                    EmailSent: true,
+                    Message: "Verification email sent.");
             }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(
-                    ex,
-                    "User {Email} registered, but sending verification email failed. User can resend later.",
-                    userDto.Email);
 
-                return new AuthResult(
-                    Success: true,
-                    RequiresEmailConfirmation: true,
-                    EmailSent: false,
-                    Message: "Account created, but the verification email could not be sent. Please resend the code.");
-            }
+            _logger.LogWarning(
+                "User {Email} registered, but verification email was not sent",
+                request.Email);
+
+            return new AuthResult(
+                Success: true,
+                RequiresEmailConfirmation: true,
+                EmailSent: false,
+                Message: "Account created, but the verification email could not be sent. Please resend the code.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "User {Email} registered, but sending verification email failed. User can resend later.",
+                userDto.Email);
+
+            return new AuthResult(
+                Success: true,
+                RequiresEmailConfirmation: true,
+                EmailSent: false,
+                Message: "Account created, but the verification email could not be sent. Please resend the code.");
         }
     }
 }

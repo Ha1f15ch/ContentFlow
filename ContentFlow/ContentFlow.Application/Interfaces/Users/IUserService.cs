@@ -23,4 +23,6 @@ public interface IUserService
     Task<UserDto?> GetUserByUserNameAsync(string userName, CancellationToken ct);
     Task<List<UserDto>> GetUsersByUserNameAsync(string partUserName, int limit, CancellationToken ct);
     Task DeleteUserAsync(int userId, CancellationToken ct);
+    Task<bool> IsSelfDeletedAccountAsync(int userId, CancellationToken ct);
+    Task ReactivateUserAsync(int userId, CancellationToken ct);
 }

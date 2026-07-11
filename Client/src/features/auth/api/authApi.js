@@ -21,6 +21,11 @@ export const authService = {
     return data;
   },
 
+  async reactivateAccount(credentials) {
+    const { data } = await apiClient.post("/auth/reactivate-account", credentials);
+    return data;
+  },
+
   async logout() {
     const { data } = await apiClient.get("/auth/logout");
     return data;

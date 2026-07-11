@@ -22,3 +22,11 @@ export function getRetryAfterSeconds(err) {
   const value = err?.response?.data?.retryAfterSeconds;
   return typeof value === "number" && value > 0 ? value : 0;
 }
+
+export function isAccountDeletedError(err) {
+  return err?.response?.data?.accountDeleted === true;
+}
+
+export function getAccountDeletedMessage(err, fallback) {
+  return err?.response?.data?.message ?? fallback;
+}

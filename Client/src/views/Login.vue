@@ -16,6 +16,13 @@
           required
         />
         <div v-if="error" class="error-message">{{ error }}</div>
+        <ReactivateAccountPanel
+          :visible="showReactivatePanel"
+          :email="email"
+          :password="password"
+          :message="reactivateMessage"
+          @restored="clearReactivateState"
+        />
         <button type="submit" class="btn">Войти</button>
       </form>
       <p class="helper-link">
@@ -38,6 +45,11 @@ import {
   savePendingConfirmationEmail,
   saveConfirmationWarning,
 } from '@/features/auth/utils/pendingEmailStorage.js';
+import {
+  isAccountDeletedError,
+  getAccountDeletedMessage,
+} from '@/features/auth/utils/authResponseUtils.js';
+import ReactivateAccountPanel from '@/features/auth/components/ReactivateAccountPanel.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -45,6 +57,8 @@ const authStore = useAuthStore();
 const email = ref('');
 const password = ref('');
 const error = ref('');
+const showReactivatePanel = ref(false);
+const reactivateMessage = ref('');
 
 const confirmEmailLink = computed(() => ({
   path: '/confirm-email',
@@ -53,6 +67,7 @@ const confirmEmailLink = computed(() => ({
 
 const handleLogin = async () => {
   error.value = "";
+  showReactivatePanel.value = false;
 
   try {
     const data = await authService.login({ email: email.value, password: password.value });
@@ -80,10 +95,26 @@ const handleLogin = async () => {
       return;
     }
 
+    if (isAccountDeletedError(err)) {
+      reactivateMessage.value = getAccountDeletedMessage(
+        err,
+        "Этот аккаунт был удалён. Вы можете восстановить его с тем же паролем."
+      );
+      showReactivatePanel.value = true;
+      error.value = "";
+      return;
+    }
+
     console.error("Ошибка входа:", err);
     error.value = err.response?.data?.message || err.message || "Ошибка входа";
   }
 };
+
+function clearReactivateState() {
+  showReactivatePanel.value = false;
+  reactivateMessage.value = "";
+  error.value = "";
+}
 </script>
 
 <style scoped>

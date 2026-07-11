@@ -8,5 +8,6 @@ public record AuthResult(
     bool RequiresEmailConfirmation = false,
     bool EmailSent = false,
     bool EmailAlreadyConfirmed = false,
+    bool AccountDeleted = false,
     string? Message = null,
     int? RetryAfterSeconds = null);

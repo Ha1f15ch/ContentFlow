@@ -80,6 +80,13 @@ public class UserProfile
             DeletedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
         }
+
+        public void Restore()
+        {
+            if (!DeletedAt.HasValue) return;
+            DeletedAt = null;
+            UpdatedAt = DateTime.UtcNow;
+        }
     
         public void UpdateProfile(
             string? firstName,

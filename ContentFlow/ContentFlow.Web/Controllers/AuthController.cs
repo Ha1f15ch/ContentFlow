@@ -35,7 +35,12 @@ public class AuthController : ControllerBase
 
             if (!result.Success)
             {
-                return BadRequest(new { message = "Registration failed", errors = result.Errors });
+                return BadRequest(new
+                {
+                    message = result.Message ?? result.Errors ?? "Registration failed",
+                    errors = result.Errors,
+                    accountDeleted = result.AccountDeleted,
+                });
             }
 
             return Ok(result);
@@ -75,9 +80,10 @@ public class AuthController : ControllerBase
             {
                 return BadRequest(new
                 {
-                    message = result.Errors ?? "Login failed",
+                    message = result.Message ?? result.Errors ?? "Login failed",
                     errors = result.Errors,
                     requiresEmailConfirmation = result.RequiresEmailConfirmation,
+                    accountDeleted = result.AccountDeleted,
                 });
             }
             
@@ -153,6 +159,46 @@ public class AuthController : ControllerBase
         }
 
         return Ok(new { Success = true });
+    }
+
+    [HttpPost("reactivate-account")]
+    public async Task<IActionResult> ReactivateAccount([FromBody] LoginRequest loginRequest)
+    {
+        var metadata = new ClientMetadata(
+            IpAddress: GetIpAddress(),
+            UserAgent: HttpContext.Request.Headers.UserAgent,
+            DeviceId: Request.Headers["DeviceId"],
+            Location: null
+        );
+
+        var result = await _mediator.Send(new ReactivateAccountCommand(
+            loginRequest.Email,
+            loginRequest.Password,
+            metadata));
+
+        if (!result.Success)
+        {
+            return BadRequest(new
+            {
+                message = result.Errors ?? "Reactivation failed",
+                errors = result.Errors,
+            });
+        }
+
+        Response.Cookies.Append("refresh_token", result.RefreshToken!, new CookieOptions
+        {
+            HttpOnly = true,
+#if DEBUG
+            Secure = false,
+#else
+            Secure = true,
+#endif
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTimeOffset.UtcNow.AddDays(7),
+            Path = "/api/auth"
+        });
+
+        return Ok(new { token = result.Token, message = result.Message });
     }
 
     [HttpGet("logout")]

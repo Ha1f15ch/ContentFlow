@@ -22,6 +22,13 @@
           required
         />
         <div v-if="error" class="error-message">{{ error }}</div>
+        <ReactivateAccountPanel
+          :visible="showReactivatePanel"
+          :email="email"
+          :password="password"
+          :message="reactivateMessage"
+          @restored="clearReactivateState"
+        />
         <button type="submit" class="btn">Зарегистрироваться</button>
       </form>
       <p>
@@ -36,6 +43,11 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '@/features/auth/api/authApi';
 import { openEmailConfirmationAfterRegister } from '@/features/auth/utils/emailConfirmationNavigation.js';
+import {
+  isAccountDeletedError,
+  getAccountDeletedMessage,
+} from '@/features/auth/utils/authResponseUtils.js';
+import ReactivateAccountPanel from '@/features/auth/components/ReactivateAccountPanel.vue';
 
 const router = useRouter();
 
@@ -43,8 +55,13 @@ const email = ref('');
 const password = ref('');
 const userName = ref('');
 const error = ref('');
+const showReactivatePanel = ref(false);
+const reactivateMessage = ref('');
 
 const handleRegister = async () => {
+  error.value = '';
+  showReactivatePanel.value = false;
+
   try {
     const result = await authService.register({
       email: email.value,
@@ -53,6 +70,16 @@ const handleRegister = async () => {
     });
     await openEmailConfirmationAfterRegister(router, email.value, result);
   } catch (err) {
+    if (isAccountDeletedError(err)) {
+      reactivateMessage.value = getAccountDeletedMessage(
+        err,
+        'Аккаунт с этими данными уже существовал и был удалён. Восстановите его с тем же паролем.'
+      );
+      showReactivatePanel.value = true;
+      error.value = '';
+      return;
+    }
+
     const status = err.response?.status;
     const data = err.response?.data;
 
@@ -81,6 +108,12 @@ const handleRegister = async () => {
     }
   }
 };
+
+function clearReactivateState() {
+  showReactivatePanel.value = false;
+  reactivateMessage.value = '';
+  error.value = '';
+}
 </script>
 
 <style scoped>

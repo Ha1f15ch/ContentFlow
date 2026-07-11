@@ -10,6 +10,7 @@ import CreatePostView from '@/features/post/views/CreatePostView.vue';
 import MyProfileView from '@/features/userProfile/views/MyProfileView.vue';
 import UserProfileView from '@/features/userProfile/views/UserProfileView.vue';
 import ModerationView from '@/features/moderation/views/ModerationView.vue';
+import SettingsView from '@/features/settings/views/SettingsView.vue';
 
 const routes = [
   {
@@ -49,6 +50,12 @@ const routes = [
     path: '/profiles/:profileId',
     name: 'userProfile',
     component: UserProfileView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/settings',
+    name: 'settings',
+    component: SettingsView,
     meta: { requiresAuth: true }
   },
   {

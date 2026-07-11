@@ -13,8 +13,10 @@ export const userProfileService = {
     return apiClient.put("/userprofile", profileData);
   },
 
-  deleteMe() {
-    return apiClient.delete("/userprofile");
+  deleteMe(userId) {
+    return apiClient.delete("/userprofile", {
+      data: { userId },
+    });
   },
 
   getMyFollowers() {
