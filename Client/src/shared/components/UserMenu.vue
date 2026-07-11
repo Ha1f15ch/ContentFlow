@@ -116,10 +116,10 @@
     router.push('/moderation');
   };
   
-  const logout = () => {
+  const logout = async () => {
     closeMenu();
-    authStore.logout();
-    router.push('/logout');
+    await authStore.logout();
+    router.push('/');
   };
 </script>
 
