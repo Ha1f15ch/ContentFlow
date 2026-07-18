@@ -61,9 +61,14 @@ defineEmits(["update:modelValue"]);
   flex-wrap: wrap;
   gap: 1.25rem;
   align-items: center;
-  padding-bottom: 0.75rem;
+  padding: 0.85rem 0 0.75rem;
   margin-bottom: 1.25rem;
   border-bottom: 1px solid var(--border-color);
+
+  position: sticky;
+  top: var(--app-header-height, 4.5rem);
+  z-index: 900;
+  background: var(--bg-primary);
 }
 
 .section-tab {

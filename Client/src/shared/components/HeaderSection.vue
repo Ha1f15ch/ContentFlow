@@ -134,7 +134,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onBeforeUnmount } from "vue";
+import { computed, ref, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
 import { useRouter, useRoute, RouterLink } from "vue-router";
 import { useThemeStore } from "@/shared/stores/theme";
 import { useAuthStore } from "@/features/auth/stores/authStore";
@@ -221,12 +221,32 @@ const goToCreatePost = () => {
   router.push("/create-post");
 };
 
+function syncHeaderHeight() {
+  const header = document.querySelector("header.app-header, header");
+  const height = header?.getBoundingClientRect().height ?? 0;
+  document.documentElement.style.setProperty(
+    "--app-header-height",
+    `${Math.ceil(height)}px`
+  );
+}
+
+watch(
+  () => authStore.isLoggedIn,
+  async () => {
+    await nextTick();
+    syncHeaderHeight();
+  }
+);
+
 onMounted(() => {
   document.addEventListener("click", handleOutsideClick);
+  syncHeaderHeight();
+  window.addEventListener("resize", syncHeaderHeight);
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener("click", handleOutsideClick);
+  window.removeEventListener("resize", syncHeaderHeight);
 });
 </script>
 

@@ -75,6 +75,10 @@ header {
   padding: 1rem 2rem;
   background: var(--header-bg);
   color: var(--text-primary);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 1px 0 var(--border-color);
 }
 
 body.light-theme {
