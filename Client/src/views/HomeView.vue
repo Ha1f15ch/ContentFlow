@@ -55,6 +55,7 @@ import {
   postService,
   POST_STATUS,
 } from "@/features/post/api/postService";
+import { clientLog } from "@/shared/utils/clientLog.js";
 
 const POSTS_PAGE_SIZE = 5;
 
@@ -161,7 +162,7 @@ async function loadPosts({ reset = false } = {}) {
       filter: buildPostFilter(),
     });
 
-    console.log("GET /posts response:", response.data);
+    clientLog.debug("GET /posts response:", response.data);
 
     const result = response.data ?? {};
     const items = result.items ?? [];

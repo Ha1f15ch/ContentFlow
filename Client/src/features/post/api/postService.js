@@ -1,4 +1,5 @@
 import apiClient from "@/shared/api/HttpClient.js";
+import { clientLog } from "@/shared/utils/clientLog.js";
 
 export const POST_STATUS = {
   Draft: 0,
@@ -64,7 +65,7 @@ function buildPostQueryParams({
 export const postService = {
   getPosts(options = {}) {
     const builtParams = buildPostQueryParams(options);
-    console.log("GET /posts params:", builtParams);
+    clientLog.debug("GET /posts params:", builtParams);
     return apiClient.get("/posts", {
       params: builtParams,
     });

@@ -16,6 +16,9 @@ export async function startNotificationConnection({ onNotification } = {}) {
       accessTokenFactory: () => getToken() ?? "",
     })
     .withAutomaticReconnect()
+    .configureLogging(
+      import.meta.env.DEV ? signalR.LogLevel.Information : signalR.LogLevel.Warning
+    )
     .build();
 
   const handleNotification = (type) => (payload) => {
