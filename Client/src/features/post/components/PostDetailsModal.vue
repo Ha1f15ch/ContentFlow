@@ -253,6 +253,7 @@ const formatDate = (isoDate) => {
   width: calc(100vw - 32px);
   max-width: 1040px;
   max-height: 92vh;
+  overflow-x: hidden;
   overflow-y: auto;
   background: var(--bg-primary, #121212);
   color: var(--text-primary, #e0e0e0);
@@ -260,6 +261,14 @@ const formatDate = (isoDate) => {
   padding: 20px;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
   box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.modal-content::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .modal-close {
@@ -280,13 +289,16 @@ const formatDate = (isoDate) => {
   flex-direction: column;
   gap: 16px;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding-top: 12px;
   box-sizing: border-box;
 }
 
 .post-card {
   width: 100%;
-  max-width: none;
+  max-width: 100%;
+  min-width: 0;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 18px;

@@ -18,6 +18,7 @@ public class PostCommentsService : IPostCommentsService
     public List<CommentDto> BuildCommentsTree(
         List<Comment> comments,
         Dictionary<int, string> userNames,
+        Dictionary<int, int> authorProfileIds,
         Dictionary<int, int> likesCounts,
         Dictionary<int, int> dislikesCounts,
         Dictionary<int, ReactionType?> currentUserReactions)
@@ -26,20 +27,26 @@ public class PostCommentsService : IPostCommentsService
             throw new ArgumentNullException(nameof(comments));
         
         _logger.LogDebug("Building comment tree for {Count} comments", comments.Count);
-        var commentsDto = comments.Select(c => new CommentDto(
-            Id: c.Id,
-            PostId: c.PostId,
-            Content: c.Content,
-            UserName: userNames.GetValueOrDefault(c.AuthorId, "Unknown"),
-            CreatedAt: c.CreatedAt,
-            Comments: new List<CommentDto>(),
-            ParentCommentId: c.ParentCommentId,
-            CommentStatus: c.Status.ToString(),
-            IsDeleted: c.IsDeleted,
-            LikesCount: likesCounts.GetValueOrDefault(c.Id, 0),
-            DislikesCount: dislikesCounts.GetValueOrDefault(c.Id, 0),
-            CurrentUserReaction: currentUserReactions.GetValueOrDefault(c.Id)
-            )).ToList();
+        var commentsDto = comments.Select(c =>
+        {
+            authorProfileIds.TryGetValue(c.AuthorId, out var authorProfileId);
+
+            return new CommentDto(
+                Id: c.Id,
+                PostId: c.PostId,
+                Content: c.Content,
+                UserName: userNames.GetValueOrDefault(c.AuthorId, "Unknown"),
+                AuthorProfileId: authorProfileId == 0 ? null : authorProfileId,
+                CreatedAt: c.CreatedAt,
+                Comments: new List<CommentDto>(),
+                ParentCommentId: c.ParentCommentId,
+                CommentStatus: c.Status.ToString(),
+                IsDeleted: c.IsDeleted,
+                LikesCount: likesCounts.GetValueOrDefault(c.Id, 0),
+                DislikesCount: dislikesCounts.GetValueOrDefault(c.Id, 0),
+                CurrentUserReaction: currentUserReactions.GetValueOrDefault(c.Id)
+            );
+        }).ToList();
 
         var commentDict = commentsDto.ToDictionary(c => c.Id);
         var rootComments = new List<CommentDto>();

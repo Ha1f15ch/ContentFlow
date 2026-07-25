@@ -1,75 +1,89 @@
 <template>
   <article
     class="comment-item"
-    :class="{ 'comment-item-deleted': comment.isDeleted }"
-    :style="{ marginLeft: `${depth * 20}px` }"
+    :class="{
+      'comment-item-root': depth === 0,
+      'comment-item-nested': depth > 0,
+      'comment-item-deep': depth >= MAX_VISUAL_DEPTH,
+      'comment-item-deleted': comment.isDeleted,
+    }"
   >
-    <div class="comment-top">
-      <div class="comment-author">
-        {{ comment.userName || "Пользователь" }}
-      </div>
+    <div class="comment-main">
+      <div class="comment-top">
+        <RouterLink
+          v-if="comment.authorProfileId"
+          class="comment-author author-link"
+          :to="{ name: 'userProfile', params: { profileId: comment.authorProfileId } }"
+          @click.stop
+        >
+          {{ comment.userName || "Пользователь" }}
+        </RouterLink>
+        <div v-else class="comment-author">
+          {{ comment.userName || "Пользователь" }}
+        </div>
 
-      <div class="comment-top-right">
-        <ReportButton
-          v-if="!comment.isDeleted"
-          target-type="comment"
-          :target-id="comment.id"
-          :is-authenticated="isAuthenticated"
-        />
+        <div class="comment-top-right">
+          <ReportButton
+            v-if="!comment.isDeleted"
+            target-type="comment"
+            :target-id="comment.id"
+            :is-authenticated="isAuthenticated"
+          />
 
-        <div class="comment-date">
-          {{ formatDate(comment.createdAt) }}
+          <div class="comment-date">
+            {{ formatDate(comment.createdAt) }}
+          </div>
         </div>
       </div>
-    </div>
 
-    <div
-      class="comment-content"
-      :class="{ 'comment-content-deleted': comment.isDeleted }"
-    >
-      {{ comment.content }}
-    </div>
-
-    <div class="comment-actions">
-      <ReactionBar
-        :likes-count="comment.likesCount ?? 0"
-        :dislikes-count="comment.dislikesCount ?? 0"
-        :current-user-reaction="comment.currentUserReaction"
-        :is-authenticated="isAuthenticated"
-        :pending="pendingCommentId === comment.id"
-        @set="(reactionType) => emit('set-reaction', { commentId: comment.id, reactionType })"
-        @remove="emit('remove-reaction', comment.id)"
-        @request-auth="emit('request-auth')"
-      />
-
-      <button
-        v-if="isAuthenticated && !comment.isDeleted"
-        type="button"
-        class="reply-btn"
-        @click="toggleReply"
+      <div
+        class="comment-content"
+        :class="{ 'comment-content-deleted': comment.isDeleted }"
       >
-        {{ isReplying ? "Отмена" : "Ответить" }}
-      </button>
-    </div>
+        {{ comment.content }}
+      </div>
 
-    <div v-if="isReplying" class="reply-editor">
-      <textarea
-        v-model="replyText"
-        class="reply-textarea"
-        rows="3"
-        maxlength="2000"
-        :placeholder="`Ответ для ${comment.userName || 'пользователя'}...`"
-      />
+      <div class="comment-actions">
+        <ReactionBar
+          :likes-count="comment.likesCount ?? 0"
+          :dislikes-count="comment.dislikesCount ?? 0"
+          :current-user-reaction="comment.currentUserReaction"
+          :is-authenticated="isAuthenticated"
+          :pending="pendingCommentId === comment.id"
+          @set="(reactionType) => emit('set-reaction', { commentId: comment.id, reactionType })"
+          @remove="emit('remove-reaction', comment.id)"
+          @request-auth="emit('request-auth')"
+        />
 
-      <div class="reply-actions">
         <button
+          v-if="isAuthenticated && !comment.isDeleted"
           type="button"
-          class="reply-btn reply-btn-primary"
-          :disabled="!canSubmitReply || submittingReplyToId === comment.id"
-          @click="submitReply"
+          class="reply-btn"
+          @click="toggleReply"
         >
-          {{ submittingReplyToId === comment.id ? "Отправка..." : "Отправить ответ" }}
+          {{ isReplying ? "Отмена" : "Ответить" }}
         </button>
+      </div>
+
+      <div v-if="isReplying" class="reply-editor">
+        <textarea
+          v-model="replyText"
+          class="reply-textarea"
+          rows="3"
+          maxlength="2000"
+          :placeholder="`Ответ для ${comment.userName || 'пользователя'}...`"
+        />
+
+        <div class="reply-actions">
+          <button
+            type="button"
+            class="reply-btn reply-btn-primary"
+            :disabled="!canSubmitReply || submittingReplyToId === comment.id"
+            @click="submitReply"
+          >
+            {{ submittingReplyToId === comment.id ? "Отправка..." : "Отправить ответ" }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -96,9 +110,12 @@
 
 <script setup>
 import { computed, ref } from "vue";
+import { RouterLink } from "vue-router";
 import CommentThreadChild from "./CommentThreadItem.vue";
 import ReactionBar from "@/shared/components/ReactionBar.vue";
 import ReportButton from "@/features/reports/components/ReportButton.vue";
+
+const MAX_VISUAL_DEPTH = 4;
 
 const props = defineProps({
   comment: { type: Object, required: true },
@@ -147,31 +164,50 @@ function formatDate(isoDate) {
 <style scoped>
 .comment-item {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   box-sizing: border-box;
+}
+
+.comment-item-root {
   border: 1px solid var(--border-color);
   border-radius: 14px;
   padding: 0.9rem 1rem;
   background: var(--bg-primary);
-  transition: background 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
-.comment-item:hover {
-  background: var(--bg-secondary);
-  border-color: var(--btn-primary-bg);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+.comment-item-nested {
+  position: relative;
+  padding: 0.65rem 0 0.65rem 0.95rem;
+  margin-left: 0.35rem;
+  border-left: 2px solid var(--border-color);
+}
+
+.comment-item-nested::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: 1.15rem;
+  width: 0.7rem;
+  height: 2px;
+  background: var(--border-color);
+}
+
+.comment-item-deep.comment-item-nested {
+  margin-left: 0;
+  padding-left: 0.85rem;
+}
+
+.comment-main {
+  min-width: 0;
 }
 
 .comment-item-deleted {
   opacity: 0.72;
-  border-style: dashed;
 }
 
-.comment-item-deleted:hover {
-  background: var(--bg-primary);
-  border-color: var(--border-color);
-  transform: none;
-  box-shadow: none;
+.comment-item-root.comment-item-deleted {
+  border-style: dashed;
 }
 
 .comment-top {
@@ -192,6 +228,16 @@ function formatDate(isoDate) {
 .comment-author {
   color: var(--text-primary);
   font-weight: 700;
+}
+
+.author-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.author-link:hover {
+  color: var(--btn-primary-bg);
+  text-decoration: underline;
 }
 
 .comment-date {
@@ -244,6 +290,7 @@ function formatDate(isoDate) {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+  min-width: 0;
 }
 
 .reply-textarea {
@@ -279,9 +326,11 @@ function formatDate(isoDate) {
 }
 
 .comment-children {
-  margin-top: 0.8rem;
+  margin-top: 0.35rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0;
+  min-width: 0;
+  max-width: 100%;
 }
 </style>

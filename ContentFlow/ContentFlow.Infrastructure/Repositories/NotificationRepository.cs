@@ -25,7 +25,7 @@ public class NotificationRepository : INotificationRepository
     public async Task<IReadOnlyList<Notification>> GetByUserAsync(int userId, int take, CancellationToken ct)
     {
         return await _dbContext.Notifications
-            .Where(n => n.UserId == userId)
+            .Where(n => n.UserId == userId && !n.IsRead)
             .OrderByDescending(n => n.CreatedAt)
             .Take(take)
             .ToListAsync(ct);

@@ -8,6 +8,7 @@ public interface IPostCommentsService
     public List<CommentDto> BuildCommentsTree(
         List<Domain.Entities.Comment> comments,
         Dictionary<int, string> userNames,
+        Dictionary<int, int> authorProfileIds,
         Dictionary<int, int> likesCounts,
         Dictionary<int, int> dislikesCounts,
         Dictionary<int, ReactionType?> currentUserReactions);

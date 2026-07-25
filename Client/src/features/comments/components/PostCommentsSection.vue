@@ -259,11 +259,14 @@ watch(
 <style scoped>
 .comments-card {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 18px;
   padding: 1rem 1.1rem;
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .comments-body {
@@ -361,6 +364,8 @@ watch(
   flex-direction: column;
   gap: 0.85rem;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .auth-hint {

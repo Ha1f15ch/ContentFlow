@@ -7,6 +7,7 @@ public record CommentDto(
     int PostId,
     string Content,
     string UserName,
+    int? AuthorProfileId,
     DateTime CreatedAt,
     List<CommentDto> Comments,
     int? ParentCommentId,

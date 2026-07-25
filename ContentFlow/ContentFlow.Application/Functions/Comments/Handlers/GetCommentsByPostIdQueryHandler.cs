@@ -3,6 +3,7 @@ using ContentFlow.Application.Functions.Comments.Queries;
 using ContentFlow.Application.Interfaces.Comment;
 using ContentFlow.Application.Interfaces.CommentReaction;
 using ContentFlow.Application.Interfaces.Posts;
+using ContentFlow.Application.Interfaces.UserProfile;
 using ContentFlow.Application.Interfaces.Users;
 using ContentFlow.Domain.Exceptions;
 using MediatR;
@@ -15,6 +16,7 @@ public class GetCommentsByPostIdQueryHandler : IRequestHandler<GetCommentsByPost
     private readonly ICommentRepository _commentRepository;
     private readonly IPostRepository _postRepository;
     private readonly IUserService  _userService;
+    private readonly IUserProfileRepository _userProfileRepository;
     private readonly IPostCommentsService _postCommentsService;
     private readonly ICommentReactionRepository _commentReactionRepository;
     private readonly ILogger<GetCommentsByPostIdQueryHandler> _logger;
@@ -23,6 +25,7 @@ public class GetCommentsByPostIdQueryHandler : IRequestHandler<GetCommentsByPost
         ICommentRepository commentRepository,
         IPostRepository postRepository,
         IUserService userService,
+        IUserProfileRepository userProfileRepository,
         IPostCommentsService postCommentsService,
         ICommentReactionRepository commentReactionRepository,
         ILogger<GetCommentsByPostIdQueryHandler> logger)
@@ -30,6 +33,7 @@ public class GetCommentsByPostIdQueryHandler : IRequestHandler<GetCommentsByPost
         _commentRepository = commentRepository;
         _postRepository = postRepository;
         _userService = userService;
+        _userProfileRepository = userProfileRepository;
         _postCommentsService = postCommentsService;
         _commentReactionRepository = commentReactionRepository;
         _logger = logger;
@@ -65,6 +69,17 @@ public class GetCommentsByPostIdQueryHandler : IRequestHandler<GetCommentsByPost
 
         var users = await _userService.GetByIdsAsync(authorIds, cancellationToken);
         var userDict = users.ToDictionary(u => u.Id, u => $"{u.UserName}".Trim());
+        var authorProfileIds = new Dictionary<int, int>();
+
+        foreach (var authorId in authorIds)
+        {
+            var profile = await _userProfileRepository.GetByUserIdAsync(authorId, cancellationToken);
+            if (profile != null)
+            {
+                authorProfileIds[authorId] = profile.Id;
+            }
+        }
+
         var likesCounts = new Dictionary<int, int>();
         var dislikesCounts = new Dictionary<int, int>();
         var currentUserReactions = new Dictionary<int, Domain.Enums.ReactionType?>();
@@ -92,6 +107,7 @@ public class GetCommentsByPostIdQueryHandler : IRequestHandler<GetCommentsByPost
         var commentTree = _postCommentsService.BuildCommentsTree(
             postComments,
             userDict,
+            authorProfileIds,
             likesCounts,
             dislikesCounts,
             currentUserReactions);

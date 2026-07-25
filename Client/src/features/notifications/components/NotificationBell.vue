@@ -43,7 +43,7 @@
       </div>
 
       <div v-else-if="notifications.length === 0" class="dropdown-state">
-        Уведомлений пока нет.
+        Нет непрочитанных уведомлений.
       </div>
 
       <template v-else>
@@ -187,6 +187,7 @@ async function markAsRead(notification) {
   try {
     await notificationService.markAsRead(notification.id);
     notification.isRead = true;
+    notifications.value = notifications.value.filter((item) => item.id !== notification.id);
     unreadCount.value = Math.max(0, unreadCount.value - 1);
   } catch (err) {
     console.warn("Failed to mark notification as read", err);
