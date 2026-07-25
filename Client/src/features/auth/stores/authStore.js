@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { getToken, setToken, clearToken } from "@/shared/api/TokenStorage.js";
-import { getRolesFromToken } from "@/shared/utils/jwtUtils.js";
+import { getRolesFromToken, isAccessTokenExpired } from "@/shared/utils/jwtUtils.js";
+import { ensureFreshAccessToken } from "@/shared/api/HttpClient.js";
 import { userProfileService } from "@/features/userProfile/api/userProfileService";
 import { authService } from "@/features/auth/api/authApi.js";
 
@@ -71,13 +72,46 @@ export const useAuthStore = defineStore("auth", {
       return this._initPromise;
     },
 
-    async bootstrap() {
-      if (!this.token) {
+    /**
+     * Refresh access token before calling protected APIs when the stored
+     * access token is missing-but-we-had-one / expired. Guests (no token ever)
+     * skip refresh entirely and browse as anonymous.
+     */
+    async ensureSessionToken() {
+      const current = this.token || getToken();
+
+      // Never logged in (or already cleaned up) — stay anonymous, no refresh call.
+      if (!current) {
         this.user = null;
         return null;
       }
 
-      if (this.user) return this.user;
+      if (!isAccessTokenExpired(current)) {
+        if (this.token !== current) {
+          this.token = current;
+        }
+        return current;
+      }
+
+      // Access token exists but expired — try rotate via refresh cookie.
+      try {
+        return await ensureFreshAccessToken();
+      } catch {
+        this.clearToken();
+        return null;
+      }
+    },
+
+    async bootstrap() {
+      if (this.user && this.token && !isAccessTokenExpired(this.token)) {
+        return this.user;
+      }
+
+      const token = await this.ensureSessionToken();
+      if (!token) {
+        this.user = null;
+        return null;
+      }
 
       if (this._mePromise) return this._mePromise;
 

@@ -25,7 +25,7 @@ apiClient.interceptors.request.use((config) => {
   return config
 });
 
-// --- refresh logic (single-flight) generated part
+// --- refresh logic (single-flight)
 let isRefreshing = false;
 let refreshWaiters = [];
 
@@ -54,6 +54,36 @@ async function refreshAccessTokenApi() {
   return resp.data;
 }
 
+/** Ensures a fresh access token using the refresh cookie (single-flight). */
+export async function ensureFreshAccessToken() {
+  if (isRefreshing) {
+    return new Promise((resolve, reject) => {
+      addRefreshWaiter(resolve, reject);
+    });
+  }
+
+  isRefreshing = true;
+
+  try {
+    const data = await refreshAccessTokenApi();
+    const newToken = data.accessToken ?? data.token;
+
+    if (!newToken) {
+      throw new Error("Refresh did not return access token");
+    }
+
+    authStoreRef?.setToken(newToken);
+    resolveWaiters(newToken);
+    return newToken;
+  } catch (refreshErr) {
+    authStoreRef?.clearToken();
+    rejectWaiters(refreshErr);
+    throw refreshErr;
+  } finally {
+    isRefreshing = false;
+  }
+}
+
 apiClient.interceptors.response.use(
   (resp) => resp,
   async (err) => {
@@ -73,44 +103,15 @@ apiClient.interceptors.response.use(
 
     originalRequest._retry = true;
 
-    if (isRefreshing) {
-      return new Promise((resolve, reject) => {
-        addRefreshWaiter(
-          (newToken) => {
-            originalRequest.headers = originalRequest.headers ?? {};
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            resolve(apiClient(originalRequest));
-          },
-          reject
-        );
-      });
-    }
-
-    isRefreshing = true;
-
     try {
-      const data = await refreshAccessTokenApi();
-      const newToken = data.accessToken ?? data.token;
-
-      if (!newToken) {
-        throw new Error("Refresh did not return access token");
-      }
-
-      authStoreRef?.setToken(newToken);
-      resolveWaiters(newToken);
-
+      const newToken = await ensureFreshAccessToken();
       originalRequest.headers = originalRequest.headers ?? {};
       originalRequest.headers.Authorization = `Bearer ${newToken}`;
-
       return apiClient(originalRequest);
     } catch (refreshErr) {
-      authStoreRef?.clearToken();
-      rejectWaiters(refreshErr);
       return Promise.reject(refreshErr);
-    } finally {
-      isRefreshing = false;
     }
   }
 );
 
-export default apiClient
+export default apiClient;

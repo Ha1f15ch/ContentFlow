@@ -30,3 +30,21 @@ export function getRolesFromToken(token) {
   if (!roleClaim) return [];
   return Array.isArray(roleClaim) ? roleClaim : [roleClaim];
 }
+
+/** @param {string|null|undefined} token */
+export function getTokenExpiresAt(token) {
+  const payload = parseJwtPayload(token);
+  if (!payload?.exp) return null;
+  return payload.exp * 1000;
+}
+
+/**
+ * @param {string|null|undefined} token
+ * @param {number} skewMs refresh a bit before real expiry
+ */
+export function isAccessTokenExpired(token, skewMs = 30_000) {
+  if (!token) return true;
+  const expiresAt = getTokenExpiresAt(token);
+  if (!expiresAt) return true;
+  return Date.now() >= expiresAt - skewMs;
+}
