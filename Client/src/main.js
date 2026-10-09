@@ -18,6 +18,7 @@ async function bootstrapApp() {
   await authStore.initSession()
 
   app.mount('#app')
+  // комментарий
 }
 
 bootstrapApp()
