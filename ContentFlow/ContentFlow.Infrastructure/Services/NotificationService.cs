@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ContentFlow.Infrastructure.Services;
 
+// TODO Рассмотреть реализацию системы доставки уведомлений с Outbox Pattern
 public class NotificationService : INotificationService
 {
     private readonly INotificationRepository _notificationRepository;

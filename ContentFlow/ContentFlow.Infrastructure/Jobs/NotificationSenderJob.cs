@@ -22,7 +22,7 @@ public class NotificationSenderJob : INotificationSenderJob
         var tasks = userIds.Select(userId => 
             _realtimeNotificationSender.SendAsync(userId, "PostPublished", new { postId, authorProfileId }, ct));
         
-        await Task.WhenAll(tasks);
+        await Task.WhenAll(tasks); //TODO переписать на более безопасный вариант, типа - await Parallel.ForEachAsync чтобы избежать падения при любой ошибке и обеспечить устойчивость
         
         _logger.LogInformation("Sent batch of {Count} notifications for Post {PostId}", userIds.Count, postId);
     }
